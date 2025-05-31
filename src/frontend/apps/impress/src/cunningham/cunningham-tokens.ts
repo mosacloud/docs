@@ -588,6 +588,8 @@ export const tokens = {
         },
       },
       components: {
+        'la-gaufre': false,
+        'home-proconnect': false,
         beta: true,
         button: {
           primary: {

@@ -689,6 +689,8 @@
   --c--theme--colors--yellow-600: #b88a34;
   --c--theme--font--families--base: inter, roboto flex variable, sans-serif;
   --c--theme--font--families--accent: inter, roboto flex variable, sans-serif;
+  --c--components--la-gaufre: false;
+  --c--components--home-proconnect: false;
   --c--components--beta: true;
   --c--components--button--primary--background--color-hover: var(
     --c--theme--colors--primary-focus

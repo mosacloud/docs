@@ -66,6 +66,8 @@ tokens.themes.default.components = {
   ...{
     'la-gaufre': false,
     'home-proconnect': false,
+    beta: false,
+    footer: false,
     'image-system-filter': '',
     favicon: {
       ico: '/assets/favicon-light.ico',
@@ -107,6 +109,8 @@ const dsfrTheme = {
     components: {
       'la-gaufre': true,
       'home-proconnect': true,
+      beta: true,
+      footer: true,
       favicon: {
         ico: '/assets/favicon-dsfr.ico',
         'png-light': '/assets/favicon-dsfr.png',
@@ -267,6 +271,7 @@ const genericTheme = {
       'la-gaufre': false,
       'home-proconnect': false,
       beta: true,
+      footer: false,
       button: {
         primary: {
           background: {

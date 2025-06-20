@@ -363,9 +363,11 @@ export const tokens = {
           warning: { 'background-color': '#fff4f3', color: '#b34000' },
           info: { 'background-color': '#E8EDFF', color: '#0063CB' },
         },
-        'la-gaufre': false,
-        'home-proconnect': false,
-        beta: false,
+        'la-gaufre': true,
+        'home-proconnect': true,
+        beta: true,
+        footer: true,
+        onboardingTutorial: true,
         'image-system-filter': '',
         favicon: {
           ico: '/assets/favicon-light.ico',
@@ -440,6 +442,8 @@ export const tokens = {
         'la-gaufre': true,
         'home-proconnect': true,
         beta: true,
+        footer: true,
+        onboardingTutorial: true,
         favicon: {
           ico: '/assets/favicon-dsfr.ico',
           'png-light': '/assets/favicon-dsfr.png',
@@ -449,12 +453,7 @@ export const tokens = {
     },
     generic: {
       theme: {
-        logo: {
-          src: '/assets/mosa-cloud.svg',
-          widthHeader: '90px',
-          widthFooter: '110px',
-          alt: 'Gouvernement Logo',
-        },
+        logo: { src: '', widthHeader: '', widthFooter: '', alt: '' },
         colors: {
           'primary-action': '#0443F2',
           'primary-focus': '#0443F2',
@@ -591,6 +590,8 @@ export const tokens = {
         'la-gaufre': false,
         'home-proconnect': false,
         beta: true,
+        footer: false,
+        onboardingTutorial: false,
         button: {
           primary: {
             background: {

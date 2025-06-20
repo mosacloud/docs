@@ -57,10 +57,11 @@ tokens.themes.default.theme = {
 tokens.themes.default.components = {
   ...tokens.themes.default.components,
   ...{
-    'la-gaufre': false,
-    'home-proconnect': false,
-    beta: false,
-    footer: false,
+    'la-gaufre': true,
+    'home-proconnect': true,
+    beta: true,
+    footer: true,
+    onboardingTutorial: true,
     'image-system-filter': '',
     favicon: {
       ico: '/assets/favicon-light.ico',
@@ -88,6 +89,7 @@ const dsfrTheme = {
       'home-proconnect': true,
       beta: true,
       footer: true,
+      onboardingTutorial: true,
       favicon: {
         ico: '/assets/favicon-dsfr.ico',
         'png-light': '/assets/favicon-dsfr.png',
@@ -101,10 +103,10 @@ const genericTheme = {
   generic: {
     theme: {
       logo: {
-        src: '/assets/mosa-cloud.svg',
-        widthHeader: '90px',
-        widthFooter: '110px',
-        alt: 'Gouvernement Logo',
+        src: '',
+        widthHeader: '',
+        widthFooter: '',
+        alt: '',
       },
       colors: {
         'primary-action': '#0443F2',
@@ -249,6 +251,7 @@ const genericTheme = {
       'home-proconnect': false,
       beta: true,
       footer: false,
+      onboardingTutorial: false,
       button: {
         primary: {
           background: {

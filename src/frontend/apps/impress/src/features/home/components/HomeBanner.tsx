@@ -19,6 +19,7 @@ export default function HomeBanner() {
     useCunninghamTheme();
   const { isMobile, isSmallMobile } = useResponsiveStore();
   const withProConnect = componentTokens['home-proconnect'];
+  const withOnboardingTutorial = componentTokens['onboardingTutorial'];
 
   return (
     <Box
@@ -102,22 +103,24 @@ export default function HomeBanner() {
           />
         )}
       </Box>
-      <Box $css="bottom: 3rem" $position="absolute">
-        <Button
-          color="secondary"
-          icon={
-            <Icon $theme="primary" $variation="800" iconName="expand_more" />
-          }
-          onClick={(e) => {
-            e.preventDefault();
-            document
-              .querySelector('#docs-app-info')
-              ?.scrollIntoView({ behavior: 'smooth' });
-          }}
-        >
-          {t('Show more')}
-        </Button>
-      </Box>
+      {withOnboardingTutorial && (
+        <Box $css="bottom: 3rem" $position="absolute">
+          <Button
+            color="secondary"
+            icon={
+              <Icon $theme="primary" $variation="800" iconName="expand_more" />
+            }
+            onClick={(e) => {
+              e.preventDefault();
+              document
+                .querySelector('#docs-app-info')
+                ?.scrollIntoView({ behavior: 'smooth' });
+            }}
+          >
+            {t('Show more')}
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 }

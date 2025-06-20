@@ -39,6 +39,7 @@ DOCKER_UID          = $(shell id -u)
 DOCKER_GID          = $(shell id -g)
 DOCKER_USER         = $(DOCKER_UID):$(DOCKER_GID)
 COMPOSE             = DOCKER_USER=$(DOCKER_USER) docker compose
+COMPOSE_E2E         = DOCKER_USER=$(DOCKER_USER) docker compose -f compose.yml -f compose-e2e.yml
 COMPOSE_EXEC        = $(COMPOSE) exec
 COMPOSE_EXEC_APP    = $(COMPOSE_EXEC) app-dev
 COMPOSE_RUN         = $(COMPOSE) run --rm
@@ -74,22 +75,39 @@ create-env-files: \
 	env.d/development/kc_postgresql
 .PHONY: create-env-files
 
-bootstrap: ## Prepare Docker images for the project
-bootstrap: \
+pre-bootstrap: \
 	data/media \
 	data/static \
-	create-env-files \
-	build \
+	create-env-files
+.PHONY: pre-bootstrap
+
+post-bootstrap: \
 	migrate \
 	demo \
 	back-i18n-compile \
 	mails-install \
-	mails-build \
+	mails-build
+.PHONY: post-bootstrap
+
+
+bootstrap: ## Prepare Docker developmentimages for the project
+bootstrap: \
+	pre-bootstrap \
+	build \
+	post-bootstrap \
 	run
 .PHONY: bootstrap
 
+bootstrap-e2e: ## Prepare Docker production images to be used for e2e tests
+bootstrap-e2e: \
+	pre-bootstrap \
+	build-e2e \
+	post-bootstrap \
+	run-e2e
+.PHONY: bootstrap-e2e
+
 # -- Docker/compose
-build: cache ?= --no-cache
+build: cache ?=
 build: ## build the project containers
 	@$(MAKE) build-backend cache=$(cache)
 	@$(MAKE) build-yjs-provider cache=$(cache)
@@ -103,16 +121,23 @@ build-backend: ## build the app-dev container
 
 build-yjs-provider: cache ?=
 build-yjs-provider: ## build the y-provider container
-	@$(COMPOSE) build y-provider $(cache)
+	@$(COMPOSE) build y-provider-development $(cache)
 .PHONY: build-yjs-provider
 
 build-frontend: cache ?=
 build-frontend: ## build the frontend container
-	@$(COMPOSE) build frontend $(cache)
+	@$(COMPOSE) build frontend-development $(cache)
 .PHONY: build-frontend
 
+build-e2e: cache ?=
+build-e2e: ## build the e2e container
+	@$(MAKE) build-backend cache=$(cache)
+	@$(COMPOSE_E2E) build frontend $(cache)
+	@$(COMPOSE_E2E) build y-provider $(cache)
+.PHONY: build-e2e
+
 down: ## stop and remove containers, networks, images, and volumes
-	@$(COMPOSE) down
+	@$(COMPOSE_E2E) down
 .PHONY: down
 
 logs: ## display app-dev logs (follow mode)
@@ -121,22 +146,30 @@ logs: ## display app-dev logs (follow mode)
 
 run-backend: ## Start only the backend application and all needed services
 	@$(COMPOSE) up --force-recreate -d celery-dev
-	@$(COMPOSE) up --force-recreate -d y-provider
+	@$(COMPOSE) up --force-recreate -d y-provider-development
 	@$(COMPOSE) up --force-recreate -d nginx
 .PHONY: run-backend
 
 run: ## start the wsgi (production) and development server
 run: 
 	@$(MAKE) run-backend
-	@$(COMPOSE) up --force-recreate -d frontend
+	@$(COMPOSE) up --force-recreate -d frontend-development
 .PHONY: run
 
+run-e2e: ## start the e2e server
+run-e2e:
+	@$(MAKE) run-backend
+	@$(COMPOSE_E2E) stop y-provider-development
+	@$(COMPOSE_E2E) up --force-recreate -d frontend
+	@$(COMPOSE_E2E) up --force-recreate -d y-provider
+.PHONY: run-e2e
+
 status: ## an alias for "docker compose ps"
-	@$(COMPOSE) ps
+	@$(COMPOSE_E2E) ps
 .PHONY: status
 
 stop: ## stop the development server using Docker
-	@$(COMPOSE) stop
+	@$(COMPOSE_E2E) stop
 .PHONY: stop
 
 # -- Backend
@@ -315,7 +348,7 @@ frontend-lint: ## run the frontend linter
 .PHONY: frontend-lint
 
 run-frontend-development: ## Run the frontend in development mode
-	@$(COMPOSE) stop frontend
+	@$(COMPOSE) stop frontend frontend-development
 	cd $(PATH_FRONT_IMPRESS) && yarn dev
 .PHONY: run-frontend-development
 

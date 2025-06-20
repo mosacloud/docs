@@ -504,7 +504,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="documentaccess",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     models.Q(("team", ""), ("user__isnull", False)),
                     models.Q(("team__gt", ""), ("user__isnull", True)),
                     _connector="OR",
@@ -540,7 +540,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="templateaccess",
             constraint=models.CheckConstraint(
-                check=models.Q(
+                condition=models.Q(
                     models.Q(("team", ""), ("user__isnull", False)),
                     models.Q(("team__gt", ""), ("user__isnull", True)),
                     _connector="OR",

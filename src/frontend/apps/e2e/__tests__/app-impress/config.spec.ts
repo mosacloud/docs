@@ -119,9 +119,29 @@ test.describe('Config', () => {
         .first(),
     ).toBeAttached();
   });
+
+  test('it checks theme_customization.translations config', async ({
+    page,
+  }) => {
+    await overrideConfig(page, {
+      theme_customization: {
+        translations: {
+          en: {
+            translation: {
+              Docs: 'MyCustomDocs',
+            },
+          },
+        },
+      },
+    });
+
+    await page.goto('/');
+
+    await expect(page.getByText('MyCustomDocs')).toBeAttached();
+  });
 });
 
-test.describe('Config: Not loggued', () => {
+test.describe('Config: Not logged', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('it checks the config api is called', async ({ page }) => {

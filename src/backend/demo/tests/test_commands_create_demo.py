@@ -33,9 +33,9 @@ def test_commands_create_demo():
     # assert dev users have doc accesses
     user = models.User.objects.get(email="impress@impress.world")
     assert models.DocumentAccess.objects.filter(user=user).exists()
-    user = models.User.objects.get(email="user@webkit.e2e")
+    user = models.User.objects.get(email="user@webkit.test")
     assert models.DocumentAccess.objects.filter(user=user).exists()
-    user = models.User.objects.get(email="user@firefox.e2e")
+    user = models.User.objects.get(email="user@firefox.test")
     assert models.DocumentAccess.objects.filter(user=user).exists()
-    user = models.User.objects.get(email="user@chromium.e2e")
+    user = models.User.objects.get(email="user@chromium.test")
     assert models.DocumentAccess.objects.filter(user=user).exists()

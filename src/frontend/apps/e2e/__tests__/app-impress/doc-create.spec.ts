@@ -31,7 +31,7 @@ test.describe('Doc Create', () => {
   });
 });
 
-test.describe('Doc Create: Not loggued', () => {
+test.describe('Doc Create: Not logged', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
   test('it creates a doc server way', async ({
@@ -44,8 +44,8 @@ test.describe('Doc Create: Not loggued', () => {
     const data = {
       title,
       content: markdown,
-      sub: `user@${browserName}.e2e`,
-      email: `user@${browserName}.e2e`,
+      sub: `user@${browserName}.test`,
+      email: `user@${browserName}.test`,
     };
 
     const newDoc = await request.post(

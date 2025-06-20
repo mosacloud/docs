@@ -131,7 +131,7 @@ test.describe('Document list members', () => {
     const list = page.getByTestId('doc-share-quick-search');
     await expect(list).toBeVisible();
     const currentUser = list.getByTestId(
-      `doc-share-member-row-user@${browserName}.e2e`,
+      `doc-share-member-row-user@${browserName}.test`,
     );
     const currentUserRole = currentUser.getByLabel('doc-role-dropdown');
     await expect(currentUser).toBeVisible();
@@ -175,7 +175,7 @@ test.describe('Document list members', () => {
 
     const list = page.getByTestId('doc-share-quick-search');
 
-    const emailMyself = `user@${browserName}.e2e`;
+    const emailMyself = `user@${browserName}.test`;
     const mySelf = list.getByTestId(`doc-share-member-row-${emailMyself}`);
     const mySelfMoreActions = mySelf.getByRole('button', {
       name: 'more_horiz',

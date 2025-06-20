@@ -1064,7 +1064,7 @@ def test_models_documents_restore(django_assert_num_queries):
     assert document.deleted_at is not None
     assert document.ancestors_deleted_at == document.deleted_at
 
-    with django_assert_num_queries(8):
+    with django_assert_num_queries(10):
         document.restore()
     document.refresh_from_db()
     assert document.deleted_at is None
@@ -1107,7 +1107,7 @@ def test_models_documents_restore_complex(django_assert_num_queries):
     assert child2.ancestors_deleted_at == document.deleted_at
 
     # Restore the item
-    with django_assert_num_queries(11):
+    with django_assert_num_queries(13):
         document.restore()
     document.refresh_from_db()
     child1.refresh_from_db()
@@ -1157,7 +1157,7 @@ def test_models_documents_restore_complex_bis(django_assert_num_queries):
 
     # Restoring the grand parent should not restore the document
     # as it was deleted before the grand parent
-    with django_assert_num_queries(9):
+    with django_assert_num_queries(11):
         grand_parent.restore()
 
     grand_parent.refresh_from_db()

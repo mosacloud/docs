@@ -5,7 +5,6 @@ import { css } from 'styled-components';
 import * as Y from 'yjs';
 
 import { Box, Text, TextErrors } from '@/components';
-import { useCunninghamTheme } from '@/cunningham';
 import { DocHeader, DocVersionHeader } from '@/docs/doc-header/';
 import {
   Doc,
@@ -26,9 +25,6 @@ interface DocEditorProps {
 export const DocEditor = ({ doc, versionId }: DocEditorProps) => {
   const { isDesktop } = useResponsiveStore();
   const isVersion = !!versionId && typeof versionId === 'string';
-
-  const { colorsTokens } = useCunninghamTheme();
-
   const { provider } = useProviderStore();
 
   if (!provider) {
@@ -66,7 +62,6 @@ export const DocEditor = ({ doc, versionId }: DocEditorProps) => {
         </Box>
 
         <Box
-          $background={colorsTokens['primary-bg']}
           $direction="row"
           $width="100%"
           $css="overflow-x: clip; flex: 1;"

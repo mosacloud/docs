@@ -93,11 +93,11 @@ The easiest way to start working on the project is to use [GNU Make](https://www
 $ make bootstrap FLUSH_ARGS='--no-input'
 ```
 
-This command builds the `app` container, installs dependencies, performs database migrations and compiles translations. It's a good idea to use this command each time you are pulling code from the project repository to avoid dependency-related or migration-related issues.
+This command builds the `app-dev` and `frontend-dev` containers, installs dependencies, performs database migrations and compiles translations. It's a good idea to use this command each time you are pulling code from the project repository to avoid dependency-related or migration-related issues.
 
 Your Docker services should now be up and running 🎉
 
-You can access to the project by going to <http://localhost:3000>.
+You can access the project by going to <http://localhost:3000>.
 
 You will be prompted to log in. The default credentials are:
 
@@ -106,7 +106,7 @@ username: impress
 password: impress
 ```
 
-📝 Note that if you need to run them afterwards, you can use the eponym Make rule:
+📝 Note that if you need to run them afterwards, you can use the eponymous Make rule:
 
 ```shellscript
 $ make run

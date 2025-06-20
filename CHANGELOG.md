@@ -8,6 +8,28 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- ✨(frontend) add customization for translations #857
+- 📝(project) add troubleshoot doc #1066
+- 📝(project) add system-requirement doc #1066
+- 🔧(front) configure x-frame-options to DENY in nginx conf #1084
+
+### Changed
+
+- 📌(yjs) stop pinning node to minor version on yjs docker image #1005
+- 🧑‍💻(docker) add .next to .dockerignore #1055
+- 🧑‍💻(docker) handle frontend development images with docker compose #1033
+- 🧑‍💻(docker) add y-provider config to development environment #1057
+
+### Fixed
+
+-🐛(frontend) table of content disappearing #982
+-🐛(frontend) fix multiple EmojiPicker #1012
+-🐛(frontend) fix meta title #1017
+-🔧(git) set LF line endings for all text files #1032
+-📝(docs) minor fixes to docs/env.md
+
 ## [3.3.0] - 2025-05-06
 
 ### Added

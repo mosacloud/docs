@@ -1,19 +1,13 @@
 {
   "extends": ["github>numerique-gouv/renovate-configuration"],
   "dependencyDashboard": true,
-  "labels": ["dependencies", "noChangeLog"],
+  "labels": ["dependencies", "noChangeLog", "automated"],
   "packageRules": [
     {
       "enabled": false,
       "groupName": "ignored python dependencies",
       "matchManagers": ["pep621"],
       "matchPackageNames": []
-    },
-    {
-      "groupName": "allowed django versions",
-      "matchManagers": ["pep621"],
-      "matchPackageNames": ["Django"],
-      "allowedVersions": "<5.2"
     },
     {
       "groupName": "allowed redis versions",

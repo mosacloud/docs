@@ -151,7 +151,7 @@ test.describe('Doc Visibility: Restricted', () => {
     });
 
     const otherBrowser = browsersName.find((b) => b !== browserName);
-    const username = `user@${otherBrowser}.e2e`;
+    const username = `user@${otherBrowser}.test`;
     await inputSearch.fill(username);
     await page.getByRole('option', { name: username }).click();
 
@@ -295,7 +295,7 @@ test.describe('Doc Visibility: Public', () => {
     ).toBeVisible();
 
     await page.getByLabel('Visibility mode').click();
-    await page.getByLabel('Edition').click();
+    await page.getByLabel('Editing').click();
 
     await expect(
       page.getByText('The document visibility has been updated.').first(),
@@ -333,7 +333,7 @@ test.describe('Doc Visibility: Public', () => {
 test.describe('Doc Visibility: Authenticated', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('A doc is not accessible when unauthentified.', async ({
+  test('A doc is not accessible when unauthenticated.', async ({
     page,
     browserName,
   }) => {
@@ -476,7 +476,7 @@ test.describe('Doc Visibility: Authenticated', () => {
 
     const urlDoc = page.url();
     await page.getByLabel('Visibility mode').click();
-    await page.getByLabel('Edition').click();
+    await page.getByLabel('Editing').click();
 
     await expect(
       page.getByText('The document visibility has been updated.').first(),

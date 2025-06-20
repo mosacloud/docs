@@ -520,7 +520,7 @@ class Document(MP_Node, BaseModel):
         verbose_name_plural = _("Documents")
         constraints = [
             models.CheckConstraint(
-                check=(
+                condition=(
                     models.Q(deleted_at__isnull=True)
                     | models.Q(deleted_at=models.F("ancestors_deleted_at"))
                 ),
@@ -747,7 +747,7 @@ class Document(MP_Node, BaseModel):
         for ancestor in ancestors_links:
             links_definitions[ancestor["link_reach"]].add(ancestor["link_role"])
 
-        return dict(links_definitions)  # Convert defaultdict back to a normal dict
+        return dict(links_definitions)  # Convert default dict back to a normal dict
 
     def compute_ancestors_links(self, user):
         """
@@ -1088,7 +1088,7 @@ class DocumentAccess(BaseAccess):
                 violation_error_message=_("This team is already in this document."),
             ),
             models.CheckConstraint(
-                check=models.Q(user__isnull=False, team="")
+                condition=models.Q(user__isnull=False, team="")
                 | models.Q(user__isnull=True, team__gt=""),
                 name="check_document_access_either_user_or_team",
                 violation_error_message=_("Either user or team must be set, not both."),
@@ -1236,7 +1236,7 @@ class TemplateAccess(BaseAccess):
                 violation_error_message=_("This team is already in this template."),
             ),
             models.CheckConstraint(
-                check=models.Q(user__isnull=False, team="")
+                condition=models.Q(user__isnull=False, team="")
                 | models.Q(user__isnull=True, team__gt=""),
                 name="check_template_access_either_user_or_team",
                 violation_error_message=_("Either user or team must be set, not both."),

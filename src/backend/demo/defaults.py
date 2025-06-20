@@ -8,11 +8,11 @@ NB_OBJECTS = {
 
 DEV_USERS = [
     {"username": "impress", "email": "impress@impress.world", "language": "en-us"},
-    {"username": "user-e2e-webkit", "email": "user@webkit.e2e", "language": "en-us"},
-    {"username": "user-e2e-firefox", "email": "user@firefox.e2e", "language": "en-us"},
+    {"username": "user-e2e-webkit", "email": "user@webkit.test", "language": "en-us"},
+    {"username": "user-e2e-firefox", "email": "user@firefox.test", "language": "en-us"},
     {
         "username": "user-e2e-chromium",
-        "email": "user@chromium.e2e",
+        "email": "user@chromium.test",
         "language": "en-us",
     },
 ]

@@ -1,11 +1,11 @@
-FROM node:22.9-alpine AS base
+FROM node:22-alpine AS base
 
 # Upgrade system packages to install security updates
 RUN apk update && \
   apk upgrade && \
   rm -rf /var/cache/apk/*
 
-FROM base AS y-provider-builder
+FROM base AS y-provider-deps
 
 WORKDIR /home/frontend/
 
@@ -18,6 +18,16 @@ RUN yarn install
 
 COPY ./src/frontend/packages/eslint-config-impress ./packages/eslint-config-impress
 COPY ./src/frontend/servers/y-provider ./servers/y-provider
+
+FROM y-provider-deps AS y-provider-development
+
+WORKDIR /home/frontend/servers/y-provider
+
+EXPOSE 4444
+
+CMD [ "yarn", "dev"]
+
+FROM y-provider-deps AS y-provider-builder
 
 WORKDIR /home/frontend/servers/y-provider
 RUN yarn build

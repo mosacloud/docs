@@ -28,9 +28,10 @@ import { HomeSection } from './HomeSection';
 
 export function HomeContent() {
   const { i18n, t } = useTranslation();
-  const { colorsTokens } = useCunninghamTheme();
+  const { colorsTokens, componentTokens } = useCunninghamTheme();
   const { isMobile, isSmallMobile, isTablet } = useResponsiveStore();
   const isFrLanguage = i18n.resolvedLanguage === 'fr';
+  const withFooter = componentTokens['footer'];
 
   return (
     <Box as="main" className="--docs--home-content">
@@ -229,7 +230,7 @@ export function HomeContent() {
             <HomeBottom />
           </Box>
         </Box>
-        <Footer />
+        {withFooter && <Footer />}
       </Box>
     </Box>
   );

@@ -493,8 +493,11 @@
     --c--theme--colors--info-100
   );
   --c--components--badge--info--color: var(--c--theme--colors--info-600);
-  --c--components--la-gaufre: false;
-  --c--components--home-proconnect: false;
+  --c--components--la-gaufre: true;
+  --c--components--home-proconnect: true;
+  --c--components--beta: true;
+  --c--components--footer: true;
+  --c--components--onboardingtutorial: true;
   --c--components--image-system-filter: ;
   --c--components--favicon--ico: /assets/favicon-light.ico;
   --c--components--favicon--png-light: /assets/favicon-light.png;
@@ -560,16 +563,19 @@
   --c--theme--font--families--accent: marianne;
   --c--components--la-gaufre: true;
   --c--components--home-proconnect: true;
+  --c--components--beta: true;
+  --c--components--footer: true;
+  --c--components--onboardingTutorial: true;
   --c--components--favicon--ico: /assets/favicon-dsfr.ico;
   --c--components--favicon--png-light: /assets/favicon-dsfr.png;
   --c--components--favicon--png-dark: /assets/favicon-dark-dsfr.png;
 }
 
 .cunningham-theme--generic {
-  --c--theme--logo--src: /assets/mosa-cloud.svg;
-  --c--theme--logo--widthHeader: 90px;
-  --c--theme--logo--widthFooter: 110px;
-  --c--theme--logo--alt: gouvernement logo;
+  --c--theme--logo--src: ;
+  --c--theme--logo--widthHeader: ;
+  --c--theme--logo--widthFooter: ;
+  --c--theme--logo--alt: ;
   --c--theme--colors--primary-action: #0443f2;
   --c--theme--colors--primary-focus: #0443f2;
   --c--theme--colors--primary-text: #0443f2;
@@ -698,6 +704,8 @@
   --c--components--la-gaufre: false;
   --c--components--home-proconnect: false;
   --c--components--beta: true;
+  --c--components--footer: false;
+  --c--components--onboardingTutorial: false;
   --c--components--button--primary--background--color-hover: var(
     --c--theme--colors--primary-focus
   );

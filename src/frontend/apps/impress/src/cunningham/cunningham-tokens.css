@@ -706,6 +706,9 @@
   --c--components--beta: true;
   --c--components--footer: false;
   --c--components--onboardingTutorial: false;
+  --c--components--favicon--ico: /assets/icon-docs.png;
+  --c--components--favicon--png-light: /assets/icon-docs.png;
+  --c--components--favicon--png-dark: /assets/icon-docs.png;
   --c--components--button--primary--background--color-hover: var(
     --c--theme--colors--primary-focus
   );

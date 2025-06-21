@@ -595,6 +595,11 @@ export const tokens = {
         beta: true,
         footer: false,
         onboardingTutorial: false,
+        favicon: {
+          ico: '/assets/icon-docs.png',
+          'png-light': '/assets/icon-docs.png',
+          'png-dark': '/assets/icon-docs.png',
+        },
         button: {
           primary: {
             background: {

@@ -22,7 +22,7 @@ export const useSynchronizedLanguage = () => {
   );
 
   const changeBackendLanguage = useCallback(
-    async (language: string, user?: User) => {
+    async (language: string, user?: User | null) => {
       const closestBackendLanguage = getMatchingLocales(
         availableBackendLanguages,
         [language],
@@ -52,7 +52,7 @@ export const useSynchronizedLanguage = () => {
   );
 
   const changeLanguageSynchronized = useCallback(
-    async (language: string, user?: User) => {
+    async (language: string, user?: User | null) => {
       if (!isSynchronizingLanguage.current) {
         isSynchronizingLanguage.current = true;
         await changeFrontendLanguage(language);

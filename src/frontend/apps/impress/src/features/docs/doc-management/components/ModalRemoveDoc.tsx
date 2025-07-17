@@ -5,9 +5,9 @@ import {
   VariantType,
   useToastProvider,
 } from '@openfun/cunningham-react';
-import { t } from 'i18next';
 import { usePathname } from 'next/navigation';
 import { useRouter } from 'next/router';
+import { Trans, useTranslation } from 'react-i18next';
 
 import { Box, Text, TextErrors } from '@/components';
 
@@ -17,16 +17,20 @@ import { Doc } from '../types';
 interface ModalRemoveDocProps {
   onClose: () => void;
   doc: Doc;
+  afterDelete?: (doc: Doc) => void;
 }
 
-export const ModalRemoveDoc = ({ onClose, doc }: ModalRemoveDocProps) => {
+export const ModalRemoveDoc = ({
+  onClose,
+  doc,
+  afterDelete,
+}: ModalRemoveDocProps) => {
   const { toast } = useToastProvider();
+  const { t } = useTranslation();
   const { push } = useRouter();
   const pathname = usePathname();
-
   const {
     mutate: removeDoc,
-
     isError,
     error,
   } = useRemoveDoc({
@@ -34,6 +38,11 @@ export const ModalRemoveDoc = ({ onClose, doc }: ModalRemoveDocProps) => {
       toast(t('The document has been deleted.'), VariantType.SUCCESS, {
         duration: 4000,
       });
+      if (afterDelete) {
+        afterDelete(doc);
+        return;
+      }
+
       if (pathname === '/') {
         onClose();
       } else {
@@ -71,7 +80,7 @@ export const ModalRemoveDoc = ({ onClose, doc }: ModalRemoveDocProps) => {
           </Button>
         </>
       }
-      size={ModalSize.SMALL}
+      size={ModalSize.MEDIUM}
       title={
         <Text
           $size="h6"
@@ -89,8 +98,11 @@ export const ModalRemoveDoc = ({ onClose, doc }: ModalRemoveDocProps) => {
         className="--docs--modal-remove-doc"
       >
         {!isError && (
-          <Text $size="sm" $variation="600">
-            {t('Are you sure you want to delete this document ?')}
+          <Text $size="sm" $variation="600" $display="inline-block">
+            <Trans t={t}>
+              This document and <strong>any sub-documents</strong> will be
+              permanently deleted. This action is irreversible.
+            </Trans>
           </Text>
         )}
 

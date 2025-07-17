@@ -1,11 +1,12 @@
-import { Loader } from '@openfun/cunningham-react';
+import { TreeProvider } from '@gouvfr-lasuite/ui-kit';
 import { useQueryClient } from '@tanstack/react-query';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Box, Icon, TextErrors } from '@/components';
+import { Box, Icon, Loading, TextErrors } from '@/components';
+import { DEFAULT_QUERY_RETRY } from '@/core';
 import { DocEditor } from '@/docs/doc-editor';
 import {
   Doc,
@@ -14,7 +15,8 @@ import {
   useDoc,
   useDocStore,
 } from '@/docs/doc-management/';
-import { KEY_AUTH, setAuthUrl } from '@/features/auth';
+import { KEY_AUTH, setAuthUrl, useAuth } from '@/features/auth';
+import { getDocChildren, subPageToTree } from '@/features/docs/doc-tree/';
 import { MainLayout } from '@/layouts';
 import { useBroadcastStore } from '@/stores';
 import { NextPageWithLayout } from '@/types/next';
@@ -34,9 +36,17 @@ export function DocLayout() {
         <meta name="robots" content="noindex" />
       </Head>
 
-      <MainLayout>
-        <DocPage id={id} />
-      </MainLayout>
+      <TreeProvider
+        initialNodeId={id}
+        onLoadChildren={async (docId: string) => {
+          const doc = await getDocChildren({ docId });
+          return subPageToTree(doc.results);
+        }}
+      >
+        <MainLayout>
+          <DocPage id={id} />
+        </MainLayout>
+      </TreeProvider>
     </>
   );
 }
@@ -56,6 +66,14 @@ const DocPage = ({ id }: DocProps) => {
     {
       staleTime: 0,
       queryKey: [KEY_DOC, { id }],
+      retryDelay: 1000,
+      retry: (failureCount, error) => {
+        if (error.status == 403 || error.status == 401 || error.status == 404) {
+          return false;
+        } else {
+          return failureCount < DEFAULT_QUERY_RETRY;
+        }
+      },
     },
   );
 
@@ -66,6 +84,7 @@ const DocPage = ({ id }: DocProps) => {
   const { replace } = useRouter();
   useCollaboration(doc?.id, doc?.content);
   const { t } = useTranslation();
+  const { authenticated } = useAuth();
 
   useEffect(() => {
     if (!docQuery || isFetching) {
@@ -75,6 +94,12 @@ const DocPage = ({ id }: DocProps) => {
     setDoc(docQuery);
     setCurrentDoc(docQuery);
   }, [docQuery, setCurrentDoc, isFetching]);
+
+  useEffect(() => {
+    return () => {
+      setCurrentDoc(undefined);
+    };
+  }, [setCurrentDoc]);
 
   /**
    * We add a broadcast task to reset the query cache
@@ -93,23 +118,24 @@ const DocPage = ({ id }: DocProps) => {
   }, [addTask, doc?.id, queryClient]);
 
   if (isError && error) {
-    if (error.status === 403) {
-      void replace(`/403`);
-      return null;
-    }
+    if ([403, 404, 401].includes(error.status)) {
+      let replacePath = `/${error.status}`;
 
-    if (error.status === 404) {
-      void replace(`/404`);
-      return null;
-    }
+      if (error.status === 401) {
+        if (authenticated) {
+          queryClient.setQueryData([KEY_AUTH], {
+            user: null,
+            authenticated: false,
+          });
+        }
+        setAuthUrl();
+      } else if (error.status === 403) {
+        replacePath = `/docs/${id}/403`;
+      }
 
-    if (error.status === 401) {
-      void queryClient.resetQueries({
-        queryKey: [KEY_AUTH],
-      });
-      setAuthUrl();
-      void replace(`/401`);
-      return null;
+      void replace(replacePath);
+
+      return <Loading />;
     }
 
     return (
@@ -127,11 +153,7 @@ const DocPage = ({ id }: DocProps) => {
   }
 
   if (!doc) {
-    return (
-      <Box $align="center" $justify="center" $height="100%">
-        <Loader />
-      </Box>
-    );
+    return <Loading />;
   }
 
   return (

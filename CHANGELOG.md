@@ -8,27 +8,60 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [3.4.1] - 2025-07-15
+
+### Fixed
+
+- 🌐(frontend) keep simple tag during export #1154
+- 🐛(back) manage can-edit endpoint without created room 
+  in the ws #1152
+- 🐛(frontend) fix action buttons not clickable #1162
+- 🐛(frontend) fix crash share modal on grid options #1174
+
+## [3.4.0] - 2025-07-09
+
 ### Added
 
+- ✨(frontend) multi-pages #701
+- ✨(frontend) Duplicate a doc #1078
+- ✨Ask for access #1081
 - ✨(frontend) add customization for translations #857
+- ✨(backend) add ancestors links definitions to document abilities #846
+- ✨(backend) include ancestors accesses on document accesses list view # 846
+- ✨(backend) add ancestors links reach and role to document API #846
 - 📝(project) add troubleshoot doc #1066
 - 📝(project) add system-requirement doc #1066
 - 🔧(front) configure x-frame-options to DENY in nginx conf #1084
+- ✨(backend) allow to disable checking unsafe mimetype on 
+  attachment upload #1099
+- ✨(doc) add documentation to install with compose #855
+- ✨ Give priority to users connected to collaboration server 
+  (aka no websocket feature) #1093 
 
 ### Changed
 
+- ♻️(backend) stop requiring owner for non-root documents #846
+- ♻️(backend) simplify roles by ranking them and return only the max role #846
 - 📌(yjs) stop pinning node to minor version on yjs docker image #1005
 - 🧑‍💻(docker) add .next to .dockerignore #1055
 - 🧑‍💻(docker) handle frontend development images with docker compose #1033
 - 🧑‍💻(docker) add y-provider config to development environment #1057
+- ⚡️(frontend) optimize document fetch error handling #1089
 
 ### Fixed
 
--🐛(frontend) table of content disappearing #982
--🐛(frontend) fix multiple EmojiPicker #1012
--🐛(frontend) fix meta title #1017
--🔧(git) set LF line endings for all text files #1032
--📝(docs) minor fixes to docs/env.md
+- 🐛(backend) fix link definition select options linked to ancestors #846
+- 🐛(frontend) table of content disappearing #982
+- 🐛(frontend) fix multiple EmojiPicker #1012
+- 🐛(frontend) fix meta title #1017
+- 🔧(git) set LF line endings for all text files #1032
+- 📝(docs) minor fixes to docs/env.md
+- ✨support `_FILE` environment variables for secrets #912
+
+### Removed
+
+- 🔥(frontend) remove Beta from logo #1095
+
 
 ## [3.3.0] - 2025-05-06
 
@@ -96,6 +129,7 @@ and this project adheres to
 - 🔒(frontend) enhance file download security #889
 - 🐛(backend) race condition create doc #633
 - 🐛(frontend) fix breaklines in custom blocks #908
+
 
 ## [3.1.0] - 2025-04-07
 
@@ -612,7 +646,9 @@ and this project adheres to
 - ✨(frontend) Coming Soon page (#67)
 - 🚀 Impress, project to manage your documents easily and collaboratively.
 
-[unreleased]: https://github.com/numerique-gouv/impress/compare/v3.3.0...main
+[unreleased]: https://github.com/numerique-gouv/impress/compare/v3.4.1...main
+[v3.4.1]: https://github.com/numerique-gouv/impress/releases/v3.4.1
+[v3.4.0]: https://github.com/numerique-gouv/impress/releases/v3.4.0
 [v3.3.0]: https://github.com/numerique-gouv/impress/releases/v3.3.0
 [v3.2.1]: https://github.com/numerique-gouv/impress/releases/v3.2.1
 [v3.2.0]: https://github.com/numerique-gouv/impress/releases/v3.2.0

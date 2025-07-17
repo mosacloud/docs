@@ -59,6 +59,7 @@ test.describe('Documents Grid mobile', () => {
                 link_reach: 'public',
                 created_at: '2024-10-07T13:02:41.085298Z',
                 updated_at: '2024-10-07T13:30:21.829690Z',
+                user_roles: ['owner'],
               },
             ],
           },
@@ -88,6 +89,22 @@ test.describe('Documents Grid mobile', () => {
 test.describe('Document grid item options', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
+  });
+
+  test('it checks the share modal', async ({ page, browserName }) => {
+    const [docTitle] = await createDoc(page, `check share modal`, browserName);
+
+    await page.goto('/');
+
+    await expect(page.getByText(docTitle)).toBeVisible();
+    const row = await getGridRow(page, docTitle);
+    await row.getByText(`more_horiz`).click();
+
+    await page.getByRole('menuitem', { name: 'Share' }).click();
+
+    await expect(
+      page.getByRole('dialog').getByText('Share the document'),
+    ).toBeVisible();
   });
 
   test('it pins a document', async ({ page, browserName }) => {
@@ -168,6 +185,8 @@ test.describe('Document grid item options', () => {
               },
               link_reach: 'restricted',
               created_at: '2021-09-01T09:00:00Z',
+              user_roles: ['editor'],
+              user_role: 'editor',
             },
           ],
         },
@@ -222,6 +241,8 @@ test.describe('Documents filters', () => {
     await expect(sharedWithMe).toHaveAttribute('aria-selected', 'false');
 
     await allDocs.click();
+
+    await page.waitForURL('**/?target=all_docs');
 
     let url = new URL(page.url());
     let target = url.searchParams.get('target');

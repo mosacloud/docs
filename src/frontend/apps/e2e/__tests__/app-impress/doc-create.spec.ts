@@ -14,10 +14,10 @@ test.beforeEach(async ({ page }) => {
 
 test.describe('Doc Create', () => {
   test('it creates a doc', async ({ page, browserName }) => {
-    const [docTitle] = await createDoc(page, 'My new doc', browserName, 1);
+    const [docTitle] = await createDoc(page, 'my-new-doc', browserName, 1);
 
     await page.waitForFunction(
-      () => document.title.match(/My new doc - Docs/),
+      () => document.title.match(/my-new-doc - Docs/),
       { timeout: 5000 },
     );
 
@@ -39,6 +39,7 @@ test.describe('Doc Create: Not logged', () => {
     browserName,
     request,
   }) => {
+    const SERVER_TO_SERVER_API_TOKENS = 'server-api-token';
     const markdown = `This is a normal text\n\n# And this is a large heading`;
     const [title] = randomName('My server way doc create', browserName, 1);
     const data = {
@@ -53,7 +54,7 @@ test.describe('Doc Create: Not logged', () => {
       {
         data,
         headers: {
-          Authorization: 'Bearer test-e2e',
+          Authorization: `Bearer ${SERVER_TO_SERVER_API_TOKENS}`,
           format: 'json',
         },
       },

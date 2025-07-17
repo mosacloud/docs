@@ -1,10 +1,12 @@
 import { Page, expect } from '@playwright/test';
 
+export const BROWSERS = ['chromium', 'webkit', 'firefox'];
+
 export const CONFIG = {
   AI_FEATURE_ENABLED: true,
   CRISP_WEBSITE_ID: null,
   COLLABORATION_WS_URL: 'ws://localhost:4444/collaboration/ws/',
-  COLLABORATION_WS_NOT_CONNECTED_READY_ONLY: false,
+  COLLABORATION_WS_NOT_CONNECTED_READY_ONLY: true,
   ENVIRONMENT: 'development',
   FRONTEND_CSS_URL: null,
   FRONTEND_HOMEPAGE_FEATURE_ENABLED: true,
@@ -76,12 +78,15 @@ export const createDoc = async (
   docName: string,
   browserName: string,
   length: number = 1,
+  isChild: boolean = false,
 ) => {
   const randomDocs = randomName(docName, browserName, length);
 
   for (let i = 0; i < randomDocs.length; i++) {
-    const header = page.locator('header').first();
-    await header.locator('h2').getByText('Docs').click();
+    if (!isChild) {
+      const header = page.locator('header').first();
+      await header.locator('h2').getByText('Docs').click();
+    }
 
     await page
       .getByRole('button', {
@@ -208,7 +213,27 @@ export const goToGridDoc = async (
   return docTitle as string;
 };
 
-export const mockedDocument = async (page: Page, json: object) => {
+export const updateDocTitle = async (page: Page, title: string) => {
+  const input = page.getByLabel('doc title input');
+  await expect(input).toBeVisible();
+  await expect(input).toHaveText('');
+  await input.click();
+  await input.fill(title);
+  await input.click();
+  await input.blur();
+  await verifyDocName(page, title);
+};
+
+export const waitForResponseCreateDoc = (page: Page) => {
+  return page.waitForResponse(
+    (response) =>
+      response.url().includes('/documents/') &&
+      response.url().includes('/children/') &&
+      response.request().method() === 'POST',
+  );
+};
+
+export const mockedDocument = async (page: Page, data: object) => {
   await page.route('**/documents/**/', async (route) => {
     const request = route.request();
     if (
@@ -218,12 +243,15 @@ export const mockedDocument = async (page: Page, json: object) => {
       !request.url().includes('accesses') &&
       !request.url().includes('invitations')
     ) {
+      const { abilities, ...doc } = data as unknown as {
+        abilities?: Record<string, unknown>;
+      };
       await route.fulfill({
         json: {
           id: 'mocked-document-id',
           content: '',
           title: 'Mocked document',
-          accesses: [],
+          path: '000000',
           abilities: {
             destroy: false, // Means not owner
             link_configuration: false,
@@ -234,10 +262,21 @@ export const mockedDocument = async (page: Page, json: object) => {
             update: false,
             partial_update: false, // Means not editor
             retrieve: true,
+            link_select_options: {
+              public: ['reader', 'editor'],
+              authenticated: ['reader', 'editor'],
+              restricted: null,
+            },
+            ...abilities,
           },
           link_reach: 'restricted',
+          computed_link_reach: 'restricted',
+          computed_link_role: 'reader',
+          ancestors_link_reach: null,
+          ancestors_link_role: null,
           created_at: '2021-09-01T09:00:00Z',
-          ...json,
+          user_role: 'owner',
+          ...doc,
         },
       });
     } else {
@@ -246,7 +285,41 @@ export const mockedDocument = async (page: Page, json: object) => {
   });
 };
 
+export const mockedListDocs = async (page: Page, data: object[] = []) => {
+  await page.route('**/documents/**/', async (route) => {
+    const request = route.request();
+    if (request.method().includes('GET') && request.url().includes('page=')) {
+      await route.fulfill({
+        json: {
+          count: data.length,
+          next: null,
+          previous: null,
+          results: data,
+        },
+      });
+    }
+  });
+};
+
 export const mockedInvitations = async (page: Page, json?: object) => {
+  let result = [
+    {
+      id: '120ec765-43af-4602-83eb-7f4e1224548a',
+      abilities: {
+        destroy: true,
+        update: true,
+        partial_update: true,
+        retrieve: true,
+      },
+      created_at: '2024-10-03T12:19:26.107687Z',
+      email: 'test@invitation.test',
+      document: '4888c328-8406-4412-9b0b-c0ba5b9e5fb6',
+      role: 'editor',
+      issuer: '7380f42f-02eb-4ad5-b8f0-037a0e66066d',
+      is_expired: false,
+      ...json,
+    },
+  ];
   await page.route('**/invitations/**/', async (route) => {
     const request = route.request();
     if (
@@ -259,65 +332,69 @@ export const mockedInvitations = async (page: Page, json?: object) => {
           count: 1,
           next: null,
           previous: null,
-          results: [
-            {
-              id: '120ec765-43af-4602-83eb-7f4e1224548a',
-              abilities: {
-                destroy: true,
-                update: true,
-                partial_update: true,
-                retrieve: true,
-              },
-              created_at: '2024-10-03T12:19:26.107687Z',
-              email: 'test@invitation.test',
-              document: '4888c328-8406-4412-9b0b-c0ba5b9e5fb6',
-              role: 'editor',
-              issuer: '7380f42f-02eb-4ad5-b8f0-037a0e66066d',
-              is_expired: false,
-              ...json,
-            },
-          ],
+          results: result,
         },
       });
     } else {
       await route.continue();
     }
   });
+
+  await page.route(
+    '**/invitations/120ec765-43af-4602-83eb-7f4e1224548a/**/',
+    async (route) => {
+      const request = route.request();
+      if (request.method().includes('DELETE')) {
+        result = [];
+
+        await route.fulfill({
+          json: {},
+        });
+      }
+    },
+  );
 };
 
 export const mockedAccesses = async (page: Page, json?: object) => {
   await page.route('**/accesses/**/', async (route) => {
     const request = route.request();
+
     if (
       request.method().includes('GET') &&
-      request.url().includes('accesses') &&
-      request.url().includes('page=')
+      request.url().includes('accesses')
     ) {
       await route.fulfill({
-        json: {
-          count: 1,
-          next: null,
-          previous: null,
-          results: [
-            {
-              id: 'bc8bbbc5-a635-4f65-9817-fd1e9ec8ef87',
-              user: {
-                id: 'b4a21bb3-722e-426c-9f78-9d190eda641c',
-                email: 'test@accesses.test',
-              },
-              team: '',
-              role: 'reader',
-              abilities: {
-                destroy: true,
-                update: true,
-                partial_update: true,
-                retrieve: true,
-                set_role_to: ['administrator', 'editor'],
-              },
-              ...json,
+        json: [
+          {
+            id: 'bc8bbbc5-a635-4f65-9817-fd1e9ec8ef87',
+            user: {
+              id: 'b4a21bb3-722e-426c-9f78-9d190eda641c',
+              email: 'test@accesses.test',
             },
-          ],
-        },
+            team: '',
+            max_ancestors_role: null,
+            max_role: 'reader',
+            role: 'reader',
+            document: {
+              id: 'mocked-document-id',
+              path: '000000',
+              depth: 1,
+            },
+            abilities: {
+              destroy: true,
+              update: true,
+              partial_update: true,
+              retrieve: true,
+              link_select_options: {
+                public: ['reader', 'editor'],
+                authenticated: ['reader', 'editor'],
+                restricted: null,
+              },
+              set_role_to: ['administrator', 'editor'],
+            },
+            ...json,
+          },
+        ],
       });
     } else {
       await route.continue();
@@ -328,4 +405,6 @@ export const mockedAccesses = async (page: Page, json?: object) => {
 export const expectLoginPage = async (page: Page) =>
   await expect(
     page.getByRole('heading', { name: 'Collaborative writing' }),
-  ).toBeVisible();
+  ).toBeVisible({
+    timeout: 10000,
+  });

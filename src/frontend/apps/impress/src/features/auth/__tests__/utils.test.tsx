@@ -24,13 +24,22 @@ describe('utils', () => {
   });
 
   it('checks support session is terminated when logout', () => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
     window.$crisp = true;
-    Object.defineProperty(window, 'location', {
+    const propertyDescriptors = Object.getOwnPropertyDescriptors(window);
+    for (const key in propertyDescriptors) {
+      propertyDescriptors[key].configurable = true;
+    }
+    const clonedWindow = Object.defineProperties({}, propertyDescriptors);
+
+    Object.defineProperty(clonedWindow, 'location', {
       value: {
         ...window.location,
         replace: jest.fn(),
       },
       writable: true,
+      configurable: true,
     });
 
     gotoLogout();

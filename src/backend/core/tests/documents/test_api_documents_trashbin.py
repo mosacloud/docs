@@ -75,6 +75,7 @@ def test_api_documents_trashbin_format():
             "ai_transform": True,
             "ai_translate": True,
             "attachment_upload": True,
+            "can_edit": True,
             "children_create": True,
             "children_list": True,
             "collaboration_auth": True,
@@ -88,7 +89,7 @@ def test_api_documents_trashbin_format():
             "link_select_options": {
                 "authenticated": ["reader", "editor"],
                 "public": ["reader", "editor"],
-                "restricted": ["reader", "editor"],
+                "restricted": None,
             },
             "media_auth": True,
             "media_check": True,
@@ -102,6 +103,10 @@ def test_api_documents_trashbin_format():
             "versions_list": True,
             "versions_retrieve": True,
         },
+        "ancestors_link_reach": None,
+        "ancestors_link_role": None,
+        "computed_link_reach": document.computed_link_reach,
+        "computed_link_role": document.computed_link_role,
         "created_at": document.created_at.isoformat().replace("+00:00", "Z"),
         "creator": str(document.creator.id),
         "depth": 1,
@@ -114,7 +119,7 @@ def test_api_documents_trashbin_format():
         "path": document.path,
         "title": document.title,
         "updated_at": document.updated_at.isoformat().replace("+00:00", "Z"),
-        "user_roles": ["owner"],
+        "user_role": "owner",
     }
 
 

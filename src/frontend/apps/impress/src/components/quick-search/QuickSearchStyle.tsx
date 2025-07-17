@@ -26,8 +26,6 @@ export const QuickSearchStyle = createGlobalStyle`
     }
   }
 
-
-
   [cmdk-item] {
     content-visibility: auto;
     cursor: pointer;  
@@ -64,10 +62,6 @@ export const QuickSearchStyle = createGlobalStyle`
   }
 
   [cmdk-list] {
-  
-    padding: 0 var(--c--theme--spacings--base) var(--c--theme--spacings--base)
-      var(--c--theme--spacings--base);
-  
     flex:1;
     overflow-y: auto;
     overscroll-behavior: contain;

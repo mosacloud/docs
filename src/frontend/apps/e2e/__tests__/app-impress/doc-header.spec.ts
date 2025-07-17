@@ -9,55 +9,18 @@ import {
   mockedInvitations,
   verifyDocName,
 } from './common';
+import { createRootSubPage } from './sub-pages-utils';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
 });
 
 test.describe('Doc Header', () => {
-  test('it checks the element are correctly displayed', async ({ page }) => {
-    await mockedDocument(page, {
-      accesses: [
-        {
-          id: 'b0df4343-c8bd-4c20-9ff6-fbf94fc94egg',
-          role: 'owner',
-          user: {
-            email: 'super@owner.com',
-            full_name: 'Super Owner',
-          },
-        },
-        {
-          id: 'b0df4343-c8bd-4c20-9ff6-fbf94fc94egg',
-          role: 'admin',
-          user: {
-            email: 'super@admin.com',
-          },
-        },
-        {
-          id: 'b0df4343-c8bd-4c20-9ff6-fbf94fc94egg',
-          role: 'owner',
-          user: {
-            email: 'super2@owner.com',
-          },
-        },
-      ],
-      abilities: {
-        destroy: true, // Means owner
-        link_configuration: true,
-        versions_destroy: true,
-        versions_list: true,
-        versions_retrieve: true,
-        accesses_manage: true,
-        accesses_view: true,
-        update: true,
-        partial_update: true,
-        retrieve: true,
-      },
-      link_reach: 'public',
-      created_at: '2021-09-01T09:00:00Z',
-    });
-
-    await goToGridDoc(page);
+  test('it checks the element are correctly displayed', async ({
+    page,
+    browserName,
+  }) => {
+    await createDoc(page, 'doc-update', browserName, 1);
 
     const card = page.getByLabel(
       'It is the card information about the document.',
@@ -65,6 +28,18 @@ test.describe('Doc Header', () => {
 
     const docTitle = card.getByRole('textbox', { name: 'doc title input' });
     await expect(docTitle).toBeVisible();
+
+    await page.getByRole('button', { name: 'Share' }).click();
+
+    await page.getByLabel('Visibility', { exact: true }).click();
+
+    await page
+      .getByRole('menuitem', {
+        name: 'Public',
+      })
+      .click();
+
+    await page.getByRole('button', { name: 'close' }).first().click();
 
     await expect(card.getByText('Public document')).toBeVisible();
 
@@ -95,9 +70,7 @@ test.describe('Doc Header', () => {
       page.getByRole('heading', { name: 'Delete a doc' }),
     ).toBeVisible();
 
-    await expect(
-      page.getByText(`Are you sure you want to delete this document ?`),
-    ).toBeVisible();
+    await expect(page.getByText(`This document and any sub-`)).toBeVisible();
 
     await page
       .getByRole('button', {
@@ -158,32 +131,31 @@ test.describe('Doc Header', () => {
     await expect(shareModal).toBeVisible();
     await expect(page.getByText('Share the document')).toBeVisible();
 
-    await expect(page.getByPlaceholder('Type a name or email')).toBeVisible();
-
     const invitationCard = shareModal.getByLabel('List invitation card');
     await expect(invitationCard).toBeVisible();
     await expect(
       invitationCard.getByText('test@invitation.test').first(),
     ).toBeVisible();
-    await expect(invitationCard.getByLabel('doc-role-dropdown')).toBeVisible();
+    const invitationRole = invitationCard.getByLabel('doc-role-dropdown');
+    await expect(invitationRole).toBeVisible();
 
-    await invitationCard.getByRole('button', { name: 'more_horiz' }).click();
+    await invitationRole.click();
 
-    await expect(page.getByLabel('Delete')).toBeEnabled();
-    await invitationCard.click();
+    await page.getByRole('menuitem', { name: 'Remove access' }).click();
+    await expect(invitationCard).toBeHidden();
 
     const memberCard = shareModal.getByLabel('List members card');
+    const roles = memberCard.getByLabel('doc-role-dropdown');
     await expect(memberCard).toBeVisible();
     await expect(
       memberCard.getByText('test@accesses.test').first(),
     ).toBeVisible();
-    await expect(memberCard.getByLabel('doc-role-dropdown')).toBeVisible();
-    await expect(
-      memberCard.getByRole('button', { name: 'more_horiz' }),
-    ).toBeVisible();
-    await memberCard.getByRole('button', { name: 'more_horiz' }).click();
+    await expect(roles).toBeVisible();
 
-    await expect(page.getByLabel('Delete')).toBeEnabled();
+    await roles.click();
+    await expect(
+      page.getByRole('menuitem', { name: 'Remove access' }),
+    ).toBeEnabled();
   });
 
   test('it checks the options available if editor', async ({ page }) => {
@@ -424,7 +396,7 @@ test.describe('Doc Header', () => {
   });
 
   test('it pins a document', async ({ page, browserName }) => {
-    const [docTitle] = await createDoc(page, `Favorite doc`, browserName);
+    const [docTitle] = await createDoc(page, `Pin doc`, browserName);
 
     await page.getByLabel('Open the document options').click();
 
@@ -455,6 +427,61 @@ test.describe('Doc Header', () => {
     // Check is unpinned
     await expect(row.getByLabel('Pin document icon')).toBeHidden();
     await expect(leftPanelFavorites.getByText(docTitle)).toBeHidden();
+  });
+
+  test('it duplicates a document', async ({ page, browserName }) => {
+    const [docTitle] = await createDoc(page, `Duplicate doc`, browserName);
+
+    const editor = page.locator('.ProseMirror');
+    await editor.click();
+    await editor.fill('Hello Duplicated World');
+
+    await page.getByLabel('Open the document options').click();
+
+    await page.getByRole('menuitem', { name: 'Duplicate' }).click();
+    await expect(
+      page.getByText('Document duplicated successfully!'),
+    ).toBeVisible();
+
+    await page.goto('/');
+
+    const duplicateTitle = 'Copy of ' + docTitle;
+
+    const row = await getGridRow(page, duplicateTitle);
+
+    await expect(row.getByText(duplicateTitle)).toBeVisible();
+
+    await row.getByText(`more_horiz`).click();
+    await page.getByRole('menuitem', { name: 'Duplicate' }).click();
+    const duplicateDuplicateTitle = 'Copy of ' + duplicateTitle;
+    await page.getByText(duplicateDuplicateTitle).click();
+    await expect(page.getByText('Hello Duplicated World')).toBeVisible();
+  });
+
+  test('it duplicates a child document', async ({ page, browserName }) => {
+    await createDoc(page, `Duplicate doc`, browserName);
+
+    const { name: childTitle } = await createRootSubPage(
+      page,
+      browserName,
+      'Duplicate doc - child',
+    );
+
+    const editor = page.locator('.ProseMirror');
+    await editor.click();
+    await editor.fill('Hello Duplicated World');
+
+    await page.getByLabel('Open the document options').click();
+
+    await page.getByRole('menuitem', { name: 'Duplicate' }).click();
+    await expect(
+      page.getByText('Document duplicated successfully!'),
+    ).toBeVisible();
+
+    const duplicateDuplicateTitle = 'Copy of ' + childTitle;
+    await expect(
+      page.getByTestId('doc-tree').getByText(duplicateDuplicateTitle),
+    ).toBeVisible();
   });
 });
 

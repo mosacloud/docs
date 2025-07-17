@@ -1,33 +1,28 @@
 // eslint-disable-next-line import/order
 import '../services/sentry';
+
 import * as Sentry from '@sentry/node';
 import express from 'express';
 import expressWebsockets from 'express-ws';
 
-import { PORT } from '../env';
 import {
   collaborationResetConnectionsHandler,
   collaborationWSHandler,
-  convertMarkdownHandler,
-} from '../handlers';
-import { corsMiddleware, httpSecurity, wsSecurity } from '../middlewares';
-import { routes } from '../routes';
-import { logger } from '../utils';
+  convertHandler,
+  getDocumentConnectionInfoHandler,
+} from '@/handlers';
+import { corsMiddleware, httpSecurity, wsSecurity } from '@/middlewares';
+import { routes } from '@/routes';
+import { logger } from '@/utils';
 
 /**
  * init the collaboration server.
  *
  * @returns An object containing the Express app, Hocuspocus server, and HTTP server instance.
  */
-export const initServer = () => {
+export const initApp = () => {
   const { app } = expressWebsockets(express());
-  app.use((req, res, next) => {
-    if (req.path === routes.CONVERT_MARKDOWN) {
-      // Large transcript files are bigger than the default '100kb' limit
-      return express.json({ limit: '500kb' })(req, res, next);
-    }
-    express.json()(req, res, next);
-  });
+
   app.use(corsMiddleware);
 
   /**
@@ -43,13 +38,28 @@ export const initServer = () => {
   app.post(
     routes.COLLABORATION_RESET_CONNECTIONS,
     httpSecurity,
+    express.json(),
     collaborationResetConnectionsHandler,
   );
 
+  app.get(
+    routes.COLLABORATION_GET_CONNECTIONS,
+    httpSecurity,
+    getDocumentConnectionInfoHandler,
+  );
+
   /**
-   * Route to convert markdown
+   * Route to convert Markdown or BlockNote blocks
    */
-  app.post(routes.CONVERT_MARKDOWN, httpSecurity, convertMarkdownHandler);
+  app.post(
+    routes.CONVERT,
+    httpSecurity,
+    express.raw({
+      limit: '500kb',
+      type: '*/*',
+    }),
+    convertHandler,
+  );
 
   Sentry.setupExpressErrorHandler(app);
 
@@ -62,9 +72,5 @@ export const initServer = () => {
     res.status(403).json({ error: 'Forbidden' });
   });
 
-  const server = app.listen(PORT, () =>
-    console.log('App listening on port :', PORT),
-  );
-
-  return { app, server };
+  return app;
 };

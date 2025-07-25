@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
+import { useTreeContext } from '@gouvfr-lasuite/ui-kit';
 import { Tooltip } from '@openfun/cunningham-react';
-import { useQueryClient } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
@@ -12,7 +12,6 @@ import {
   Doc,
   KEY_DOC,
   KEY_LIST_DOC,
-  KEY_SUB_PAGE,
   useDocStore,
   useTrans,
   useUpdateDoc,
@@ -50,10 +49,10 @@ export const DocTitleText = () => {
 
 const DocTitleInput = ({ doc }: DocTitleProps) => {
   const { isDesktop } = useResponsiveStore();
-  const queryClient = useQueryClient();
   const { t } = useTranslation();
   const { colorsTokens } = useCunninghamTheme();
   const [titleDisplay, setTitleDisplay] = useState(doc.title);
+  const treeContext = useTreeContext<Doc>();
 
   const { untitledDocument } = useTrans();
 
@@ -64,10 +63,16 @@ const DocTitleInput = ({ doc }: DocTitleProps) => {
     onSuccess(updatedDoc) {
       // Broadcast to every user connected to the document
       broadcast(`${KEY_DOC}-${updatedDoc.id}`);
-      queryClient.setQueryData(
-        [KEY_SUB_PAGE, { id: updatedDoc.id }],
-        updatedDoc,
-      );
+
+      if (!treeContext) {
+        return;
+      }
+
+      if (treeContext.root?.id === updatedDoc.id) {
+        treeContext?.setRoot(updatedDoc);
+      } else {
+        treeContext?.treeData.updateNode(updatedDoc.id, updatedDoc);
+      }
     },
   });
 

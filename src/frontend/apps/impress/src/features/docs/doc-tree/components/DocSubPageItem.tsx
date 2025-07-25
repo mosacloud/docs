@@ -4,17 +4,12 @@ import {
   useTreeContext,
 } from '@gouvfr-lasuite/ui-kit';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { css } from 'styled-components';
 
 import { Box, Icon, Text } from '@/components';
 import { useCunninghamTheme } from '@/cunningham';
-import {
-  Doc,
-  KEY_SUB_PAGE,
-  useDoc,
-  useTrans,
-} from '@/features/docs/doc-management';
+import { Doc, useTrans } from '@/features/docs/doc-management';
 import { useLeftPanelStore } from '@/features/left-panel';
 import { useResponsiveStore } from '@/stores';
 
@@ -31,8 +26,7 @@ const ItemTextCss = css`
   -webkit-box-orient: vertical;
 `;
 
-type Props = TreeViewNodeProps<Doc>;
-export const DocSubPageItem = (props: Props) => {
+export const DocSubPageItem = (props: TreeViewNodeProps<Doc>) => {
   const doc = props.node.data.value as Doc;
   const treeContext = useTreeContext<Doc>();
   const { untitledDocument } = useTrans();
@@ -43,28 +37,6 @@ export const DocSubPageItem = (props: Props) => {
 
   const router = useRouter();
   const { togglePanel } = useLeftPanelStore();
-
-  const isInitialLoad = useRef(false);
-  const { data: docQuery } = useDoc(
-    { id: doc.id },
-    {
-      initialData: doc,
-      queryKey: [KEY_SUB_PAGE, { id: doc.id }],
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
-    },
-  );
-
-  useEffect(() => {
-    if (docQuery && isInitialLoad.current === true) {
-      treeContext?.treeData.updateNode(docQuery.id, docQuery);
-    }
-
-    if (docQuery) {
-      isInitialLoad.current = true;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [docQuery]);
 
   const afterCreate = (createdDoc: Doc) => {
     const actualChildren = node.data.children ?? [];

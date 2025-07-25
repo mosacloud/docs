@@ -8,7 +8,8 @@ import {
   keyCloakSignIn,
   mockedDocument,
   verifyDocName,
-} from './common';
+} from './utils-common';
+import { createRootSubPage } from './utils-sub-pages';
 
 test.describe('Doc Routing', () => {
   test.beforeEach(async ({ page }) => {
@@ -60,16 +61,20 @@ test.describe('Doc Routing', () => {
   });
 
   test('checks 401 on docs/[id] page', async ({ page, browserName }) => {
-    const [docTitle] = await createDoc(page, '401-doc', browserName, 1);
+    const [docTitle] = await createDoc(page, '401-doc-parent', browserName, 1);
     await verifyDocName(page, docTitle);
 
+    await createRootSubPage(page, browserName, '401-doc-child');
+
+    await page.locator('.ProseMirror.bn-editor').fill('Hello World');
+
     const responsePromise = page.route(
-      /.*\/link-configuration\/$|users\/me\/$/,
+      /.*\/documents\/.*\/$|users\/me\/$/,
       async (route) => {
         const request = route.request();
 
         if (
-          request.method().includes('PUT') ||
+          request.method().includes('PATCH') ||
           request.method().includes('GET')
         ) {
           await route.fulfill({
@@ -84,11 +89,7 @@ test.describe('Doc Routing', () => {
       },
     );
 
-    await page.getByRole('button', { name: 'Share' }).click();
-
-    const selectVisibility = page.getByLabel('Visibility', { exact: true });
-    await selectVisibility.click();
-    await page.getByLabel('Connected').click();
+    await page.getByRole('link', { name: '401-doc-parent' }).click();
 
     await responsePromise;
 

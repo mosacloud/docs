@@ -5,7 +5,7 @@ import {
   getFormattingToolbarItems,
   useDictionary,
 } from '@blocknote/react';
-import React, { JSX, useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useConfig } from '@/core/config/api';
@@ -50,7 +50,7 @@ export const BlockNoteToolbar = () => {
       );
     }
 
-    return toolbarItems as JSX.Element[];
+    return toolbarItems;
   }, [dict, t]);
 
   const formattingToolbar = useCallback(() => {

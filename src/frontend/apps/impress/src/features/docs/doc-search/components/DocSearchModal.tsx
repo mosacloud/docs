@@ -7,9 +7,9 @@ import { useDebouncedCallback } from 'use-debounce';
 
 import { Box } from '@/components';
 import { QuickSearch } from '@/components/quick-search';
+import { Doc, useDocUtils } from '@/docs/doc-management';
 import { useResponsiveStore } from '@/stores';
 
-import { Doc } from '../../doc-management';
 import EmptySearchIcon from '../assets/illustration-docs-empty.png';
 
 import { DocSearchContent } from './DocSearchContent';
@@ -20,18 +20,18 @@ import {
 } from './DocSearchFilters';
 import { DocSearchSubPageContent } from './DocSearchSubPageContent';
 
-type DocSearchModalProps = {
+type DocSearchModalGlobalProps = {
   onClose: () => void;
   isOpen: boolean;
   showFilters?: boolean;
   defaultFilters?: DocSearchFiltersValues;
 };
 
-export const DocSearchModal = ({
+const DocSearchModalGlobal = ({
   showFilters = false,
   defaultFilters,
   ...modalProps
-}: DocSearchModalProps) => {
+}: DocSearchModalGlobalProps) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
 
@@ -125,4 +125,43 @@ export const DocSearchModal = ({
       </Box>
     </Modal>
   );
+};
+
+type DocSearchModalDetailProps = DocSearchModalGlobalProps & {
+  doc: Doc;
+};
+
+const DocSearchModalDetail = ({
+  doc,
+  ...modalProps
+}: DocSearchModalDetailProps) => {
+  const { hasChildren, isChild } = useDocUtils(doc);
+  const isWithChildren = isChild || hasChildren;
+
+  let defaultFilters = DocSearchTarget.ALL;
+  let showFilters = false;
+  if (isWithChildren) {
+    defaultFilters = DocSearchTarget.CURRENT;
+    showFilters = true;
+  }
+
+  return (
+    <DocSearchModalGlobal
+      {...modalProps}
+      showFilters={showFilters}
+      defaultFilters={{ target: defaultFilters }}
+    />
+  );
+};
+
+type DocSearchModalProps = DocSearchModalGlobalProps & {
+  doc?: Doc;
+};
+
+export const DocSearchModal = ({ doc, ...modalProps }: DocSearchModalProps) => {
+  if (doc) {
+    return <DocSearchModalDetail doc={doc} {...modalProps} />;
+  }
+
+  return <DocSearchModalGlobal {...modalProps} />;
 };

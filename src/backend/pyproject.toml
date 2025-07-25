@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "impress"
-version = "3.4.1"
+version = "3.4.2"
 authors = [{ "name" = "DINUM", "email" = "dev@mail.numerique.gouv.fr" }]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -64,10 +64,10 @@ dependencies = [
 ]
 
 [project.urls]
-"Bug Tracker" = "https://github.com/numerique-gouv/impress/issues/new"
-"Changelog" = "https://github.com/numerique-gouv/impress/blob/main/CHANGELOG.md"
-"Homepage" = "https://github.com/numerique-gouv/impress"
-"Repository" = "https://github.com/numerique-gouv/impress"
+"Bug Tracker" = "https://github.com/suitenumerique/docs/issues/new"
+"Changelog" = "https://github.com/suitenumerique/docs/blob/main/CHANGELOG.md"
+"Homepage" = "https://github.com/suitenumerique/docs"
+"Repository" = "https://github.com/suitenumerique/docs"
 
 [project.optional-dependencies]
 dev = [

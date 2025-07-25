@@ -175,8 +175,11 @@ def test_api_documents_ai_transform_authenticated_success(mock_create, reach, ro
             {
                 "role": "system",
                 "content": (
-                    "Answer the prompt in markdown format. Preserve the language and markdown "
-                    "formatting. Do not provide any other information. Preserve the language."
+                    "Answer the prompt using markdown formatting for structure and emphasis. "
+                    "Return the content directly without wrapping it in code blocks or markdown delimiters. "
+                    "Preserve the language and markdown formatting. "
+                    "Do not provide any other information. "
+                    "Preserve the language."
                 ),
             },
             {"role": "user", "content": "Hello"},
@@ -249,8 +252,11 @@ def test_api_documents_ai_transform_success(mock_create, via, role, mock_user_te
             {
                 "role": "system",
                 "content": (
-                    "Answer the prompt in markdown format. Preserve the language and markdown "
-                    "formatting. Do not provide any other information. Preserve the language."
+                    "Answer the prompt using markdown formatting for structure and emphasis. "
+                    "Return the content directly without wrapping it in code blocks or markdown delimiters. "
+                    "Preserve the language and markdown formatting. "
+                    "Do not provide any other information. "
+                    "Preserve the language."
                 ),
             },
             {"role": "user", "content": "Hello"},

@@ -1,5 +1,9 @@
 import { CunninghamProvider } from '@openfun/cunningham-react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  MutationCache,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 
@@ -24,8 +28,24 @@ const defaultOptions = {
     retry: DEFAULT_QUERY_RETRY,
   },
 };
+
+let globalRouterReplace: ((url: string) => void) | null = null;
+
 const queryClient = new QueryClient({
   defaultOptions,
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      if (error instanceof Error && 'status' in error && error.status === 401) {
+        void queryClient.resetQueries({
+          queryKey: [KEY_AUTH],
+        });
+        setAuthUrl();
+        if (globalRouterReplace) {
+          void globalRouterReplace('/401');
+        }
+      }
+    },
+  }),
 });
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -40,25 +60,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return initializeResizeListener();
   }, [initializeResizeListener]);
 
+  /**
+   * Update the global router replace function
+   * This allows us to use the router replace function globally
+   */
   useEffect(() => {
-    queryClient.setDefaultOptions({
-      ...defaultOptions,
-      mutations: {
-        onError: (error) => {
-          if (
-            error instanceof Error &&
-            'status' in error &&
-            error.status === 401
-          ) {
-            void queryClient.resetQueries({
-              queryKey: [KEY_AUTH],
-            });
-            setAuthUrl();
-            void replace(`/401`);
-          }
-        },
-      },
-    });
+    globalRouterReplace = (url: string) => {
+      void replace(url);
+    };
   }, [replace]);
 
   return (

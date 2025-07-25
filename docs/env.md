@@ -136,9 +136,10 @@ NODE_ENV=production NEXT_PUBLIC_PUBLISH_AS_MIT=false yarn build
 
 Packages with licences incompatible with the MIT licence:
 * `xl-docx-exporter`: [AGPL-3.0](https://github.com/TypeCellOS/BlockNote/blob/main/packages/xl-docx-exporter/LICENSE), 
-* `xl-pdf-exporter`: [AGPL-3.0](https://github.com/TypeCellOS/BlockNote/blob/main/packages/xl-pdf-exporter/LICENSE) 
+* `xl-pdf-exporter`: [AGPL-3.0](https://github.com/TypeCellOS/BlockNote/blob/main/packages/xl-pdf-exporter/LICENSE), 
+* `xl-multi-column`: [AGPL-3.0](https://github.com/TypeCellOS/BlockNote/blob/main/packages/xl-multi-column/LICENSE). 
 
 In `.env.development`, `PUBLISH_AS_MIT` is set to `false`, allowing developers to test Docs with all its features.
 
-⚠️ If you run Docs in production with `PUBLISH_AS_MIT` set to `false` make sure you fulfill your [BlockNote licensing](https://github.com/TypeCellOS/BlockNote/blob/main/packages/xl-pdf-exporter/LICENSE) or [subscription](https://www.blocknotejs.org/about#partner-with-us) obligations.
+⚠️ If you run Docs in production with `PUBLISH_AS_MIT` set to `false` make sure you fulfill your BlockNote licensing or [subscription](https://www.blocknotejs.org/about#partner-with-us) obligations.
 

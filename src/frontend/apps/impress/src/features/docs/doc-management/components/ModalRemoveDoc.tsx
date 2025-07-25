@@ -15,15 +15,15 @@ import { useRemoveDoc } from '../api/useRemoveDoc';
 import { Doc } from '../types';
 
 interface ModalRemoveDocProps {
-  onClose: () => void;
   doc: Doc;
-  afterDelete?: (doc: Doc) => void;
+  onClose: () => void;
+  onSuccess?: (doc: Doc) => void;
 }
 
 export const ModalRemoveDoc = ({
-  onClose,
   doc,
-  afterDelete,
+  onClose,
+  onSuccess,
 }: ModalRemoveDocProps) => {
   const { toast } = useToastProvider();
   const { t } = useTranslation();
@@ -35,19 +35,17 @@ export const ModalRemoveDoc = ({
     error,
   } = useRemoveDoc({
     onSuccess: () => {
-      toast(t('The document has been deleted.'), VariantType.SUCCESS, {
-        duration: 4000,
-      });
-      if (afterDelete) {
-        afterDelete(doc);
-        return;
-      }
-
-      if (pathname === '/') {
+      if (onSuccess) {
+        onSuccess(doc);
+      } else if (pathname === '/') {
         onClose();
       } else {
         void push('/');
       }
+
+      toast(t('The document has been deleted.'), VariantType.SUCCESS, {
+        duration: 4000,
+      });
     },
   });
 

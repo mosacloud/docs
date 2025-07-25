@@ -9,11 +9,7 @@ export type DocsTreeParams = {
 };
 
 export const getDocTree = async ({ docId }: DocsTreeParams): Promise<Doc> => {
-  const searchParams = new URLSearchParams();
-
-  const response = await fetchAPI(
-    `documents/${docId}/tree/?${searchParams.toString()}`,
-  );
+  const response = await fetchAPI(`documents/${docId}/tree/`);
 
   if (!response.ok) {
     throw new APIError(
@@ -29,10 +25,7 @@ export const KEY_DOC_TREE = 'doc-tree';
 
 export function useDocTree(
   params: DocsTreeParams,
-  queryConfig?: Omit<
-    UseQueryOptions<Doc, APIError, Doc>,
-    'queryKey' | 'queryFn'
-  >,
+  queryConfig?: UseQueryOptions<Doc, APIError, Doc>,
 ) {
   return useQuery<Doc, APIError, Doc>({
     queryKey: [KEY_DOC_TREE, params],

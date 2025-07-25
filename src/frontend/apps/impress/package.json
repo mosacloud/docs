@@ -1,6 +1,10 @@
 {
   "name": "app-impress",
+<<<<<<< HEAD
   "version": "3.4.1",
+=======
+  "version": "3.4.2",
+>>>>>>> upstream/main
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -16,23 +20,41 @@
   },
   "dependencies": {
     "@ag-media/react-pdf-table": "2.0.3",
+<<<<<<< HEAD
     "@blocknote/code-block": "0.33.0",
     "@blocknote/core": "0.33.0",
     "@blocknote/mantine": "0.33.0",
     "@blocknote/react": "0.33.0",
     "@blocknote/xl-docx-exporter": "0.33.0",
     "@blocknote/xl-pdf-exporter": "0.33.0",
+=======
+    "@blocknote/code-block": "0.35.0",
+    "@blocknote/core": "0.35.0",
+    "@blocknote/mantine": "0.35.0",
+    "@blocknote/react": "0.35.0",
+    "@blocknote/xl-docx-exporter": "0.35.0",
+    "@blocknote/xl-multi-column": "0.35.0",
+    "@blocknote/xl-pdf-exporter": "0.35.0",
+>>>>>>> upstream/main
     "@dnd-kit/core": "6.3.1",
     "@dnd-kit/modifiers": "9.0.0",
     "@emoji-mart/data": "1.2.1",
     "@emoji-mart/react": "1.1.1",
     "@fontsource/material-icons": "5.2.5",
     "@gouvfr-lasuite/integration": "1.0.3",
+<<<<<<< HEAD
     "@gouvfr-lasuite/ui-kit": "0.8.2",
+=======
+    "@gouvfr-lasuite/ui-kit": "0.10.0",
+>>>>>>> upstream/main
     "@hocuspocus/provider": "2.15.2",
-    "@openfun/cunningham-react": "3.1.0",
+    "@openfun/cunningham-react": "3.2.0",
     "@react-pdf/renderer": "4.3.0",
+<<<<<<< HEAD
     "@sentry/nextjs": "9.38.0",
+=======
+    "@sentry/nextjs": "9.42.0",
+>>>>>>> upstream/main
     "@tanstack/react-query": "5.83.0",
     "canvg": "4.0.3",
     "clsx": "2.1.1",
@@ -45,12 +67,21 @@
     "idb": "8.0.3",
     "lodash": "4.17.21",
     "luxon": "3.7.1",
+<<<<<<< HEAD
     "next": "15.4.1",
     "posthog-js": "1.257.0",
     "react": "*",
     "react-aria-components": "1.10.1",
     "react-dom": "*",
     "react-i18next": "15.6.0",
+=======
+    "next": "15.4.4",
+    "posthog-js": "1.258.2",
+    "react": "*",
+    "react-aria-components": "1.11.0",
+    "react-dom": "*",
+    "react-i18next": "15.6.1",
+>>>>>>> upstream/main
     "react-intersection-observer": "9.16.0",
     "react-select": "5.10.2",
     "styled-components": "6.1.19",
@@ -73,6 +104,7 @@
     "@types/react": "*",
     "@types/react-dom": "*",
     "cross-env": "7.0.3",
+<<<<<<< HEAD
     "dotenv": "17.2.0",
     "eslint-config-impress": "*",
     "fetch-mock": "9.11.0",
@@ -85,6 +117,20 @@
     "stylelint-prettier": "5.0.3",
     "typescript": "*",
     "webpack": "5.100.1",
+=======
+    "dotenv": "17.2.1",
+    "eslint-config-impress": "*",
+    "fetch-mock": "9.11.0",
+    "jest": "30.0.5",
+    "jest-environment-jsdom": "30.0.5",
+    "node-fetch": "2.7.0",
+    "prettier": "3.6.2",
+    "stylelint": "16.22.0",
+    "stylelint-config-standard": "38.0.0",
+    "stylelint-prettier": "5.0.3",
+    "typescript": "*",
+    "webpack": "5.100.2",
+>>>>>>> upstream/main
     "workbox-webpack-plugin": "7.1.0"
   }
 }

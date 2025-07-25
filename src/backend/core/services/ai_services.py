@@ -9,7 +9,8 @@ from core import enums
 
 AI_ACTIONS = {
     "prompt": (
-        "Answer the prompt in markdown format. "
+        "Answer the prompt using markdown formatting for structure and emphasis. "
+        "Return the content directly without wrapping it in code blocks or markdown delimiters. "
         "Preserve the language and markdown formatting. "
         "Do not provide any other information. "
         "Preserve the language."

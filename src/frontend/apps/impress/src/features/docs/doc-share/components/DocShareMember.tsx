@@ -1,5 +1,4 @@
 import { VariantType, useToastProvider } from '@openfun/cunningham-react';
-import { useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,7 +6,7 @@ import { Box } from '@/components';
 import { QuickSearchData } from '@/components/quick-search';
 import { QuickSearchGroup } from '@/components/quick-search/QuickSearchGroup';
 import { useCunninghamTheme } from '@/cunningham';
-import { Access, Doc, KEY_SUB_PAGE, Role } from '@/docs/doc-management/';
+import { Access, Doc, Role } from '@/docs/doc-management/';
 
 import { useDocAccesses, useUpdateDocAccess } from '../api';
 import { useWhoAmI } from '../hooks/';
@@ -26,7 +25,6 @@ export const DocShareMemberItem = ({
   isInherited = false,
 }: Props) => {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
   const { isLastOwner } = useWhoAmI(access);
   const { toast } = useToastProvider();
 
@@ -39,14 +37,6 @@ export const DocShareMemberItem = ({
     : undefined;
 
   const { mutate: updateDocAccess } = useUpdateDocAccess({
-    onSuccess: () => {
-      if (!doc) {
-        return;
-      }
-      void queryClient.invalidateQueries({
-        queryKey: [KEY_SUB_PAGE, { id: doc.id }],
-      });
-    },
     onError: () => {
       toast(t('Error while updating the member role.'), VariantType.ERROR, {
         duration: 4000,

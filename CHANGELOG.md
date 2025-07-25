@@ -8,6 +8,37 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- ✨(backend) allow masking documents from the list view #1171
+- ✨(frontend) subdocs can manage link reach #1190
+- ✨(frontend) add duplicate action to doc tree #1175
+- ✨(frontend) add multi columns support for editor #1219
+
+### Changed
+
+- ♻️(frontend) search on all docs if no children #1184
+- ♻️(frontend) redirect to doc after duplicate #1175
+- 🔧(project) change env.d system by using local files #1200
+- ⚡️(frontend) improve tree stability #1207
+
+### Fixed
+
+- 🐛(service-worker) Fix useOffline Maximum update depth exceeded #1196
+- 🐛(frontend) fix empty left panel after deleting root doc #1197
+- 🐛(helm) charts generate invalid YAML for collaboration API / WS #890
+- 🐛(frontend) 401 redirection overridden #1214
+
+## [3.4.2] - 2025-07-18
+
+### Changed
+
+- ⚡️(docker) Optimize Dockerfile to use apk with --no-cache #743
+
+### Fixed
+
+- 🐛(backend) improve prompt to not use code blocks delimiter #1188
+
 ## [3.4.1] - 2025-07-15
 
 ### Fixed
@@ -17,6 +48,7 @@ and this project adheres to
   in the ws #1152
 - 🐛(frontend) fix action buttons not clickable #1162
 - 🐛(frontend) fix crash share modal on grid options #1174
+- 🐛(frontend) fix unfold subdocs not clickable at the bottom #1179
 
 ## [3.4.0] - 2025-07-09
 
@@ -27,11 +59,11 @@ and this project adheres to
 - ✨Ask for access #1081
 - ✨(frontend) add customization for translations #857
 - ✨(backend) add ancestors links definitions to document abilities #846
-- ✨(backend) include ancestors accesses on document accesses list view # 846
+- ✨(backend) include ancestors accesses on document accesses list view #846
 - ✨(backend) add ancestors links reach and role to document API #846
 - 📝(project) add troubleshoot doc #1066
 - 📝(project) add system-requirement doc #1066
-- 🔧(front) configure x-frame-options to DENY in nginx conf #1084
+- 🔧(frontend) configure x-frame-options to DENY in nginx conf #1084
 - ✨(backend) allow to disable checking unsafe mimetype on 
   attachment upload #1099
 - ✨(doc) add documentation to install with compose #855
@@ -129,7 +161,6 @@ and this project adheres to
 - 🔒(frontend) enhance file download security #889
 - 🐛(backend) race condition create doc #633
 - 🐛(frontend) fix breaklines in custom blocks #908
-
 
 ## [3.1.0] - 2025-04-07
 
@@ -646,35 +677,36 @@ and this project adheres to
 - ✨(frontend) Coming Soon page (#67)
 - 🚀 Impress, project to manage your documents easily and collaboratively.
 
-[unreleased]: https://github.com/numerique-gouv/impress/compare/v3.4.1...main
-[v3.4.1]: https://github.com/numerique-gouv/impress/releases/v3.4.1
-[v3.4.0]: https://github.com/numerique-gouv/impress/releases/v3.4.0
-[v3.3.0]: https://github.com/numerique-gouv/impress/releases/v3.3.0
-[v3.2.1]: https://github.com/numerique-gouv/impress/releases/v3.2.1
-[v3.2.0]: https://github.com/numerique-gouv/impress/releases/v3.2.0
-[v3.1.0]: https://github.com/numerique-gouv/impress/releases/v3.1.0
-[v3.0.0]: https://github.com/numerique-gouv/impress/releases/v3.0.0
-[v2.6.0]: https://github.com/numerique-gouv/impress/releases/v2.6.0
-[v2.5.0]: https://github.com/numerique-gouv/impress/releases/v2.5.0
-[v2.4.0]: https://github.com/numerique-gouv/impress/releases/v2.4.0
-[v2.3.0]: https://github.com/numerique-gouv/impress/releases/v2.3.0
-[v2.2.0]: https://github.com/numerique-gouv/impress/releases/v2.2.0
-[v2.1.0]: https://github.com/numerique-gouv/impress/releases/v2.1.0
-[v2.0.1]: https://github.com/numerique-gouv/impress/releases/v2.0.1
-[v2.0.0]: https://github.com/numerique-gouv/impress/releases/v2.0.0
-[v1.10.0]: https://github.com/numerique-gouv/impress/releases/v1.10.0
-[v1.9.0]: https://github.com/numerique-gouv/impress/releases/v1.9.0
-[v1.8.2]: https://github.com/numerique-gouv/impress/releases/v1.8.2
-[v1.8.1]: https://github.com/numerique-gouv/impress/releases/v1.8.1
-[v1.8.0]: https://github.com/numerique-gouv/impress/releases/v1.8.0
-[v1.7.0]: https://github.com/numerique-gouv/impress/releases/v1.7.0
-[v1.6.0]: https://github.com/numerique-gouv/impress/releases/v1.6.0
-[1.5.1]: https://github.com/numerique-gouv/impress/releases/v1.5.1
-[1.5.0]: https://github.com/numerique-gouv/impress/releases/v1.5.0
-[1.4.0]: https://github.com/numerique-gouv/impress/releases/v1.4.0
-[1.3.0]: https://github.com/numerique-gouv/impress/releases/v1.3.0
-[1.2.1]: https://github.com/numerique-gouv/impress/releases/v1.2.1
-[1.2.0]: https://github.com/numerique-gouv/impress/releases/v1.2.0
-[1.1.0]: https://github.com/numerique-gouv/impress/releases/v1.1.0
-[1.0.0]: https://github.com/numerique-gouv/impress/releases/v1.0.0
-[0.1.0]: https://github.com/numerique-gouv/impress/releases/v0.1.0
+[unreleased]: https://github.com/suitenumerique/docs/compare/v3.4.2...main
+[v3.4.2]: https://github.com/suitenumerique/docs/releases/v3.4.2
+[v3.4.1]: https://github.com/suitenumerique/docs/releases/v3.4.1
+[v3.4.0]: https://github.com/suitenumerique/docs/releases/v3.4.0
+[v3.3.0]: https://github.com/suitenumerique/docs/releases/v3.3.0
+[v3.2.1]: https://github.com/suitenumerique/docs/releases/v3.2.1
+[v3.2.0]: https://github.com/suitenumerique/docs/releases/v3.2.0
+[v3.1.0]: https://github.com/suitenumerique/docs/releases/v3.1.0
+[v3.0.0]: https://github.com/suitenumerique/docs/releases/v3.0.0
+[v2.6.0]: https://github.com/suitenumerique/docs/releases/v2.6.0
+[v2.5.0]: https://github.com/suitenumerique/docs/releases/v2.5.0
+[v2.4.0]: https://github.com/suitenumerique/docs/releases/v2.4.0
+[v2.3.0]: https://github.com/suitenumerique/docs/releases/v2.3.0
+[v2.2.0]: https://github.com/suitenumerique/docs/releases/v2.2.0
+[v2.1.0]: https://github.com/suitenumerique/docs/releases/v2.1.0
+[v2.0.1]: https://github.com/suitenumerique/docs/releases/v2.0.1
+[v2.0.0]: https://github.com/suitenumerique/docs/releases/v2.0.0
+[v1.10.0]: https://github.com/suitenumerique/docs/releases/v1.10.0
+[v1.9.0]: https://github.com/suitenumerique/docs/releases/v1.9.0
+[v1.8.2]: https://github.com/suitenumerique/docs/releases/v1.8.2
+[v1.8.1]: https://github.com/suitenumerique/docs/releases/v1.8.1
+[v1.8.0]: https://github.com/suitenumerique/docs/releases/v1.8.0
+[v1.7.0]: https://github.com/suitenumerique/docs/releases/v1.7.0
+[v1.6.0]: https://github.com/suitenumerique/docs/releases/v1.6.0
+[1.5.1]: https://github.com/suitenumerique/docs/releases/v1.5.1
+[1.5.0]: https://github.com/suitenumerique/docs/releases/v1.5.0
+[1.4.0]: https://github.com/suitenumerique/docs/releases/v1.4.0
+[1.3.0]: https://github.com/suitenumerique/docs/releases/v1.3.0
+[1.2.1]: https://github.com/suitenumerique/docs/releases/v1.2.1
+[1.2.0]: https://github.com/suitenumerique/docs/releases/v1.2.0
+[1.1.0]: https://github.com/suitenumerique/docs/releases/v1.1.0
+[1.0.0]: https://github.com/suitenumerique/docs/releases/v1.0.0
+[0.1.0]: https://github.com/suitenumerique/docs/releases/v0.1.0

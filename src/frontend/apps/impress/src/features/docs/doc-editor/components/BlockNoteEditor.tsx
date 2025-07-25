@@ -28,8 +28,13 @@ import { randomColor } from '../utils';
 import { BlockNoteSuggestionMenu } from './BlockNoteSuggestionMenu';
 import { BlockNoteToolbar } from './BlockNoteToolBar/BlockNoteToolbar';
 import { CalloutBlock, DividerBlock } from './custom-blocks';
+import XLMultiColumn from './xl-multi-column';
 
-export const blockNoteSchema = withPageBreak(
+const multiColumnDropCursor = XLMultiColumn?.multiColumnDropCursor;
+const multiColumnLocales = XLMultiColumn?.locales;
+const withMultiColumn = XLMultiColumn?.withMultiColumn;
+
+const baseBlockNoteSchema = withPageBreak(
   BlockNoteSchema.create({
     blockSpecs: {
       ...defaultBlockSpecs,
@@ -38,6 +43,9 @@ export const blockNoteSchema = withPageBreak(
     },
   }),
 );
+
+export const blockNoteSchema = (withMultiColumn?.(baseBlockNoteSchema) ||
+  baseBlockNoteSchema) as typeof baseBlockNoteSchema;
 
 interface BlockNoteEditorProps {
   doc: Doc;
@@ -116,7 +124,11 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
         },
         showCursorLabels: showCursorLabels as 'always' | 'activity',
       },
-      dictionary: locales[lang as keyof typeof locales],
+      dictionary: {
+        ...locales[lang as keyof typeof locales],
+        multi_column:
+          multiColumnLocales?.[lang as keyof typeof multiColumnLocales],
+      },
       tables: {
         splitCells: true,
         cellBackgroundColor: true,
@@ -125,6 +137,7 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
       },
       uploadFile,
       schema: blockNoteSchema,
+      dropCursor: multiColumnDropCursor,
     },
     [collabName, lang, provider, uploadFile],
   );

@@ -5,46 +5,52 @@ import {
 } from '@gouvfr-lasuite/ui-kit';
 import { useModal } from '@openfun/cunningham-react';
 import { useRouter } from 'next/router';
-import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
 import { Box, BoxButton, Icon } from '@/components';
-
 import {
   Doc,
   ModalRemoveDoc,
   Role,
   useCopyDocLink,
-} from '../../doc-management';
+  useDuplicateDoc,
+} from '@/docs/doc-management';
+
 import { useCreateChildrenDoc } from '../api/useCreateChildren';
 import { useDetachDoc } from '../api/useDetach';
 import MoveDocIcon from '../assets/doc-extract-bold.svg';
-import { useTreeUtils } from '../hooks';
 
 type DocTreeItemActionsProps = {
   doc: Doc;
-  parentId?: string | null;
-  onCreateSuccess?: (newDoc: Doc) => void;
   isOpen?: boolean;
+  isRoot?: boolean;
+  onCreateSuccess?: (newDoc: Doc) => void;
   onOpenChange?: (isOpen: boolean) => void;
+  parentId?: string | null;
 };
 
 export const DocTreeItemActions = ({
   doc,
-  parentId,
-  onCreateSuccess,
   isOpen,
+  isRoot = false,
+  onCreateSuccess,
   onOpenChange,
+  parentId,
 }: DocTreeItemActionsProps) => {
   const router = useRouter();
   const { t } = useTranslation();
   const deleteModal = useModal();
-
   const copyLink = useCopyDocLink(doc.id);
-  const { isCurrentParent } = useTreeUtils(doc);
   const { mutate: detachDoc } = useDetachDoc();
-  const treeContext = useTreeContext<Doc>();
+  const treeContext = useTreeContext<Doc | null>();
+  const { mutate: duplicateDoc } = useDuplicateDoc({
+    onSuccess: (duplicatedDoc) => {
+      // Reset the tree context root will reset the full tree view.
+      treeContext?.setRoot(null);
+      void router.push(`/docs/${duplicatedDoc.id}`);
+    },
+  });
 
   const handleDetachDoc = () => {
     if (!treeContext?.root) {
@@ -55,10 +61,13 @@ export const DocTreeItemActions = ({
       { documentId: doc.id, rootId: treeContext.root.id },
       {
         onSuccess: () => {
-          treeContext.treeData.deleteNode(doc.id);
           if (treeContext.root) {
             treeContext.treeData.setSelectedNode(treeContext.root);
-            void router.push(`/docs/${treeContext.root.id}`);
+            void router.push(`/docs/${treeContext.root.id}`).then(() => {
+              setTimeout(() => {
+                treeContext?.treeData.deleteNode(doc.id);
+              }, 100);
+            });
           }
         },
       },
@@ -71,7 +80,7 @@ export const DocTreeItemActions = ({
       icon: <Icon iconName="link" $size="24px" />,
       callback: copyLink,
     },
-    ...(!isCurrentParent
+    ...(!isRoot
       ? [
           {
             label: t('Move to my docs'),
@@ -90,6 +99,18 @@ export const DocTreeItemActions = ({
         ]
       : []),
     {
+      label: t('Duplicate'),
+      icon: <Icon $variation="600" iconName="content_copy" />,
+      isDisabled: !doc.abilities.duplicate,
+      callback: () => {
+        duplicateDoc({
+          docId: doc.id,
+          with_accesses: false,
+          canSave: doc.abilities.partial_update,
+        });
+      },
+    },
+    {
       label: t('Delete'),
       isDisabled: !doc.abilities.destroy,
       icon: <Icon iconName="delete" $size="24px" />,
@@ -104,20 +125,26 @@ export const DocTreeItemActions = ({
     },
   });
 
-  const afterDelete = () => {
+  const onSuccessDelete = () => {
     if (parentId) {
-      treeContext?.treeData.deleteNode(doc.id);
-      void router.push(`/docs/${parentId}`);
+      void router.push(`/docs/${parentId}`).then(() => {
+        setTimeout(() => {
+          treeContext?.treeData.deleteNode(doc.id);
+        }, 100);
+      });
     } else if (doc.id === treeContext?.root?.id && !parentId) {
-      void router.push(`/docs/`);
+      void router.push(`/`);
     } else if (treeContext && treeContext.root) {
-      treeContext?.treeData.deleteNode(doc.id);
-      void router.push(`/docs/${treeContext.root.id}`);
+      void router.push(`/docs/${treeContext.root.id}`).then(() => {
+        setTimeout(() => {
+          treeContext?.treeData.deleteNode(doc.id);
+        }, 100);
+      });
     }
   };
 
   return (
-    <Fragment>
+    <Box className="doc-tree-root-item-actions">
       <Box
         $direction="row"
         $align="center"
@@ -166,9 +193,9 @@ export const DocTreeItemActions = ({
         <ModalRemoveDoc
           onClose={deleteModal.onClose}
           doc={doc}
-          afterDelete={afterDelete}
+          onSuccess={onSuccessDelete}
         />
       )}
-    </Fragment>
+    </Box>
   );
 };

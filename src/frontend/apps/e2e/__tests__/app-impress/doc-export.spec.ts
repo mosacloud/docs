@@ -4,7 +4,7 @@ import { expect, test } from '@playwright/test';
 import cs from 'convert-stream';
 import pdf from 'pdf-parse';
 
-import { createDoc, verifyDocName } from './common';
+import { createDoc, verifyDocName } from './utils-common';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -345,5 +345,70 @@ test.describe('Doc Export', () => {
     const pdfBuffer = await cs.toBuffer(await download.createReadStream());
     const pdfData = await pdf(pdfBuffer);
     expect(pdfData.text).toContain('Hello World');
+  });
+
+  test('it exports the doc with multi columns', async ({
+    page,
+    browserName,
+  }) => {
+    const [randomDoc] = await createDoc(
+      page,
+      'doc-multi-columns',
+      browserName,
+      1,
+    );
+
+    await page.locator('.bn-block-outer').last().fill('/');
+
+    await page.getByText('Three Columns', { exact: true }).click();
+
+    await page.locator('.bn-block-column').first().fill('Column 1');
+    await page.locator('.bn-block-column').nth(1).fill('Column 2');
+    await page.locator('.bn-block-column').last().fill('Column 3');
+
+    expect(await page.locator('.bn-block-column').count()).toBe(3);
+    await expect(
+      page.locator('.bn-block-column[data-node-type="column"]').first(),
+    ).toHaveText('Column 1');
+    await expect(
+      page.locator('.bn-block-column[data-node-type="column"]').nth(1),
+    ).toHaveText('Column 2');
+    await expect(
+      page.locator('.bn-block-column[data-node-type="column"]').last(),
+    ).toHaveText('Column 3');
+
+    await page
+      .getByRole('button', {
+        name: 'download',
+        exact: true,
+      })
+      .click();
+
+    await expect(
+      page.getByRole('button', {
+        name: 'Download',
+        exact: true,
+      }),
+    ).toBeVisible();
+
+    const downloadPromise = page.waitForEvent('download', (download) => {
+      return download.suggestedFilename().includes(`${randomDoc}.pdf`);
+    });
+
+    void page
+      .getByRole('button', {
+        name: 'Download',
+        exact: true,
+      })
+      .click();
+
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe(`${randomDoc}.pdf`);
+
+    const pdfBuffer = await cs.toBuffer(await download.createReadStream());
+    const pdfData = await pdf(pdfBuffer);
+    expect(pdfData.text).toContain('Column 1');
+    expect(pdfData.text).toContain('Column 2');
+    expect(pdfData.text).toContain('Column 3');
   });
 });

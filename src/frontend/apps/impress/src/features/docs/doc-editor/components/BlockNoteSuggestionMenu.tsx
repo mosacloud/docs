@@ -15,6 +15,10 @@ import {
   getCalloutReactSlashMenuItems,
   getDividerReactSlashMenuItems,
 } from './custom-blocks';
+import XLMultiColumn from './xl-multi-column';
+
+const getMultiColumnSlashMenuItems =
+  XLMultiColumn?.getMultiColumnSlashMenuItems;
 
 export const BlockNoteSuggestionMenu = () => {
   const editor = useBlockNoteEditor<DocsBlockSchema>();
@@ -27,8 +31,9 @@ export const BlockNoteSuggestionMenu = () => {
         filterSuggestionItems(
           combineByGroup(
             getDefaultReactSlashMenuItems(editor),
-            getPageBreakReactSlashMenuItems(editor),
             getCalloutReactSlashMenuItems(editor, t, basicBlocksName),
+            getMultiColumnSlashMenuItems?.(editor) || [],
+            getPageBreakReactSlashMenuItems(editor),
             getDividerReactSlashMenuItems(editor, t, basicBlocksName),
           ),
           query,

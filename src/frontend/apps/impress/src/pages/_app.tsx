@@ -22,8 +22,8 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <>
       <Head>
-        <title>{t('Docs')}</title>
-        <meta property="og:title" content={t('Docs')} key="title" />
+        <title>Mosa Docs</title>
+        <meta property="og:title" content="Mosa Docs" key="title" />
         <meta
           name="description"
           content={t(

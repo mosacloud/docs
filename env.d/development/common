@@ -78,6 +78,8 @@ Y_PROVIDER_API_KEY=yprovider-api-key
 
 # Theme customization
 THEME_CUSTOMIZATION_CACHE_TIMEOUT=15
+# Custom CSS
+FRONTEND_CSS_URL=http://localhost:3000/assets/theme.css
 
 # Indexer (disabled)
 # SEARCH_INDEXER_CLASS="core.services.search_indexers.SearchIndexer"

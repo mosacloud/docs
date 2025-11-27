@@ -3,7 +3,7 @@ export const tokens = {
     default: {
       globals: {
         colors: {
-          'logo-1': '#2845C1',
+          'logo-1': '#0443F2',
           'logo-2': '#377FDB',
           'logo-1-dark': '#95ABFF',
           'logo-2-dark': '#95ABFF',
@@ -574,7 +574,7 @@ export const tokens = {
           text: { primary: '#0000000D' },
         },
         content: {
-          logo1: '#2845C1',
+          logo1: '#0443F2',
           logo2: '#377FDB',
           semantic: {
             brand: {
@@ -802,6 +802,9 @@ export const tokens = {
         'la-gaufre': false,
         'home-proconnect': false,
         icon: { src: '/assets/icon-docs.svg', width: '32px', height: 'auto' },
+        beta: false,
+        footer: false,
+        'image-system-filter': '',
         favicon: {
           'png-light': '/assets/favicon-light.png',
           'png-dark': '/assets/favicon-dark.png',
@@ -1555,6 +1558,9 @@ export const tokens = {
           width: '32px',
           height: 'auto',
         },
+        beta: true,
+        footer: true,
+        onboardingTutorial: true,
         favicon: {
           ico: '/assets/favicon-dsfr.ico',
           'png-light': '/assets/favicon-dsfr.png',
@@ -1565,25 +1571,25 @@ export const tokens = {
     generic: {
       globals: {
         colors: {
-          'brand-050': '#EEF1FA',
-          'brand-100': '#DDE2F5',
-          'brand-150': '#CED3F1',
-          'brand-200': '#BEC5F0',
-          'brand-250': '#AFB5F1',
-          'brand-300': '#A0A5F6',
-          'brand-350': '#8F94FD',
-          'brand-400': '#8184FC',
-          'brand-450': '#7576EE',
-          'brand-500': '#6969DF',
-          'brand-550': '#5E5CD0',
-          'brand-600': '#534FC2',
-          'brand-650': '#4844AD',
-          'brand-700': '#3E3B98',
-          'brand-750': '#36347D',
-          'brand-800': '#2D2F5F',
-          'brand-850': '#262848',
-          'brand-900': '#1C1E32',
-          'brand-950': '#11131F',
+          'brand-050': '#E7EDFE',
+          'brand-100': '#CFDCFD',
+          'brand-150': '#B7CAFC',
+          'brand-200': '#9FB9FB',
+          'brand-250': '#87A7FA',
+          'brand-300': '#6F96F9',
+          'brand-350': '#5784F8',
+          'brand-400': '#3F73F7',
+          'brand-450': '#2761F6',
+          'brand-500': '#0F50F5',
+          'brand-550': '#0443F2',
+          'brand-600': '#033BD9',
+          'brand-650': '#0334C0',
+          'brand-700': '#022CA7',
+          'brand-750': '#02258E',
+          'brand-800': '#011D75',
+          'brand-850': '#01165C',
+          'brand-900': '#010E43',
+          'brand-950': '#00072A',
           'gray-000': '#FFFFFF',
           'gray-025': '#F8F8F9',
           'gray-050': '#F0F0F3',
@@ -1860,6 +1866,28 @@ export const tokens = {
             accent: 'Inter, Roboto Flex Variable, sans-serif',
           },
         },
+      },
+      components: {
+        'la-gaufre': false,
+        'home-proconnect': false,
+        beta: true,
+        footer: false,
+        onboardingTutorial: false,
+        favicon: {
+          ico: '/assets/icon-docs.png',
+          'png-light': '/assets/icon-docs.png',
+          'png-dark': '/assets/icon-docs.png',
+        },
+        button: {
+          primary: {
+            background: {
+              'color-hover': 'var(--c--theme--colors--primary-focus)',
+              'color-active': 'var(--c--theme--colors--primary-focus)',
+              'color-focus': 'var(--c--theme--colors--primary-focus)',
+            },
+          },
+        },
+        'image-system-filter': 'saturate(0.5)',
       },
     },
   },

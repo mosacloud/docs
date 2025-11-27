@@ -1,0 +1,23 @@
+/* Custom CSS for La Suite Docs (Impress) Theme Override */
+
+.cunningham-theme--generic {
+  --c--theme--colors--primary-action: #0443f2;
+  --c--theme--colors--primary-focus: #0443f2;
+  --c--theme--colors--primary-text: #0443f2;
+  --c--theme--colors--primary-500: #0443f2;
+}
+
+/* Hide secondary buttons with multiple classes */
+.c__button.c__button--secondary.c__button--medium.c__button--with-icon--left {
+  display: none;
+}
+
+/* Hide home sections */
+.docs-home-section {
+  display: none;
+}
+
+/* Hide footer */
+.docs-footer {
+  display: none;
+}

@@ -53,6 +53,7 @@ src/yhub-server/node_modules/
 
 # npm
 node_modules
+src/frontend/apps/impress/src/cunningham/cunningham-tokens*
 
 # Mails
 src/backend/core/templates/mail/

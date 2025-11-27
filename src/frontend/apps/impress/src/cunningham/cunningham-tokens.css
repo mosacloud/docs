@@ -1,5 +1,5 @@
 :root {
-  --c--globals--colors--logo-1: #2845c1;
+  --c--globals--colors--logo-1: #0443f2;
   --c--globals--colors--logo-2: #377fdb;
   --c--globals--colors--logo-1-dark: #95abff;
   --c--globals--colors--logo-2-dark: #95abff;
@@ -1083,6 +1083,9 @@
   --c--components--icon--src: /assets/icon-docs.svg;
   --c--components--icon--width: 32px;
   --c--components--icon--height: auto;
+  --c--components--beta: false;
+  --c--components--footer: false;
+  --c--components--image-system-filter: ;
   --c--components--favicon--png-light: /assets/favicon-light.png;
   --c--components--favicon--png-dark: /assets/favicon-dark.png;
 }
@@ -2067,31 +2070,34 @@
   --c--components--icon--src: /assets/icon-docs-dsfr.svg;
   --c--components--icon--width: 32px;
   --c--components--icon--height: auto;
+  --c--components--beta: true;
+  --c--components--footer: true;
+  --c--components--onboardingTutorial: true;
   --c--components--favicon--ico: /assets/favicon-dsfr.ico;
   --c--components--favicon--png-light: /assets/favicon-dsfr.png;
   --c--components--favicon--png-dark: /assets/favicon-dark-dsfr.png;
 }
 
 .cunningham-theme--generic {
-  --c--globals--colors--brand-050: #eef1fa;
-  --c--globals--colors--brand-100: #dde2f5;
-  --c--globals--colors--brand-150: #ced3f1;
-  --c--globals--colors--brand-200: #bec5f0;
-  --c--globals--colors--brand-250: #afb5f1;
-  --c--globals--colors--brand-300: #a0a5f6;
-  --c--globals--colors--brand-350: #8f94fd;
-  --c--globals--colors--brand-400: #8184fc;
-  --c--globals--colors--brand-450: #7576ee;
-  --c--globals--colors--brand-500: #6969df;
-  --c--globals--colors--brand-550: #5e5cd0;
-  --c--globals--colors--brand-600: #534fc2;
-  --c--globals--colors--brand-650: #4844ad;
-  --c--globals--colors--brand-700: #3e3b98;
-  --c--globals--colors--brand-750: #36347d;
-  --c--globals--colors--brand-800: #2d2f5f;
-  --c--globals--colors--brand-850: #262848;
-  --c--globals--colors--brand-900: #1c1e32;
-  --c--globals--colors--brand-950: #11131f;
+  --c--globals--colors--brand-050: #e7edfe;
+  --c--globals--colors--brand-100: #cfdcfd;
+  --c--globals--colors--brand-150: #b7cafc;
+  --c--globals--colors--brand-200: #9fb9fb;
+  --c--globals--colors--brand-250: #87a7fa;
+  --c--globals--colors--brand-300: #6f96f9;
+  --c--globals--colors--brand-350: #5784f8;
+  --c--globals--colors--brand-400: #3f73f7;
+  --c--globals--colors--brand-450: #2761f6;
+  --c--globals--colors--brand-500: #0f50f5;
+  --c--globals--colors--brand-550: #0443f2;
+  --c--globals--colors--brand-600: #033bd9;
+  --c--globals--colors--brand-650: #0334c0;
+  --c--globals--colors--brand-700: #022ca7;
+  --c--globals--colors--brand-750: #02258e;
+  --c--globals--colors--brand-800: #011d75;
+  --c--globals--colors--brand-850: #01165c;
+  --c--globals--colors--brand-900: #010e43;
+  --c--globals--colors--brand-950: #00072a;
   --c--globals--colors--gray-000: #fff;
   --c--globals--colors--gray-025: #f8f8f9;
   --c--globals--colors--gray-050: #f0f0f3;
@@ -2363,6 +2369,24 @@
   --c--globals--colors--pink-950: #1c0e12;
   --c--globals--font--families--base: inter, roboto flex variable, sans-serif;
   --c--globals--font--families--accent: inter, roboto flex variable, sans-serif;
+  --c--components--la-gaufre: false;
+  --c--components--home-proconnect: false;
+  --c--components--beta: true;
+  --c--components--footer: false;
+  --c--components--onboardingTutorial: false;
+  --c--components--favicon--ico: /assets/icon-docs.png;
+  --c--components--favicon--png-light: /assets/icon-docs.png;
+  --c--components--favicon--png-dark: /assets/icon-docs.png;
+  --c--components--button--primary--background--color-hover: var(
+    --c--theme--colors--primary-focus
+  );
+  --c--components--button--primary--background--color-active: var(
+    --c--theme--colors--primary-focus
+  );
+  --c--components--button--primary--background--color-focus: var(
+    --c--theme--colors--primary-focus
+  );
+  --c--components--image-system-filter: saturate(0.5);
 }
 
 .clr-logo-1 {

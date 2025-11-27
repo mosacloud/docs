@@ -2,9 +2,9 @@
   "footer": {
     "default": {
       "logo": {
-        "src": "/assets/icon-docs.svg",
+        "src": "/assets/mosa.svg",
         "width": "54px",
-        "alt": "Docs Logo",
+        "alt": "mosa.cloud",
         "withTitle": true
       },
       "externalLinks": [

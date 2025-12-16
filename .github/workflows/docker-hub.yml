@@ -11,7 +11,6 @@ on:
   pull_request:
     branches:
       - 'main'
-      - 'ci/trivy-fails'
 
 env:
   DOCKER_USER: 1001:127
@@ -22,16 +21,27 @@ jobs:
     steps:
       -
         name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      -
+        name: Get version from pyproject.toml
+        id: version
+        run: |
+          VERSION=$(grep -m1 'version' src/backend/pyproject.toml | cut -d'"' -f2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
       -
         name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: lasuite/impress-backend
+          images: mosacloud/docs-backend
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.version.outputs.version }},enable={{is_default_branch}}
+            type=ref,event=pr
+            type=semver,pattern={{version}}
       -
         name: Login to DockerHub
-        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview')
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
@@ -41,7 +51,7 @@ jobs:
         uses: numerique-gouv/action-trivy-cache@main
         with:
           docker-build-args: '--target backend-production -f Dockerfile'
-          docker-image-name: 'docker.io/lasuite/impress-backend:${{ github.sha }}'
+          docker-image-name: 'docker.io/mosacloud/docs-backend:${{ github.sha }}'
       -
         name: Build and push
         uses: docker/build-push-action@v6
@@ -49,10 +59,10 @@ jobs:
           context: .
           target: backend-production
           build-args: DOCKER_USER=${{ env.DOCKER_USER }}:-1000
-          push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      - 
+      -
         name: Cleanup Docker after build
         if: always()
         run: |
@@ -64,16 +74,27 @@ jobs:
     steps:
       -
         name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      -
+        name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(jq -r .version src/frontend/apps/impress/package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
       -
         name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: lasuite/impress-frontend
+          images: mosacloud/docs-frontend
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.version.outputs.version }},enable={{is_default_branch}}
+            type=ref,event=pr
+            type=semver,pattern={{version}}
       -
         name: Login to DockerHub
-        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview')
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_HUB_USER }}
@@ -83,7 +104,7 @@ jobs:
         uses: numerique-gouv/action-trivy-cache@main
         with:
           docker-build-args: '-f src/frontend/Dockerfile --target frontend-production'
-          docker-image-name: 'docker.io/lasuite/impress-frontend:${{ github.sha }}'
+          docker-image-name: 'docker.io/mosacloud/docs-frontend:${{ github.sha }}'
       -
         name: Build and push
         uses: docker/build-push-action@v6
@@ -94,10 +115,66 @@ jobs:
           build-args: |
             DOCKER_USER=${{ env.DOCKER_USER }}:-1000
             PUBLISH_AS_MIT=false
-          push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      - 
+      -
+        name: Cleanup Docker after build
+        if: always()
+        run: |
+          docker system prune -af
+          docker volume prune -f
+
+  build-and-push-frontend-mit:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout repository
+        uses: actions/checkout@v6
+      -
+        name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(jq -r .version src/frontend/apps/impress/package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: mosacloud/docs-frontend-mit
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.version.outputs.version }},enable={{is_default_branch}}
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+      -
+        name: Login to DockerHub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      -
+        name: Run trivy scan
+        uses: numerique-gouv/action-trivy-cache@main
+        with:
+          docker-build-args: '-f src/frontend/Dockerfile --target frontend-production'
+          docker-image-name: 'docker.io/mosacloud/docs-frontend-mit:${{ github.sha }}'
+      -
+        name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./src/frontend/Dockerfile
+          target: frontend-production
+          build-args: |
+            DOCKER_USER=${{ env.DOCKER_USER }}:-1000
+            PUBLISH_AS_MIT=true
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      -
         name: Cleanup Docker after build
         if: always()
         run: |
@@ -109,23 +186,37 @@ jobs:
     steps:
       -
         name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
+      -
+        name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(jq -r .version src/frontend/apps/impress/package.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
       -
         name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: lasuite/impress-y-provider
+          images: mosacloud/docs-y-provider
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.version.outputs.version }},enable={{is_default_branch}}
+            type=ref,event=pr
+            type=semver,pattern={{version}}
       -
         name: Login to DockerHub
-        if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview')
-        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_HUB_USER }}" --password-stdin
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       -
         name: Run trivy scan
         uses: numerique-gouv/action-trivy-cache@main
         with:
           docker-build-args: '-f src/frontend/servers/y-provider/Dockerfile --target y-provider'
-          docker-image-name: 'docker.io/lasuite/impress-y-provider:${{ github.sha }}'
+          docker-image-name: 'docker.io/mosacloud/docs-y-provider:${{ github.sha }}'
       -
         name: Build and push
         uses: docker/build-push-action@v6
@@ -134,10 +225,10 @@ jobs:
           file: ./src/frontend/servers/y-provider/Dockerfile
           target: y-provider
           build-args: DOCKER_USER=${{ env.DOCKER_USER }}:-1000
-          push: ${{ github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview') }}
+          push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      - 
+      -
         name: Cleanup Docker after build
         if: always()
         run: |
@@ -149,7 +240,7 @@ jobs:
       - build-and-push-frontend
       - build-and-push-backend
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'preview')
+    if: github.event_name != 'pull_request'
     steps:
       - uses: numerique-gouv/action-argocd-webhook-notification@main
         id: notify

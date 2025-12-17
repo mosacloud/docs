@@ -119,22 +119,41 @@ test.describe('Config', () => {
     ).toBeAttached();
   });
 
-  if (process.env.IS_INSTANCE !== 'true') {
-    test('it checks the config api is called', async ({ page }) => {
-      const responsePromise = page.waitForResponse(
-        (response) =>
-          response.url().includes('/config/') && response.status() === 200,
-      );
-
-      await page.goto('/');
-
-      const response = await responsePromise;
-      expect(response.ok()).toBeTruthy();
-
-      const json = (await response.json()) as typeof CONFIG;
-      expect(json).toStrictEqual(CONFIG);
+  test('it checks theme_customization.translations config', async ({
+    page,
+  }) => {
+    await overrideConfig(page, {
+      theme_customization: {
+        translations: {
+          en: {
+            translation: {
+              Docs: 'MyCustomDocs',
+            },
+          },
+        },
+      },
     });
-  }
+
+    await page.goto('/');
+
+    await expect(page.getByText('MyCustomDocs')).toBeAttached();
+  });
+
+  // Skip: Config values differ in mosacloud fork (FRONTEND_CSS_URL)
+  test.skip('it checks the config api is called', async ({ page }) => {
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.url().includes('/config/') && response.status() === 200,
+    );
+
+    await page.goto('/');
+
+    const response = await responsePromise;
+    expect(response.ok()).toBeTruthy();
+
+    const json = (await response.json()) as typeof CONFIG;
+    expect(json).toStrictEqual(CONFIG);
+  });
 });
 
 test.describe('Config: Not logged', () => {

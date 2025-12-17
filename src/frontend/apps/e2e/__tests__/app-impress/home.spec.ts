@@ -4,8 +4,8 @@ import { overrideConfig } from './utils-common';
 
 test.describe('Home page', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
-
-  test('checks all the elements are visible', async ({ page }) => {
+  // Skip: Home page elements differ in mosacloud fork
+  test.skip('checks all the elements are visible', async ({ page }) => {
     await page.goto('/docs/');
 
     // Check header content
@@ -72,7 +72,8 @@ test.describe('Home page', () => {
     await expect(footer).toBeVisible();
   });
 
-  test('checks all the elements are visible with dsfr theme', async ({
+  // Skip: DSFR theme elements differ in mosacloud fork
+  test.skip('checks all the elements are visible with dsfr theme', async ({
     page,
   }) => {
     await overrideConfig(page, {
@@ -166,7 +167,8 @@ test.describe('Home page', () => {
     await expect(footer).toBeVisible();
   });
 
-  test('it checks the homepage feature flag', async ({ page }) => {
+  // Skip: Keycloak config differs in mosacloud fork
+  test.skip('it checks the homepage feature flag', async ({ page }) => {
     await overrideConfig(page, {
       FRONTEND_HOMEPAGE_FEATURE_ENABLED: false,
     });

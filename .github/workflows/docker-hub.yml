@@ -235,16 +235,3 @@ jobs:
           docker system prune -af
           docker volume prune -f
 
-  notify-argocd:
-    needs:
-      - build-and-push-frontend
-      - build-and-push-backend
-    runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
-    steps:
-      - uses: numerique-gouv/action-argocd-webhook-notification@main
-        id: notify
-        with:
-          deployment_repo_path: "${{ secrets.DEPLOYMENT_REPO_URL }}"
-          argocd_webhook_secret: "${{ secrets.ARGOCD_PREPROD_WEBHOOK_SECRET }}"
-          argocd_url: "${{ vars.ARGOCD_PREPROD_WEBHOOK_URL }}"

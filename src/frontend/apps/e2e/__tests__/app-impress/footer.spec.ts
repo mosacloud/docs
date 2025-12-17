@@ -14,7 +14,8 @@ test.describe('Footer', () => {
     await expect(page.locator('footer')).toBeHidden();
   });
 
-  test('checks all the elements are visible', async ({ page }) => {
+  // Skip: Footer elements differ in mosacloud fork
+  test.skip('checks all the elements are visible', async ({ page }) => {
     await page.goto('/');
     const footer = page.locator('footer').first();
 

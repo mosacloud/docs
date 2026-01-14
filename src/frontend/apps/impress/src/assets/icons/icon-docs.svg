@@ -1,22 +1,3 @@
-<svg width="64" height="108" viewBox="0 0 109 108" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M99 62L99 27C99 25.3431 97.6569 24 96 24L61 24L61 59C61 60.6569 62.3431 62 64 62L99 62Z" fill="white"/>
-    <path d="M9 27C9 25.3431 10.3431 24 12 24H96C97.6569 24 99 25.3431 99 27V66L81 84H12C10.3431 84 9 82.6569 9 81V27Z" fill="#0443F2"/>
-    <g filter="url(#filter0_d_34_43)">
-        <path d="M81 84L99 66L84 66C82.3431 66 81 67.3431 81 69L81 84Z" fill="white"/>
-    </g>
-    <line x1="1.5" y1="-1.5" x2="30.5" y2="-1.5" transform="matrix(1 0 0 -1 21 54)" stroke="white" stroke-width="3" stroke-linecap="round"/>
-    <line x1="1.5" y1="-1.5" x2="34.5" y2="-1.5" transform="matrix(1 0 0 -1 21 45)" stroke="white" stroke-width="3" stroke-linecap="round"/>
-    <line x1="1.5" y1="-1.5" x2="26.5" y2="-1.5" transform="matrix(1 1.74846e-07 1.74846e-07 -1 21 36)" stroke="white" stroke-width="3" stroke-linecap="round"/>
-    <defs>
-        <filter id="filter0_d_34_43" x="71" y="56" width="38" height="38" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-            <feOffset/>
-            <feGaussianBlur stdDeviation="5"/>
-            <feComposite in2="hardAlpha" operator="out"/>
-            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.4 0"/>
-            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_34_43"/>
-            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_34_43" result="shape"/>
-        </filter>
-    </defs>
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M104 16V52C104 63.0457 112.954 72 124 72H160V160C160 168.837 152.837 176 144 176H48C39.1634 176 32 168.837 32 160V32C32 23.1634 39.1634 16 48 16H104ZM60 144C57.7909 144 56 145.791 56 148C56 150.209 57.7909 152 60 152H108C110.209 152 112 150.209 112 148C112 145.791 110.209 144 108 144H60ZM60 120C57.7909 120 56 121.791 56 124C56 126.209 57.7909 128 60 128H132C134.209 128 136 126.209 136 124C136 121.791 134.209 120 132 120H60ZM113.373 16C117.616 16.0001 121.686 17.6861 124.687 20.6865L155.313 51.3135C158.314 54.3139 160 58.3837 160 62.627V64H124C117.373 64 112 58.6274 112 52V16H113.373Z" fill="white"/>
 </svg>

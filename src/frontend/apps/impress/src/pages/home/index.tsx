@@ -1,18 +1,13 @@
-import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import { Loading } from '@/components';
-import { useConfig } from '@/core';
-import { gotoLogin, useAuth } from '@/features/auth';
-import { HomeContent } from '@/features/home';
+import { useAuth } from '@/features/auth';
+import { MosaLoginPage } from '@/features/home';
 import { NextPageWithLayout } from '@/types/next';
 
 const Page: NextPageWithLayout = () => {
-  const { t } = useTranslation();
-  const { authenticated, isAuthLoading } = useAuth();
-  const { data: config, isFetched: isConfigFetched } = useConfig();
+  const { authenticated } = useAuth();
   const { replace } = useRouter();
   const homepageDisabled =
     isConfigFetched && !config?.FRONTEND_HOMEPAGE_FEATURE_ENABLED;
@@ -46,19 +41,7 @@ const Page: NextPageWithLayout = () => {
     return <Loading $height="100vh" $width="100vw" />;
   }
 
-  return (
-    <>
-      <Head>
-        <title>{`${t('Home', { description: 'Button/link label to go back to the home page' })} - ${t('Docs', { description: 'Product name, shown in page titles and the logo' })}`}</title>
-        <meta
-          property="og:title"
-          content={`${t('Home', { description: 'Button/link label to go back to the home page' })} - ${t('Docs', { description: 'Product name, shown in page titles and the logo' })}`}
-          key="title"
-        />
-      </Head>
-      <HomeContent />
-    </>
-  );
+  return <MosaLoginPage />;
 };
 
 export default Page;

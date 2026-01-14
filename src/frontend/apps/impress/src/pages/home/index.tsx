@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 
 import { Loading } from '@/components';
 import { useAuth } from '@/features/auth';
-import { HomeContent } from '@/features/home';
+import { MosaLoginPage } from '@/features/home';
 import { NextPageWithLayout } from '@/types/next';
 
 const Page: NextPageWithLayout = () => {
@@ -25,7 +25,7 @@ const Page: NextPageWithLayout = () => {
     return <Loading $height="100vh" $width="100vw" />;
   }
 
-  return <HomeContent />;
+  return <MosaLoginPage />;
 };
 
 export default Page;

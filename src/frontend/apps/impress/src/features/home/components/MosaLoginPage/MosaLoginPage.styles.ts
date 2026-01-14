@@ -75,10 +75,8 @@ export const GradientBase = styled.div`
 export const GridOverlay = styled.div`
   position: absolute;
   inset: 0;
-  background-image: linear-gradient(
-      rgba(255, 255, 255, 0.05) 1px,
-      transparent 1px
-    ),
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 40px 40px;
   mask-image: radial-gradient(
@@ -110,11 +108,31 @@ export const Orb = styled.div<OrbProps>`
   animation: ${float} 20s ease-in-out infinite;
   width: ${(props: OrbProps) => props.$size};
   height: ${(props: OrbProps) => props.$size};
-  ${(props: OrbProps) => props.$top && css`top: ${props.$top};`}
-  ${(props: OrbProps) => props.$bottom && css`bottom: ${props.$bottom};`}
-  ${(props: OrbProps) => props.$left && css`left: ${props.$left};`}
-  ${(props: OrbProps) => props.$right && css`right: ${props.$right};`}
-  ${(props: OrbProps) => props.$delay && css`animation-delay: ${props.$delay};`}
+  ${(props: OrbProps) =>
+    props.$top &&
+    css`
+      top: ${props.$top};
+    `}
+  ${(props: OrbProps) =>
+    props.$bottom &&
+    css`
+      bottom: ${props.$bottom};
+    `}
+  ${(props: OrbProps) =>
+    props.$left &&
+    css`
+      left: ${props.$left};
+    `}
+  ${(props: OrbProps) =>
+    props.$right &&
+    css`
+      right: ${props.$right};
+    `}
+  ${(props: OrbProps) =>
+    props.$delay &&
+    css`
+      animation-delay: ${props.$delay};
+    `}
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
@@ -308,7 +326,8 @@ export const MobileAccents = styled.div`
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background-image: linear-gradient(
+    background-image:
+      linear-gradient(
         color-mix(in srgb, var(--app-color) 8%, transparent) 1px,
         transparent 1px
       ),

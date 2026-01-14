@@ -5,7 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { gotoLogin } from '@/features/auth';
 import { useSynchronizedLanguage } from '@/features/language';
 
-import { ArrowRight, ChevronDown, EuStars, GlobeIcon } from './MosaLoginPage.icons';
+import {
+  ArrowRight,
+  ChevronDown,
+  EuStars,
+  GlobeIcon,
+} from './MosaLoginPage.icons';
 import {
   Actions,
   AppIcon,
@@ -68,7 +73,7 @@ const LanguageSelector = () => {
   }, []);
 
   const handleSelect = (code: string) => {
-    changeFrontendLanguage(code);
+    void changeFrontendLanguage(code);
     setIsOpen(false);
   };
 

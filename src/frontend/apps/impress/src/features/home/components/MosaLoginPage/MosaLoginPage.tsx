@@ -149,7 +149,7 @@ export const MosaLoginPage = ({
               <img src="/assets/mosa.svg" alt="mosa.cloud" />
             </AppIcon>
             <BrandTitle>mosa.cloud</BrandTitle>
-            <BrandTagline>{t('Your open source workspace')}</BrandTagline>
+            <BrandTagline>{t('Collaborate without compromise')}</BrandTagline>
           </BrandContent>
 
           <BrandFooter>
@@ -177,13 +177,12 @@ export const MosaLoginPage = ({
               <h2>
                 {heading ?? (
                   <>
-                    {t('Welcome to')}{' '}
-                    <ProductHighlight>Docs</ProductHighlight>
+                    {t('Welcome to')} <ProductHighlight>Docs</ProductHighlight>
                   </>
                 )}
               </h2>
-              {(description ?? t('Collaborative documents')) && (
-                <p>{description ?? t('Collaborative documents')}</p>
+              {(description ?? t('Collaboration, redefined')) && (
+                <p>{description ?? t('Collaboration, redefined')}</p>
               )}
             </FormHeader>
 

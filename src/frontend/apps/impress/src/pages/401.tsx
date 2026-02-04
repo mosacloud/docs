@@ -1,14 +1,10 @@
-import { Button } from '@gouvfr-lasuite/cunningham-react';
 import Head from 'next/head';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { ReactElement, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import img401 from '@/assets/icons/icon-401.png';
-import { Box, Text } from '@/components';
-import { gotoLogin, useAuth } from '@/features/auth';
-import { PageLayout } from '@/layouts';
+import { useAuth } from '@/features/auth';
+import { MosaLoginPage } from '@/features/home/components/MosaLoginPage';
 import { NextPageWithLayout } from '@/types/next';
 
 const Page: NextPageWithLayout = () => {
@@ -33,42 +29,17 @@ const Page: NextPageWithLayout = () => {
           key="title"
         />
       </Head>
-      <Box
-        $align="center"
-        $margin="auto"
-        $gap="1rem"
-        $padding={{ bottom: '2rem' }}
-      >
-        <Text as="h1" $textAlign="center" className="sr-only">
-          {t('401 Unauthorized')} - {t('Docs')}
-        </Text>
-        <Image
-          src={img401}
-          alt=""
-          width={300}
-          height={300}
-          style={{
-            maxWidth: '100%',
-            height: 'auto',
-          }}
-        />
-
-        <Box $align="center" $gap="0.8rem">
-          <Text as="p" $textAlign="center" $maxWidth="350px" $theme="brand">
-            {t('Log in to access the document.')}
-          </Text>
-
-          <Button onClick={() => gotoLogin(false)} aria-label={t('Login')}>
-            {t('Login')}
-          </Button>
-        </Box>
-      </Box>
+      <MosaLoginPage
+        heading={t('Log in to access the document.')}
+        description=""
+        withRedirect={false}
+      />
     </>
   );
 };
 
 Page.getLayout = function getLayout(page: ReactElement) {
-  return <PageLayout withFooter={false}>{page}</PageLayout>;
+  return page;
 };
 
 export default Page;

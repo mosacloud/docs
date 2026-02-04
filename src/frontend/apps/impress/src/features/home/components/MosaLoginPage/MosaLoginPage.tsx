@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { gotoLogin } from '@/features/auth';
@@ -101,11 +101,21 @@ const LanguageSelector = () => {
   );
 };
 
-export const MosaLoginPage = () => {
+interface MosaLoginPageProps {
+  heading?: ReactNode;
+  description?: string;
+  withRedirect?: boolean;
+}
+
+export const MosaLoginPage = ({
+  heading,
+  description,
+  withRedirect = true,
+}: MosaLoginPageProps) => {
   const { t } = useTranslation();
 
   const handleLogin = () => {
-    gotoLogin();
+    gotoLogin(withRedirect);
   };
 
   return (
@@ -165,9 +175,16 @@ export const MosaLoginPage = () => {
           <FormContainer>
             <FormHeader>
               <h2>
-                {t('Welcome to')} <ProductHighlight>Docs</ProductHighlight>
+                {heading ?? (
+                  <>
+                    {t('Welcome to')}{' '}
+                    <ProductHighlight>Docs</ProductHighlight>
+                  </>
+                )}
               </h2>
-              <p>{t('Collaborative documents')}</p>
+              {(description ?? t('Collaborative documents')) && (
+                <p>{description ?? t('Collaborative documents')}</p>
+              )}
             </FormHeader>
 
             <Actions>

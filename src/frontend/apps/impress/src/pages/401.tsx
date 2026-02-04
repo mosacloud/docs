@@ -3,10 +3,8 @@ import { useRouter } from 'next/router';
 import { ReactElement, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import Error401Svg from '@/assets/icons/error-401.svg';
-import { Box, Text } from '@/components';
-import { ButtonLogin, useAuth } from '@/features/auth';
-import { StandalonePageLayout } from '@/layouts';
+import { useAuth } from '@/features/auth';
+import { MosaLoginPage } from '@/features/home/components/MosaLoginPage';
 import { NextPageWithLayout } from '@/types/next';
 
 const HeaderAuthActions = () => {
@@ -43,53 +41,17 @@ const Page: NextPageWithLayout = () => {
         <title>{pageTitle}</title>
         <meta property="og:title" content={pageTitle} key="title" />
       </Head>
-      <Box
-        $align="center"
-        $gap="base"
-        $padding={{ horizontal: 'base', bottom: 'lg' }}
-        className="--docs--error-401"
-      >
-        <Box $align="center" $gap="xxxs">
-          <Error401Svg aria-hidden="true" />
-          <Text
-            as="h1"
-            $size="md"
-            $weight="bold"
-            $textAlign="center"
-            $margin="0"
-            $theme="neutral"
-            $variation="primary"
-          >
-            {t('Please sign in', {
-              description: 'Heading of the sign-in required page',
-            })}
-          </Text>
-          <Text
-            as="p"
-            $textAlign="center"
-            $maxWidth="228px"
-            $theme="neutral"
-            $variation="secondary"
-            $margin="0"
-            $size="xs"
-          >
-            {t('You need to sign in before accessing the document', {
-              description: 'Message of the sign-in required page',
-            })}
-          </Text>
-        </Box>
-        <ButtonLogin />
-      </Box>
+      <MosaLoginPage
+        heading={t('Log in to access the document.')}
+        description=""
+        withRedirect={false}
+      />
     </>
   );
 };
 
 Page.getLayout = function getLayout(page: ReactElement) {
-  return (
-    <StandalonePageLayout headerActions={<HeaderAuthActions />}>
-      {page}
-    </StandalonePageLayout>
-  );
+  return page;
 };
 
 export default Page;

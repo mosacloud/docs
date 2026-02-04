@@ -10,98 +10,8 @@ const themeWhiteLabelLight = getUIKitThemesFromGlobals(whiteLabelGlobals, {
   overrides: {
     globals: {
       colors: {
-        'logo-1': '#0443F2',
-      },
-      spacing: {
-        '0': '0rem',
-        none: '0rem',
-        auto: 'auto',
-        bx: '2.2rem',
-        full: '100%',
-        '3xs': '0.25rem',
-        '2xs': '0.375rem',
-      },
-      font: {
-        families: {
-          base: 'sans-serif',
-          accent: 'sans-serif',
-        },
-      },
-    },
-    components: {
-      logo: {
-        src: '',
-        alt: '',
-        widthHeader: '',
-        widthFooter: '',
-      },
-      'la-gaufre': false,
-      'home-proconnect': false,
-      icon: {
-        src: '/assets/icon-docs.svg',
-        width: '32px',
-        height: 'auto',
-      },
-      beta: false,
-      footer: false,
-      'image-system-filter': '',
-      favicon: {
-        'png-light': '/assets/favicon-light.png',
-        'png-dark': '/assets/favicon-dark.png',
-      },
-    },
-  },
-});
-
-const themeDefault = {
-  default: themeWhiteLabelLight['default-light'],
-};
-
-const themesDSFRLight = getUIKitThemesFromGlobals(dsfrGlobals, {
-  prefix: 'dsfr',
-  variants: ['light'],
-  overrides: {
-    globals: {
-      font: {
-        families: {
-          base: 'Marianne, Inter, Roboto Flex Variable, sans-serif',
-          accent: 'Marianne, Inter, Roboto Flex Variable, sans-serif',
-        },
-      },
-    },
-    components: {
-      logo: {
-        src: '/assets/logo-gouv.svg',
-        widthHeader: '110px',
-        widthFooter: '220px',
-        alt: 'Gouvernement Logo',
-      },
-      'home-proconnect': true,
-      icon: {
-        src: '/assets/icon-docs-dsfr.svg',
-        width: '32px',
-        height: 'auto',
-      },
-      beta: true,
-      footer: true,
-      onboardingTutorial: true,
-      favicon: {
-        ico: '/assets/favicon-dsfr.ico',
-        'png-light': '/assets/favicon-dsfr.png',
-        'png-dark': '/assets/favicon-dark-dsfr.png',
-      },
-    },
-  },
-});
-
-const themesDSFR = {
-  dsfr: themesDSFRLight['dsfr-light'],
-};
-
-const genericTheme = {
-  generic: {
-    globals: {
-      colors: {
+        'logo-1-light': '#0443F2',
+        'logo-1-dark': '#0443F2',
         'brand-050': '#E7EDFE',
         'brand-100': '#CFDCFD',
         'brand-150': '#B7CAFC',
@@ -391,6 +301,15 @@ const genericTheme = {
         'pink-900': '#2D171F',
         'pink-950': '#1C0E12',
       },
+      spacing: {
+        '0': '0rem',
+        none: '0rem',
+        auto: 'auto',
+        bx: '2.2rem',
+        full: '100%',
+        '3xs': '0.25rem',
+        '2xs': '0.375rem',
+      },
       font: {
         families: {
           base: 'Inter, Roboto Flex Variable, sans-serif',
@@ -399,35 +318,80 @@ const genericTheme = {
       },
     },
     components: {
+      logo: {
+        src: '',
+        alt: '',
+        widthHeader: '',
+        widthFooter: '',
+      },
       'la-gaufre': false,
       'home-proconnect': false,
-      beta: true,
+      icon: {
+        src: '/assets/icon-docs.svg',
+        width: '32px',
+        height: 'auto',
+      },
+      beta: false,
       footer: false,
-      onboardingTutorial: false,
+      'image-system-filter': '',
       favicon: {
         ico: '/assets/icon-docs.png',
         'png-light': '/assets/icon-docs.png',
         'png-dark': '/assets/icon-docs.png',
       },
-      button: {
-        primary: {
-          background: {
-            'color-hover': 'var(--c--theme--colors--primary-focus)',
-            'color-active': 'var(--c--theme--colors--primary-focus)',
-            'color-focus': 'var(--c--theme--colors--primary-focus)',
-          },
-        },
-      },
-      'image-system-filter': 'saturate(0.5)',
     },
   },
+});
+
+const themeDefault = {
+  default: themeWhiteLabelLight['default-light'],
+};
+
+const themesDSFRLight = getUIKitThemesFromGlobals(dsfrGlobals, {
+  prefix: 'dsfr',
+  variants: ['light'],
+  overrides: {
+    globals: {
+      font: {
+        families: {
+          base: 'Marianne, Inter, Roboto Flex Variable, sans-serif',
+          accent: 'Marianne, Inter, Roboto Flex Variable, sans-serif',
+        },
+      },
+    },
+    components: {
+      logo: {
+        src: '/assets/logo-gouv.svg',
+        widthHeader: '110px',
+        widthFooter: '220px',
+        alt: 'Gouvernement Logo',
+      },
+      'home-proconnect': true,
+      icon: {
+        src: '/assets/icon-docs-dsfr.svg',
+        width: '32px',
+        height: 'auto',
+      },
+      beta: true,
+      footer: true,
+      onboardingTutorial: true,
+      favicon: {
+        ico: '/assets/favicon-dsfr.ico',
+        'png-light': '/assets/favicon-dsfr.png',
+        'png-dark': '/assets/favicon-dark-dsfr.png',
+      },
+    },
+  },
+});
+
+const themesDSFR = {
+  dsfr: themesDSFRLight['dsfr-light'],
 };
 
 const docsTokens = {
   themes: {
     ...themeDefault,
-    ...themesDSFR,
-    ...genericTheme,
+    // ...themesDSFR, I know it's not pretty to leave this commented, but it's the easiest to reconcile future rebases and keep track of this way
   },
 };
 

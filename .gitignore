@@ -83,3 +83,5 @@ db.sqlite3
 
 # Cursor rules
 .cursorrules
+.claude/
+CLAUDE.md

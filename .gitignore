@@ -91,8 +91,5 @@ CLAUDE.md
 .claude/
 .cursor/
 .cursorrules
-.windsurfrules
-.aider*
-.copilot/
-.github/copilot-instructions.md
-.playwright-mcp
+.claude/
+CLAUDE.md

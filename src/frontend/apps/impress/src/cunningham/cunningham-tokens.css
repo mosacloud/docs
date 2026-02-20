@@ -1744,6 +1744,7 @@
     --c--globals--colors--gray-800
   );
 }
+
 .clr-logo-1-light {
   color: var(--c--globals--colors--logo-1-light);
 }

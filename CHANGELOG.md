@@ -15,6 +15,7 @@ and this project adheres to
 - 💄(frontend) improve comments highlights #1961
 - ♿️(frontend) improve BoxButton a11y and native button semantics
   #2103
+- ♿️(frontend) improve language picker accessibility #2069
 
 ## [v4.8.3] - 2026-03-23
 

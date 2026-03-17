@@ -3,7 +3,6 @@ import { expect, test } from '@playwright/test';
 import {
   createDoc,
   getGridRow,
-  getMenuItem,
   goToGridDoc,
   mockedDocument,
   verifyDocName,
@@ -79,7 +78,7 @@ test.describe('Doc Header', () => {
 
     await page.getByTestId('doc-visibility').click();
 
-    await getMenuItem(page, 'Public').click();
+    await page.getByRole('menuitemradio', { name: 'Public' }).click();
 
     await page.getByRole('button', { name: 'close' }).first().click();
 
@@ -153,8 +152,10 @@ test.describe('Doc Header', () => {
 
     const emojiPicker = page.locator('.--docs--doc-title').getByRole('button');
     const optionMenu = page.getByLabel('Open the document options');
-    const addEmojiMenuItem = getMenuItem(page, 'Add emoji');
-    const removeEmojiMenuItem = getMenuItem(page, 'Remove emoji');
+    const addEmojiMenuItem = page.getByRole('menuitem', { name: 'Add emoji' });
+    const removeEmojiMenuItem = page.getByRole('menuitem', {
+      name: 'Remove emoji',
+    });
 
     // Top parent should not have emoji picker
     await expect(emojiPicker).toBeHidden();
@@ -208,7 +209,7 @@ test.describe('Doc Header', () => {
     const [randomDoc] = await createDoc(page, 'doc-delete', browserName, 1);
 
     await page.getByLabel('Open the document options').click();
-    await getMenuItem(page, 'Delete document').click();
+    await page.getByRole('menuitem', { name: 'Delete document' }).click();
 
     await expect(
       page.getByRole('heading', { name: 'Delete a doc' }),
@@ -270,7 +271,9 @@ test.describe('Doc Header', () => {
 
     await page.getByLabel('Open the document options').click();
 
-    await expect(getMenuItem(page, 'Delete document')).toBeDisabled();
+    await expect(
+      page.getByRole('menuitem', { name: 'Delete document' }),
+    ).toBeDisabled();
 
     // Click somewhere else to close the options
     await page.locator('body').click({ position: { x: 0, y: 0 } });
@@ -293,7 +296,7 @@ test.describe('Doc Header', () => {
 
     await invitationRole.click();
 
-    await getMenuItem(page, 'Remove access').click();
+    await page.getByRole('menuitemradio', { name: 'Remove access' }).click();
     await expect(invitationCard).toBeHidden();
 
     const memberCard = shareModal.getByLabel('List members card');
@@ -305,7 +308,9 @@ test.describe('Doc Header', () => {
     await expect(roles).toBeVisible();
 
     await roles.click();
-    await expect(getMenuItem(page, 'Remove access')).toBeEnabled();
+    await expect(
+      page.getByRole('menuitemradio', { name: 'Remove access' }),
+    ).toBeEnabled();
   });
 
   test('it checks the options available if editor', async ({ page }) => {
@@ -345,7 +350,9 @@ test.describe('Doc Header', () => {
     ).toBeVisible();
     await page.getByLabel('Open the document options').click();
 
-    await expect(getMenuItem(page, 'Delete document')).toBeDisabled();
+    await expect(
+      page.getByRole('menuitem', { name: 'Delete document' }),
+    ).toBeDisabled();
 
     // Click somewhere else to close the options
     await page.locator('body').click({ position: { x: 0, y: 0 } });
@@ -415,7 +422,9 @@ test.describe('Doc Header', () => {
     ).toBeVisible();
     await page.getByLabel('Open the document options').click();
 
-    await expect(getMenuItem(page, 'Delete document')).toBeDisabled();
+    await expect(
+      page.getByRole('menuitem', { name: 'Delete document' }),
+    ).toBeDisabled();
 
     // Click somewhere else to close the options
     await page.locator('body').click({ position: { x: 0, y: 0 } });
@@ -473,7 +482,7 @@ test.describe('Doc Header', () => {
 
     // Copy content to clipboard
     await page.getByLabel('Open the document options').click();
-    await getMenuItem(page, 'Copy as Markdown').click();
+    await page.getByRole('menuitem', { name: 'Copy as Markdown' }).click();
     await expect(
       page.getByText('Copied as Markdown to clipboard'),
     ).toBeVisible();
@@ -537,7 +546,7 @@ test.describe('Doc Header', () => {
       .click();
 
     // Pin
-    await getMenuItem(page, 'Pin').click();
+    await page.getByRole('menuitem', { name: 'Pin' }).click();
     await page
       .getByRole('button', { name: 'Open the document options' })
       .click();
@@ -558,11 +567,11 @@ test.describe('Doc Header', () => {
       .click();
 
     // Unpin
-    await getMenuItem(page, 'Unpin').click();
+    await page.getByRole('menuitem', { name: 'Unpin' }).click();
     await page
       .getByRole('button', { name: 'Open the document options' })
       .click();
-    await expect(getMenuItem(page, 'Pin')).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Pin' })).toBeVisible();
 
     await page.goto('/');
 
@@ -580,7 +589,7 @@ test.describe('Doc Header', () => {
 
     await page.getByLabel('Open the document options').click();
 
-    await getMenuItem(page, 'Duplicate').click();
+    await page.getByRole('menuitem', { name: 'Duplicate' }).click();
     await expect(
       page.getByText('Document duplicated successfully!'),
     ).toBeVisible();
@@ -595,7 +604,7 @@ test.describe('Doc Header', () => {
     await expect(row.getByText(duplicateTitle)).toBeVisible();
 
     await row.getByText(`more_horiz`).click();
-    await getMenuItem(page, 'Duplicate').click();
+    await page.getByRole('menuitem', { name: 'Duplicate' }).click();
     const duplicateDuplicateTitle = 'Copy of ' + duplicateTitle;
     await page.getByText(duplicateDuplicateTitle).click();
     await expect(page.getByText('Hello Duplicated World')).toBeVisible();
@@ -628,7 +637,7 @@ test.describe('Doc Header', () => {
 
     const currentUrl = page.url();
 
-    await getMenuItem(page, 'Duplicate').click();
+    await page.getByRole('menuitem', { name: 'Duplicate' }).click();
 
     await expect(page).not.toHaveURL(new RegExp(currentUrl));
 
@@ -667,8 +676,10 @@ test.describe('Documents Header mobile', () => {
 
     await expect(page.getByRole('button', { name: 'Copy link' })).toBeHidden();
     await page.getByLabel('Open the document options').click();
-    await expect(getMenuItem(page, 'Copy link')).toBeVisible();
-    await getMenuItem(page, 'Share').click();
+    await expect(
+      page.getByRole('menuitem', { name: 'Copy link' }),
+    ).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Share' }).click();
     await expect(page.getByRole('button', { name: 'Copy link' })).toBeVisible();
   });
 
@@ -691,7 +702,7 @@ test.describe('Documents Header mobile', () => {
     await goToGridDoc(page);
 
     await page.getByLabel('Open the document options').click();
-    await getMenuItem(page, 'Share').click();
+    await page.getByRole('menuitem', { name: 'Share' }).click();
 
     const shareModal = page.getByRole('dialog', {
       name: 'Share the document',

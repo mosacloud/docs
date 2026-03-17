@@ -8,16 +8,6 @@ import theme_customization from '../../../../../backend/impress/configuration/th
 export type BrowserName = 'chromium' | 'firefox' | 'webkit';
 export const BROWSERS: BrowserName[] = ['chromium', 'webkit', 'firefox'];
 
-/** Returns a locator for a menu item (handles both menuitem and menuitemradio roles) */
-export const getMenuItem = (
-  context: Page | Locator,
-  name: string,
-  options?: { exact?: boolean },
-): Locator =>
-  context
-    .getByRole('menuitem', { name, exact: options?.exact })
-    .or(context.getByRole('menuitemradio', { name, exact: options?.exact }));
-
 export const CONFIG = {
   AI_BOT: {
     name: 'Docs AI',
@@ -392,12 +382,12 @@ export async function waitForLanguageSwitch(
 
   await languagePicker.click();
 
-  await getMenuItem(page, lang.label).click();
+  await page.getByRole('menuitemradio', { name: lang.label }).click();
 }
 
 export const clickInEditorMenu = async (page: Page, textButton: string) => {
   await page.getByRole('button', { name: 'Open the document options' }).click();
-  await getMenuItem(page, textButton).click();
+  await page.getByRole('menuitem', { name: textButton }).click();
 };
 
 export const clickInGridMenu = async (
@@ -408,7 +398,7 @@ export const clickInGridMenu = async (
   await row
     .getByRole('button', { name: /Open the menu of actions for the document/ })
     .click();
-  await getMenuItem(page, textButton).click();
+  await page.getByRole('menuitem', { name: textButton }).click();
 };
 
 export const writeReport = async (

@@ -3,7 +3,6 @@ import { expect, test } from '@playwright/test';
 
 import {
   createDoc,
-  getMenuItem,
   mockedDocument,
   overrideConfig,
   verifyDocName,
@@ -179,18 +178,32 @@ test.describe('Doc AI feature', () => {
 
     await page.getByRole('button', { name: 'AI', exact: true }).click();
 
-    await expect(getMenuItem(page, 'Use as prompt')).toBeVisible();
-    await expect(getMenuItem(page, 'Rephrase')).toBeVisible();
-    await expect(getMenuItem(page, 'Summarize')).toBeVisible();
-    await expect(getMenuItem(page, 'Correct')).toBeVisible();
-    await expect(getMenuItem(page, 'Language')).toBeVisible();
+    await expect(
+      page.getByRole('menuitem', { name: 'Use as prompt' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('menuitem', { name: 'Rephrase' }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('menuitem', { name: 'Summarize' }),
+    ).toBeVisible();
+    await expect(page.getByRole('menuitem', { name: 'Correct' })).toBeVisible();
+    await expect(
+      page.getByRole('menuitem', { name: 'Language' }),
+    ).toBeVisible();
 
-    await getMenuItem(page, 'Language').hover();
-    await expect(getMenuItem(page, 'English', { exact: true })).toBeVisible();
-    await expect(getMenuItem(page, 'French', { exact: true })).toBeVisible();
-    await expect(getMenuItem(page, 'German', { exact: true })).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Language' }).hover();
+    await expect(
+      page.getByRole('menuitem', { name: 'English', exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('menuitem', { name: 'French', exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole('menuitem', { name: 'German', exact: true }),
+    ).toBeVisible();
 
-    await getMenuItem(page, 'German', { exact: true }).click();
+    await page.getByRole('menuitem', { name: 'German', exact: true }).click();
 
     await expect(editor.getByText('Hallo Welt')).toBeVisible();
   });
@@ -256,15 +269,23 @@ test.describe('Doc AI feature', () => {
       await page.getByRole('button', { name: 'AI', exact: true }).click();
 
       if (ai_transform) {
-        await expect(getMenuItem(page, 'Use as prompt')).toBeVisible();
+        await expect(
+          page.getByRole('menuitem', { name: 'Use as prompt' }),
+        ).toBeVisible();
       } else {
-        await expect(getMenuItem(page, 'Use as prompt')).toBeHidden();
+        await expect(
+          page.getByRole('menuitem', { name: 'Use as prompt' }),
+        ).toBeHidden();
       }
 
       if (ai_translate) {
-        await expect(getMenuItem(page, 'Language')).toBeVisible();
+        await expect(
+          page.getByRole('menuitem', { name: 'Language' }),
+        ).toBeVisible();
       } else {
-        await expect(getMenuItem(page, 'Language')).toBeHidden();
+        await expect(
+          page.getByRole('menuitem', { name: 'Language' }),
+        ).toBeHidden();
       }
     });
   });

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { createDoc, getMenuItem, verifyDocName } from './utils-common';
+import { createDoc, verifyDocName } from './utils-common';
 import { addNewMember } from './utils-share';
 
 test.beforeEach(async ({ page }) => {
@@ -160,7 +160,9 @@ test.describe('Document list members', () => {
       `You are the sole owner of this group, make another member the group owner before you can change your own role or be removed from your document.`,
     );
     await expect(soloOwner).toBeVisible();
-    await expect(getMenuItem(page, 'Administrator')).toBeDisabled();
+    await expect(
+      page.getByRole('menuitemradio', { name: 'Administrator' }),
+    ).toBeDisabled();
 
     await list.click({
       force: true, // Force click to close the dropdown
@@ -183,18 +185,20 @@ test.describe('Document list members', () => {
     });
 
     await currentUserRole.click();
-    await getMenuItem(page, 'Administrator').click();
+    await page.getByRole('menuitemradio', { name: 'Administrator' }).click();
     await list.click();
     await expect(currentUserRole).toBeVisible();
 
     await newUserRoles.click();
-    await expect(getMenuItem(page, 'Owner')).toBeDisabled();
+    await expect(
+      page.getByRole('menuitemradio', { name: 'Owner' }),
+    ).toBeDisabled();
     await list.click({
       force: true, // Force click to close the dropdown
     });
 
     await currentUserRole.click();
-    await getMenuItem(page, 'Reader').click();
+    await page.getByRole('menuitemradio', { name: 'Reader' }).click();
     await list.click({
       force: true, // Force click to close the dropdown
     });
@@ -234,11 +238,11 @@ test.describe('Document list members', () => {
     await expect(userReader).toBeVisible();
 
     await userReaderRole.click();
-    await getMenuItem(page, 'Remove access').click();
+    await page.getByRole('menuitemradio', { name: 'Remove access' }).click();
     await expect(userReader).toBeHidden();
 
     await mySelfRole.click();
-    await getMenuItem(page, 'Remove access').click();
+    await page.getByRole('menuitemradio', { name: 'Remove access' }).click();
     await expect(
       page.getByText('Insufficient access rights to view the document.'),
     ).toBeVisible();

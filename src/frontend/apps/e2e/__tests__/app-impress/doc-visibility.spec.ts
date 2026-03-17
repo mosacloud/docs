@@ -4,7 +4,6 @@ import {
   BROWSERS,
   createDoc,
   expectLoginPage,
-  getMenuItem,
   keyCloakSignIn,
   verifyDocName,
 } from './utils-common';
@@ -47,17 +46,21 @@ test.describe('Doc Visibility', () => {
 
     await expect(selectVisibility.getByText('Private')).toBeVisible();
 
-    await expect(getMenuItem(page, 'Read only')).toBeHidden();
-    await expect(getMenuItem(page, 'Can read and edit')).toBeHidden();
+    await expect(
+      page.getByRole('menuitemradio', { name: 'Read only' }),
+    ).toBeHidden();
+    await expect(
+      page.getByRole('menuitemradio', { name: 'Can read and edit' }),
+    ).toBeHidden();
 
     await selectVisibility.click();
-    await getMenuItem(page, 'Connected').click();
+    await page.getByRole('menuitemradio', { name: 'Connected' }).click();
 
     await expect(page.getByTestId('doc-access-mode')).toBeVisible();
 
     await selectVisibility.click();
 
-    await getMenuItem(page, 'Public').click();
+    await page.getByRole('menuitemradio', { name: 'Public' }).click();
 
     await expect(page.getByTestId('doc-access-mode')).toBeVisible();
   });
@@ -202,7 +205,7 @@ test.describe('Doc Visibility: Public', () => {
     const selectVisibility = page.getByTestId('doc-visibility');
     await selectVisibility.click();
 
-    await getMenuItem(page, 'Public').click();
+    await page.getByRole('menuitemradio', { name: 'Public' }).click();
 
     await expect(
       page.getByText('The document visibility has been updated.'),
@@ -210,7 +213,7 @@ test.describe('Doc Visibility: Public', () => {
 
     await expect(page.getByTestId('doc-access-mode')).toBeVisible();
     await page.getByTestId('doc-access-mode').click();
-    await getMenuItem(page, 'Reading').click();
+    await page.getByRole('menuitemradio', { name: 'Reading' }).click();
 
     await expect(
       page.getByText('The document visibility has been updated.').first(),
@@ -296,14 +299,14 @@ test.describe('Doc Visibility: Public', () => {
     const selectVisibility = page.getByTestId('doc-visibility');
     await selectVisibility.click();
 
-    await getMenuItem(page, 'Public').click();
+    await page.getByRole('menuitemradio', { name: 'Public' }).click();
 
     await expect(
       page.getByText('The document visibility has been updated.'),
     ).toBeVisible();
 
     await page.getByTestId('doc-access-mode').click();
-    await getMenuItem(page, 'Editing').click();
+    await page.getByRole('menuitemradio', { name: 'Editing' }).click();
 
     await expect(
       page.getByText('The document visibility has been updated.').first(),
@@ -387,7 +390,7 @@ test.describe('Doc Visibility: Authenticated', () => {
     await page.getByRole('button', { name: 'Share' }).click();
     const selectVisibility = page.getByTestId('doc-visibility');
     await selectVisibility.click();
-    await getMenuItem(page, 'Connected').click();
+    await page.getByRole('menuitemradio', { name: 'Connected' }).click();
 
     await expect(
       page.getByText('The document visibility has been updated.'),
@@ -435,7 +438,7 @@ test.describe('Doc Visibility: Authenticated', () => {
     await page.getByRole('button', { name: 'Share' }).click();
     const selectVisibility = page.getByTestId('doc-visibility');
     await selectVisibility.click();
-    await getMenuItem(page, 'Connected').click();
+    await page.getByRole('menuitemradio', { name: 'Connected' }).click();
 
     await expect(
       page.getByText('The document visibility has been updated.'),
@@ -533,7 +536,7 @@ test.describe('Doc Visibility: Authenticated', () => {
     await page.getByRole('button', { name: 'Share' }).click();
     const selectVisibility = page.getByTestId('doc-visibility');
     await selectVisibility.click();
-    await getMenuItem(page, 'Connected').click();
+    await page.getByRole('menuitemradio', { name: 'Connected' }).click();
 
     await expect(
       page.getByText('The document visibility has been updated.'),
@@ -541,7 +544,7 @@ test.describe('Doc Visibility: Authenticated', () => {
 
     const urlDoc = page.url();
     await page.getByTestId('doc-access-mode').click();
-    await getMenuItem(page, 'Editing').click();
+    await page.getByRole('menuitemradio', { name: 'Editing' }).click();
 
     await expect(
       page.getByText('The document visibility has been updated.').first(),

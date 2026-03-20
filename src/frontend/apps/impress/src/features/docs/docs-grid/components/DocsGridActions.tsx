@@ -72,9 +72,9 @@ export const DocsGridActions = ({ doc }: DocsGridActionsProps) => {
     {
       label: doc.is_favorite ? t('Unpin') : t('Pin'),
       icon: doc.is_favorite ? (
-        <KeepOffSVG width={24} height={24} />
+        <KeepOffSVG width={24} height={24} aria-hidden="true" />
       ) : (
-        <KeepSVG width={24} height={24} />
+        <KeepSVG width={24} height={24} aria-hidden="true" />
       ),
       callback: () => {
         if (doc.is_favorite) {
@@ -88,7 +88,7 @@ export const DocsGridActions = ({ doc }: DocsGridActionsProps) => {
     },
     {
       label: t('Share'),
-      icon: <GroupSVG width={24} height={24} />,
+      icon: <GroupSVG width={24} height={24} aria-hidden="true" />,
       callback: () => {
         shareModal.open();
       },
@@ -97,7 +97,7 @@ export const DocsGridActions = ({ doc }: DocsGridActionsProps) => {
     },
     {
       label: t('Move into a doc'),
-      icon: <DocMoveInSVG width={24} height={24} />,
+      icon: <DocMoveInSVG width={24} height={24} aria-hidden="true" />,
       callback: () => {
         importModal.open();
       },
@@ -106,7 +106,7 @@ export const DocsGridActions = ({ doc }: DocsGridActionsProps) => {
     },
     {
       label: t('Duplicate'),
-      icon: <ContentCopySVG width={24} height={24} />,
+      icon: <ContentCopySVG width={24} height={24} aria-hidden="true" />,
       disabled: !doc.abilities.duplicate,
       callback: () => {
         duplicateDoc({
@@ -119,7 +119,7 @@ export const DocsGridActions = ({ doc }: DocsGridActionsProps) => {
     },
     {
       label: t('Delete'),
-      icon: <DeleteSVG width={24} height={24} />,
+      icon: <DeleteSVG width={24} height={24} aria-hidden="true" />,
       callback: () => deleteModal.open(),
       disabled: !doc.abilities.destroy,
       testId: `docs-grid-actions-remove-${doc.id}`,

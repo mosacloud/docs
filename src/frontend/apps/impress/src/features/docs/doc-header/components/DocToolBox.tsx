@@ -118,13 +118,13 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
   const options: DropdownMenuOption[] = [
     {
       label: t('Share'),
-      icon: <GroupSVG width={24} height={24} />,
+      icon: <GroupSVG width={24} height={24} aria-hidden="true" />,
       callback: modalShare.open,
       show: isSmallMobile,
     },
     {
       label: t('Export'),
-      icon: <DownloadSVG width={24} height={24} />,
+      icon: <DownloadSVG width={24} height={24} aria-hidden="true" />,
       callback: () => {
         setIsModalExportOpen(true);
       },
@@ -133,9 +133,9 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
     {
       label: doc.is_favorite ? t('Unpin') : t('Pin'),
       icon: doc.is_favorite ? (
-        <KeepOffSVG width={24} height={24} />
+        <KeepOffSVG width={24} height={24} aria-hidden="true" />
       ) : (
-        <KeepSVG width={24} height={24} />
+        <KeepSVG width={24} height={24} aria-hidden="true" />
       ),
       callback: () => {
         if (doc.is_favorite) {
@@ -148,7 +148,7 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
     },
     {
       label: t('Version history'),
-      icon: <HistorySVG width={24} height={24} />,
+      icon: <HistorySVG width={24} height={24} aria-hidden="true" />,
       disabled: !doc.abilities.versions_list,
       callback: () => {
         selectHistoryModal.open();
@@ -158,7 +158,7 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
     },
     {
       label: t('Remove emoji'),
-      icon: <RemoveEmojiSVG width={24} height={24} />,
+      icon: <RemoveEmojiSVG width={24} height={24} aria-hidden="true" />,
       callback: () => {
         updateDocEmoji(doc.id, doc.title ?? '', '');
       },
@@ -167,7 +167,7 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
     },
     {
       label: t('Add emoji'),
-      icon: <AddEmojiSVG width={24} height={24} />,
+      icon: <AddEmojiSVG width={24} height={24} aria-hidden="true" />,
       callback: () => {
         updateDocEmoji(doc.id, doc.title ?? '', '📄');
       },
@@ -176,12 +176,12 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
     },
     {
       label: t('Copy link'),
-      icon: <AddLinkSVG width={24} height={24} />,
+      icon: <AddLinkSVG width={24} height={24} aria-hidden="true" />,
       callback: copyDocLink,
     },
     {
       label: t('Copy as {{format}}', { format: 'Markdown' }),
-      icon: <MarkdownCopySVG width={24} height={24} />,
+      icon: <MarkdownCopySVG width={24} height={24} aria-hidden="true" />,
       callback: () => {
         void copyCurrentEditorToClipboard('markdown');
       },
@@ -189,7 +189,7 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
     },
     {
       label: t('Duplicate'),
-      icon: <ContentCopySVG width={24} height={24} />,
+      icon: <ContentCopySVG width={24} height={24} aria-hidden="true" />,
       disabled: !doc.abilities.duplicate,
       callback: () => {
         duplicateDoc({
@@ -202,7 +202,7 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
     },
     {
       label: isChild ? t('Delete sub-document') : t('Delete document'),
-      icon: <DeleteSVG width={24} height={24} />,
+      icon: <DeleteSVG width={24} height={24} aria-hidden="true" />,
       disabled: !doc.abilities.destroy,
       callback: () => {
         setIsModalRemoveOpen(true);

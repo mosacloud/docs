@@ -275,7 +275,6 @@ export const DropdownMenu = ({
                     <Box
                       $theme="neutral"
                       $variation={isDisabled ? 'tertiary' : 'primary'}
-                      aria-hidden="true"
                     >
                       {option.icon}
                     </Box>

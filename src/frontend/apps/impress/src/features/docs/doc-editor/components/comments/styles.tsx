@@ -8,11 +8,36 @@ export const cssComments = (
   & .--docs--main-editor .ProseMirror {
     // Comments marks in the editor
     .bn-editor {
-      .bn-thread-mark:not([data-orphan='true']),
-      .bn-thread-mark-selected:not([data-orphan='true']) {
-        background: ${canSeeComment ? '#EDB40066' : 'transparent'};
-        color: var(--c--globals--colors--gray-700);
+      // Resets blocknote comments styles
+      .bn-thread-mark,
+      .bn-thread-mark-selected {
+        background-color: transparent;
       }
+
+      ${canSeeComment &&
+      css`
+        .bn-thread-mark:not([data-orphan='true']) {
+          background-color: color-mix(
+            in srgb,
+            var(--c--contextuals--background--palette--yellow--tertiary) 40%,
+            transparent
+          );
+          border-bottom: 2px solid
+            var(--c--contextuals--background--palette--yellow--secondary);
+
+          mix-blend-mode: multiply;
+
+          transition:
+            background-color var(--c--globals--transitions--duration),
+            border-bottom-color var(--c--globals--transitions--duration);
+
+          &:has(.bn-thread-mark-selected) {
+            background-color: var(
+              --c--contextuals--background--palette--yellow--tertiary
+            );
+          }
+        }
+      `}
 
       [data-show-selection] {
         color: HighlightText;

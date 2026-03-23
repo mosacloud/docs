@@ -6,6 +6,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- 💄(frontend) improve comments highlights #1961
+
 ## [v4.8.3] - 2026-03-23
 
 ### Changed

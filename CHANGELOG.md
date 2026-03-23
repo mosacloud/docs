@@ -15,6 +15,7 @@ and this project adheres to
 - ✨(frontend) add markdown copy icon for Copy as Markdown option #2096
 - ♻️(backend) skip saving in database a document when payload is empty #2062
 - ♻️(frontend) refacto Version modal to fit with the design system #2091
+- ⚡️(frontend) add debounce WebSocket reconnect #2104
 
 ### Fixed
 

@@ -30,6 +30,8 @@ const defaultValues = {
 
 type ExtendedCloseEvent = CloseEvent & { wasClean: boolean };
 
+let reconnectTimeout: ReturnType<typeof setTimeout> | undefined;
+
 export const useProviderStore = create<UseCollaborationStore>((set, get) => ({
   ...defaultValues,
   createProvider: (wsUrl, storeId, initialDoc) => {
@@ -60,7 +62,8 @@ export const useProviderStore = create<UseCollaborationStore>((set, get) => ({
             return;
           }
 
-          void provider.connect();
+          clearTimeout(reconnectTimeout);
+          reconnectTimeout = setTimeout(() => void provider.connect(), 1000);
         }
       },
       onAuthenticationFailed() {
@@ -119,6 +122,7 @@ export const useProviderStore = create<UseCollaborationStore>((set, get) => ({
     return provider;
   },
   destroyProvider: () => {
+    clearTimeout(reconnectTimeout);
     const provider = get().provider;
     if (provider) {
       provider.destroy();

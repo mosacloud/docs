@@ -44,7 +44,7 @@ export const DocIcon = ({
   const { t } = useTranslation();
   const { addLastFocus, restoreFocus } = useFocusStore();
 
-  const iconRef = useRef<HTMLDivElement>(null);
+  const iconRef = useRef<HTMLButtonElement>(null);
 
   const [openEmojiPicker, setOpenEmojiPicker] = useState<boolean>(false);
   const [pickerPosition, setPickerPosition] = useState<{

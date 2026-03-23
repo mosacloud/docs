@@ -1,17 +1,17 @@
-import { forwardRef } from 'react';
+import { Ref, forwardRef } from 'react';
 import { css } from 'styled-components';
 
 import { Box, BoxType } from './Box';
 
-export type BoxButtonType = BoxType & {
+export type BoxButtonType = Omit<BoxType, 'ref'> & {
   disabled?: boolean;
+  ref?: Ref<HTMLButtonElement>;
 };
-
-/**
 
 /**
  * Styleless button that extends the Box component.
  * Good to wrap around SVGs or other elements that need to be clickable.
+ * Uses aria-disabled instead of native disabled to preserve keyboard focusability.
  * @param props - @see BoxType props
  * @param ref
  * @see Box
@@ -22,8 +22,8 @@ export type BoxButtonType = BoxType & {
  *  </BoxButton>
  * ```
  */
-const BoxButton = forwardRef<HTMLDivElement, BoxButtonType>(
-  ({ $css, ...props }, ref) => {
+const BoxButton = forwardRef<HTMLButtonElement, BoxButtonType>(
+  ({ $css, disabled, ...props }, ref) => {
     const theme = props.$theme || 'gray';
     const variation = props.$variation || 'primary';
 
@@ -31,16 +31,18 @@ const BoxButton = forwardRef<HTMLDivElement, BoxButtonType>(
       <Box
         ref={ref}
         as="button"
+        type="button"
         $background="none"
         $margin="none"
         $padding="none"
         $hasTransition
+        aria-disabled={disabled || undefined}
         $css={css`
-          cursor: ${props.disabled ? 'not-allowed' : 'pointer'};
+          cursor: ${disabled ? 'not-allowed' : 'pointer'};
           border: none;
           outline: none;
           font-family: inherit;
-          color: ${props.disabled &&
+          color: ${disabled &&
           `var(--c--contextuals--content--semantic--disabled--primary)`};
           &:focus-visible {
             transition: none;
@@ -53,11 +55,11 @@ const BoxButton = forwardRef<HTMLDivElement, BoxButtonType>(
         `}
         {...props}
         className={`--docs--box-button ${props.className || ''}`}
-        onClick={(event: React.MouseEvent<HTMLDivElement>) => {
-          if (props.disabled) {
+        onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+          if (disabled) {
             return;
           }
-          props.onClick?.(event);
+          props.onClick?.(event as unknown as React.MouseEvent<HTMLDivElement>);
         }}
       />
     );

@@ -177,5 +177,5 @@ const dragAndDropFiles = async (
     return dt;
   }, filesData);
 
-  await page.dispatchEvent(selector, 'drop', { dataTransfer });
+  await page.locator(selector).dispatchEvent('drop', { dataTransfer });
 };

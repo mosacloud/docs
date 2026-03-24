@@ -236,7 +236,7 @@ test.describe('Doc Header', () => {
         hasText: randomDoc,
       });
 
-    expect(await row.count()).toBe(0);
+    await expect(row).toHaveCount(0);
   });
 
   test('it checks the options available if administrator', async ({ page }) => {
@@ -273,7 +273,7 @@ test.describe('Doc Header', () => {
     await expect(getMenuItem(page, 'Delete document')).toBeDisabled();
 
     // Click somewhere else to close the options
-    await page.click('body', { position: { x: 0, y: 0 } });
+    await page.locator('body').click({ position: { x: 0, y: 0 } });
 
     await page.getByRole('button', { name: 'Share' }).click();
 
@@ -348,7 +348,7 @@ test.describe('Doc Header', () => {
     await expect(getMenuItem(page, 'Delete document')).toBeDisabled();
 
     // Click somewhere else to close the options
-    await page.click('body', { position: { x: 0, y: 0 } });
+    await page.locator('body').click({ position: { x: 0, y: 0 } });
 
     await page.getByRole('button', { name: 'Share' }).click();
 
@@ -418,7 +418,7 @@ test.describe('Doc Header', () => {
     await expect(getMenuItem(page, 'Delete document')).toBeDisabled();
 
     // Click somewhere else to close the options
-    await page.click('body', { position: { x: 0, y: 0 } });
+    await page.locator('body').click({ position: { x: 0, y: 0 } });
 
     await page.getByRole('button', { name: 'Share' }).click();
 

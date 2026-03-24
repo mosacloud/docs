@@ -80,9 +80,9 @@ test.describe('Doc Version', () => {
     await expect(panel).toBeVisible();
     await expect(page.getByText('History', { exact: true })).toBeVisible();
     await expect(page.getByRole('status')).toBeHidden();
-    const items = await panel.locator('.version-item').all();
-    expect(items.length).toBe(2);
-    await items[1].click();
+    const items = panel.locator('.version-item');
+    await expect(items).toHaveCount(2);
+    await items.nth(1).click();
 
     await expect(modal.getByText('Hello World')).toBeVisible();
     await expect(modal.getByText('It will create a version')).toBeHidden();
@@ -90,7 +90,7 @@ test.describe('Doc Version', () => {
       modal.locator('div[data-content-type="callout"]').first(),
     ).toBeHidden();
 
-    await items[0].click();
+    await items.nth(0).click();
 
     await expect(modal.getByText('Hello World')).toBeVisible();
     await expect(modal.getByText('It will create a version')).toBeVisible();
@@ -101,7 +101,7 @@ test.describe('Doc Version', () => {
       modal.getByText('It will create a second version'),
     ).toBeHidden();
 
-    await items[1].click();
+    await items.nth(1).click();
 
     await expect(modal.getByText('Hello World')).toBeVisible();
     await expect(modal.getByText('It will create a version')).toBeHidden();

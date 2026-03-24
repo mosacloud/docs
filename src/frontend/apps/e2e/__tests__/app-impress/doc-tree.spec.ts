@@ -43,15 +43,12 @@ test.describe('Doc Tree', () => {
     await expect(secondSubPageItem).toBeVisible();
 
     // Check the position of the sub pages
-    const allSubPageItems = await docTree
-      .getByTestId(/^doc-sub-page-item/)
-      .all();
-
-    expect(allSubPageItems.length).toBe(2);
+    const allSubPageItems = docTree.getByTestId(/^doc-sub-page-item/);
+    await expect(allSubPageItems).toHaveCount(2);
 
     // Check that elements are in the correct order
-    await expect(allSubPageItems[0].getByText('first move')).toBeVisible();
-    await expect(allSubPageItems[1].getByText('second move')).toBeVisible();
+    await expect(allSubPageItems.nth(0).getByText('first move')).toBeVisible();
+    await expect(allSubPageItems.nth(1).getByText('second move')).toBeVisible();
 
     // Will move the first sub page to the second position
     const firstSubPageBoundingBox = await firstSubPageItem.boundingBox();
@@ -91,17 +88,15 @@ test.describe('Doc Tree', () => {
     await expect(secondSubPageItem).toBeVisible();
 
     // Check that elements are in the correct order
-    const allSubPageItemsAfterReload = await docTree
-      .getByTestId(/^doc-sub-page-item/)
-      .all();
-
-    expect(allSubPageItemsAfterReload.length).toBe(2);
+    const allSubPageItemsAfterReload =
+      docTree.getByTestId(/^doc-sub-page-item/);
+    await expect(allSubPageItemsAfterReload).toHaveCount(2);
 
     await expect(
-      allSubPageItemsAfterReload[0].getByText('second move'),
+      allSubPageItemsAfterReload.nth(0).getByText('second move'),
     ).toBeVisible();
     await expect(
-      allSubPageItemsAfterReload[1].getByText('first move'),
+      allSubPageItemsAfterReload.nth(1).getByText('first move'),
     ).toBeVisible();
   });
 

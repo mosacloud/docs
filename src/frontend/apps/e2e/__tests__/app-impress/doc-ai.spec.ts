@@ -47,9 +47,9 @@ test.describe('Doc AI feature', () => {
 
       await page.locator('.bn-block-outer').last().fill('Anything');
       await page.getByText('Anything').selectText();
-      expect(
-        await page.locator('button[data-test="convertMarkdown"]').count(),
-      ).toBe(1);
+      await expect(
+        page.locator('button[data-test="convertMarkdown"]'),
+      ).toHaveCount(1);
       await expect(
         page.getByRole('button', { name: config.selector, exact: true }),
       ).toBeHidden();

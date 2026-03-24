@@ -155,13 +155,11 @@ test.describe('Doc Editor', () => {
     expect(wsClose.isClosed()).toBeTruthy();
 
     // Check the ws is connected again
-    webSocketPromise = page.waitForEvent('websocket', (webSocket) => {
+    webSocket = await page.waitForEvent('websocket', (webSocket) => {
       return webSocket
         .url()
         .includes('ws://localhost:4444/collaboration/ws/?room=');
     });
-
-    webSocket = await webSocketPromise;
     framesentPromise = webSocket.waitForEvent('framesent');
     framesent = await framesentPromise;
     expect(framesent.payload).not.toBeNull();
@@ -578,12 +576,10 @@ test.describe('Doc Editor', () => {
 
     await page.reload();
 
-    responseCanEditPromise = page.waitForResponse(
+    responseCanEdit = await page.waitForResponse(
       (response) =>
         response.url().includes(`/can-edit/`) && response.status() === 200,
     );
-
-    responseCanEdit = await responseCanEditPromise;
     expect(responseCanEdit.ok()).toBeTruthy();
 
     jsonCanEdit = (await responseCanEdit.json()) as { can_edit: boolean };

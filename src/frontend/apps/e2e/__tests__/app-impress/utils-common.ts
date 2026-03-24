@@ -3,6 +3,11 @@ import path from 'path';
 
 import { Locator, Page, TestInfo, expect } from '@playwright/test';
 
+import theme_customization from '../../../../../backend/impress/configuration/theme/default.json';
+
+export type BrowserName = 'chromium' | 'firefox' | 'webkit';
+export const BROWSERS: BrowserName[] = ['chromium', 'webkit', 'firefox'];
+
 /** Returns a locator for a menu item (handles both menuitem and menuitemradio roles) */
 export const getMenuItem = (
   context: Page | Locator,
@@ -12,11 +17,6 @@ export const getMenuItem = (
   context
     .getByRole('menuitem', { name, exact: options?.exact })
     .or(context.getByRole('menuitemradio', { name, exact: options?.exact }));
-
-import theme_customization from '../../../../../backend/impress/configuration/theme/default.json';
-
-export type BrowserName = 'chromium' | 'firefox' | 'webkit';
-export const BROWSERS: BrowserName[] = ['chromium', 'webkit', 'firefox'];
 
 export const CONFIG = {
   AI_BOT: {

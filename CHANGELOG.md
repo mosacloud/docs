@@ -20,6 +20,7 @@ and this project adheres to
 ### Fixed
 
 - 🐛(y-provider) destroy Y.Doc instances after each convert request #2129
+- 🐛(backend) remove deleted sub documents in favorite_list endpoint #2083
 
 ## [v4.8.3] - 2026-03-23
 

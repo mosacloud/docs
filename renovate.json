@@ -60,6 +60,7 @@
       "groupName": "ignored js dependencies",
       "matchManagers": ["npm"],
       "matchPackageNames": [
+        "@react-pdf/renderer",
         "fetch-mock",
         "node",
         "node-fetch",

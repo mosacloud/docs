@@ -64,6 +64,8 @@
         "node",
         "node-fetch",
         "react-resizable-panels",
+        "stylelint",
+        "stylelint-config-standard",
         "workbox-webpack-plugin"
       ]
     }

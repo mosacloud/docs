@@ -115,6 +115,7 @@ def test_api_document_favorite_list_with_favorite_children():
     assert content[1]["id"] == str(children[1].id)
     assert content[2]["id"] == str(access.document.id)
 
+
 def test_api_document_favorite_list_with_deleted_child():
     """
     Authenticated users should not see deleted documents in their favorite list.

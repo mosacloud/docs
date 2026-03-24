@@ -1,16 +1,9 @@
 /// <reference types="vitest" />
 import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  plugins: [
-    react(),
-    tsconfigPaths({
-      root: '.',
-      projects: ['./tsconfig.json'],
-    }),
-  ],
+  plugins: [react()],
   test: {
     globals: true,
     environment: 'jsdom',
@@ -21,5 +14,8 @@ export default defineConfig({
   },
   define: {
     'process.env.NODE_ENV': 'test',
+  },
+  resolve: {
+    tsconfigPaths: true,
   },
 });

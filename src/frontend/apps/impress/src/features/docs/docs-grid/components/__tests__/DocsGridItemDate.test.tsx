@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import fetchMock from 'fetch-mock';
 import i18next from 'i18next';
 import { DateTime } from 'luxon';
@@ -73,7 +73,9 @@ describe('DocsGridItemDate', () => {
   });
 
   it(`should render rendered the updated_at field in the correct language`, async () => {
-    await i18next.changeLanguage('fr');
+    await act(async () => {
+      await i18next.changeLanguage('fr');
+    });
 
     render(
       <DocsGridItemDate
@@ -90,7 +92,9 @@ describe('DocsGridItemDate', () => {
 
     expect(screen.getByText('il y a 5 jours')).toBeInTheDocument();
 
-    await i18next.changeLanguage('en');
+    await act(async () => {
+      await i18next.changeLanguage('en');
+    });
   });
 
   [

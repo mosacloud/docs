@@ -4,7 +4,7 @@ import {
 } from '@gouvfr-lasuite/cunningham-react';
 import { useTranslation } from 'react-i18next';
 
-import { useEditorStore } from '../../doc-editor';
+import { useEditorStore } from '@/docs/doc-editor/stores/useEditorStore';
 
 export const useCopyCurrentEditorToClipboard = () => {
   const { editor } = useEditorStore();
@@ -21,8 +21,8 @@ export const useCopyCurrentEditorToClipboard = () => {
     try {
       const editorContentFormatted =
         asFormat === 'html'
-          ? await editor.blocksToHTMLLossy()
-          : await editor.blocksToMarkdownLossy();
+          ? editor.blocksToHTMLLossy()
+          : editor.blocksToMarkdownLossy();
       await navigator.clipboard.writeText(editorContentFormatted);
       const successMessage =
         asFormat === 'markdown'

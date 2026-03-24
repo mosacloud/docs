@@ -1,4 +1,9 @@
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('@/docs/doc-export/components/ModalExport', () => ({
+  ModalExport: vi.fn(),
+}));
+
 const originalEnv = process.env.NEXT_PUBLIC_PUBLISH_AS_MIT;
 
 describe('useModuleExport', () => {
@@ -16,12 +21,12 @@ describe('useModuleExport', () => {
     const Export = await import('@/features/docs/doc-export/');
 
     expect(Export.default).toBeUndefined();
-  }, 15000);
+  });
 
   it('should load modules when NEXT_PUBLIC_PUBLISH_AS_MIT is false', async () => {
     process.env.NEXT_PUBLIC_PUBLISH_AS_MIT = 'false';
     const Export = await import('@/features/docs/doc-export/');
 
     expect(Export.default).toHaveProperty('ModalExport');
-  }, 15000);
+  });
 });

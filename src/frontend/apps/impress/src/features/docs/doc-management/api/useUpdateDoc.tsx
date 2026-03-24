@@ -44,7 +44,7 @@ export function useUpdateDoc(queryConfig?: UseUpdateDoc) {
     ...queryConfig,
     onSuccess: (data, variables, onMutateResult, context) => {
       queryConfig?.listInvalidQueries?.forEach((queryKey) => {
-        void queryClient.invalidateQueries({
+        void queryClient.resetQueries({
           queryKey: [queryKey],
         });
       });

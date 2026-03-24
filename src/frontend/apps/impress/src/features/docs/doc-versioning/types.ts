@@ -1,4 +1,4 @@
-import { Doc } from '../doc-management';
+import { Doc } from '../doc-management/types';
 
 export interface APIListVersions {
   count: number;

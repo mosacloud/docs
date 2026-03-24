@@ -14,6 +14,11 @@ vi.mock('@/stores', () => ({
   }),
 }));
 
+vi.mock('@gouvfr-lasuite/ui-kit', async () => ({
+  ...(await vi.importActual('@gouvfr-lasuite/ui-kit')),
+  useTreeContext: () => null,
+}));
+
 describe('useDocTitleUpdate', () => {
   beforeEach(() => {
     vi.clearAllMocks();

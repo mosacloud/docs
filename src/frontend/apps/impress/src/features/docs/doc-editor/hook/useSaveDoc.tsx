@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import * as Y from 'yjs';
 
 import { useUpdateDoc } from '@/docs/doc-management/';
-import { KEY_LIST_DOC_VERSIONS } from '@/docs/doc-versioning';
+import { KEY_LIST_DOC_VERSIONS } from '@/docs/doc-versioning/api/useDocVersions';
 import { toBase64 } from '@/utils/string';
 import { isFirefox } from '@/utils/userAgent';
 

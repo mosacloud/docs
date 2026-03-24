@@ -1,9 +1,8 @@
 import { Button, useModal } from '@gouvfr-lasuite/cunningham-react';
 import { useTreeContext } from '@gouvfr-lasuite/ui-kit';
-import { useQueryClient } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
@@ -39,7 +38,6 @@ import {
   useDocUtils,
   useDuplicateDoc,
 } from '@/docs/doc-management';
-import { KEY_LIST_DOC_VERSIONS } from '@/docs/doc-versioning';
 import { useFocusStore, useResponsiveStore } from '@/stores';
 
 import { useCopyCurrentEditorToClipboard } from '../hooks/useCopyCurrentEditorToClipboard';
@@ -88,7 +86,6 @@ interface DocToolBoxProps {
 export const DocToolBox = ({ doc }: DocToolBoxProps) => {
   const { t } = useTranslation();
   const treeContext = useTreeContext<Doc>();
-  const queryClient = useQueryClient();
   const router = useRouter();
   const { isChild, isTopRoot } = useDocUtils(doc);
 
@@ -113,16 +110,6 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
   const makeFavoriteDoc = useCreateFavoriteDoc({
     listInvalidQueries: [KEY_LIST_DOC, KEY_DOC, KEY_LIST_FAVORITE_DOC],
   });
-
-  useEffect(() => {
-    if (selectHistoryModal.isOpen) {
-      return;
-    }
-
-    void queryClient.resetQueries({
-      queryKey: [KEY_LIST_DOC_VERSIONS],
-    });
-  }, [selectHistoryModal.isOpen, queryClient]);
 
   // Emoji Management
   const { emoji } = getEmojiAndTitle(doc.title ?? '');

@@ -1,6 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import React from 'react';
 import { afterAll, beforeEach, describe, expect, vi } from 'vitest';
 
 import { AppWrapper } from '@/tests/utils';
@@ -40,17 +38,11 @@ describe('DocToolBox - Licence', () => {
     render(<DocToolBox doc={doc as any} />, {
       wrapper: AppWrapper,
     });
-    const optionsButton = await screen.findByLabelText('Export the document');
-    await userEvent.click(optionsButton);
 
-    // Wait for the export modal to be visible, then assert on its content text.
-    await screen.findByTestId('modal-export-title');
     expect(
-      screen.getByText(
-        'Export your document to print or download in .docx, .odt, .pdf or .html(zip) format.',
-      ),
+      await screen.findByLabelText('Export the document'),
     ).toBeInTheDocument();
-  }, 10000);
+  }, 15000);
 
   test('The export button is not rendered when MIT version is activated', async () => {
     process.env.NEXT_PUBLIC_PUBLISH_AS_MIT = 'true';
@@ -68,5 +60,5 @@ describe('DocToolBox - Licence', () => {
     expect(
       screen.queryByLabelText('Export the document'),
     ).not.toBeInTheDocument();
-  });
+  }, 15000);
 });

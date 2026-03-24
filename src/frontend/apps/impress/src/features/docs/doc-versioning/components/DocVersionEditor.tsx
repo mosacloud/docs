@@ -4,9 +4,12 @@ import { useEffect, useState } from 'react';
 import * as Y from 'yjs';
 
 import { Box, Text, TextErrors } from '@/components';
-import { BlockNoteReader, DocEditorContainer } from '@/docs/doc-editor/';
+import { BlockNoteReader } from '@/docs/doc-editor/components/BlockNoteEditor';
+import { DocEditorContainer } from '@/docs/doc-editor/components/DocEditor';
 import { Doc, base64ToBlocknoteXmlFragment } from '@/docs/doc-management';
-import { Versions, useDocVersion } from '@/docs/doc-versioning/';
+
+import { useDocVersion } from '../api/useDocVersion';
+import { Versions } from '../types';
 
 import { DocVersionHeader } from './DocVersionHeader';
 

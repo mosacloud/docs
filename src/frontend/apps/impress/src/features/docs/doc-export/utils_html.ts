@@ -190,10 +190,11 @@ export const improveHtmlAccessibility = (
     listItem: HTMLElement;
     contentType: string;
     level: number;
+    blockOuterIndex: number;
   }
 
   const listItemsInfo: ListItemInfo[] = [];
-  allBlockOuters.forEach((blockOuter) => {
+  allBlockOuters.forEach((blockOuter, index) => {
     const listItem = blockOuter.querySelector<HTMLElement>(listItemSelector);
     if (listItem) {
       const contentType = listItem.getAttribute('data-content-type');
@@ -204,6 +205,7 @@ export const improveHtmlAccessibility = (
           listItem,
           contentType,
           level,
+          blockOuterIndex: index,
         });
       }
     }
@@ -218,12 +220,19 @@ export const improveHtmlAccessibility = (
     const isBullet = contentType === 'bulletListItem';
     const listTag = isBullet ? 'ul' : 'ol';
 
-    // Check if previous item continues the same list (same type and level)
+    // Check if previous item continues the same list (same type, level, and
+    // no non-list block between them in the DOM : e.g. a heading separates lists).
     const previousInfo = idx > 0 ? listItemsInfo[idx - 1] : null;
+    const isAdjacentBlock =
+      previousInfo && info.blockOuterIndex === previousInfo.blockOuterIndex + 1;
     const continuesPreviousList =
-      previousInfo &&
+      isAdjacentBlock &&
       previousInfo.contentType === contentType &&
       previousInfo.level === level;
+
+    if (previousInfo && !isAdjacentBlock) {
+      listStack.length = 0;
+    }
 
     // Find or create the appropriate list
     let targetList: HTMLElement | null = null;

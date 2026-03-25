@@ -674,17 +674,8 @@ class DocumentViewSet(
 
         return drf.response.Response(serializer.data)
 
-    @transaction.atomic
     def perform_create(self, serializer):
         """Set the current user as creator and owner of the newly created object."""
-
-        # locks the table to ensure safe concurrent access
-        with connection.cursor() as cursor:
-            cursor.execute(
-                f'LOCK TABLE "{models.Document._meta.db_table}" '  # noqa: SLF001
-                "IN SHARE ROW EXCLUSIVE MODE;"
-            )
-
         # Remove file from validated_data as it's not a model field
         # Process it if present
         uploaded_file = serializer.validated_data.pop("file", None)
@@ -707,10 +698,18 @@ class DocumentViewSet(
                     {"file": ["Could not convert file content"]}
                 ) from err
 
-        obj = models.Document.add_root(
-            creator=self.request.user,
-            **serializer.validated_data,
-        )
+        with transaction.atomic():
+            # locks the table to ensure safe concurrent access
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f'LOCK TABLE "{models.Document._meta.db_table}" '  # noqa: SLF001
+                    "IN SHARE ROW EXCLUSIVE MODE;"
+                )
+
+            obj = models.Document.add_root(
+                creator=self.request.user,
+                **serializer.validated_data,
+            )
         serializer.instance = obj
         models.DocumentAccess.objects.create(
             document=obj,

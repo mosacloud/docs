@@ -16,6 +16,7 @@ and this project adheres to
 - ♿️(frontend) improve BoxButton a11y and native button semantics #2103
 - ♿️(frontend) improve language picker accessibility #2069
 - ♿️(frontend) add aria-hidden to decorative icons in dropdown menu #2093
+- 🐛(backend) move lock table closer to the insert operation targeted
 
 ### Fixed
 

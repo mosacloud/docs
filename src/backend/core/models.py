@@ -267,6 +267,16 @@ class User(AbstractBaseUser, BaseModel, auth_models.PermissionsMixin):
         if settings.USER_ONBOARDING_SANDBOX_DOCUMENT:
             # transaction.atomic is used in a context manager to avoid a transaction if
             # the settings USER_ONBOARDING_SANDBOX_DOCUMENT is unused
+            sandbox_id = settings.USER_ONBOARDING_SANDBOX_DOCUMENT
+            try:
+                template_document = Document.objects.get(id=sandbox_id)
+            except Document.DoesNotExist:
+                logger.warning(
+                    "Onboarding sandbox document with id %s does not exist. Skipping.",
+                    sandbox_id,
+                )
+                return
+
             with transaction.atomic():
                 # locks the table to ensure safe concurrent access
                 with connection.cursor() as cursor:
@@ -274,17 +284,6 @@ class User(AbstractBaseUser, BaseModel, auth_models.PermissionsMixin):
                         f'LOCK TABLE "{Document._meta.db_table}" '  # noqa: SLF001
                         "IN SHARE ROW EXCLUSIVE MODE;"
                     )
-
-                sandbox_id = settings.USER_ONBOARDING_SANDBOX_DOCUMENT
-                try:
-                    template_document = Document.objects.get(id=sandbox_id)
-                except Document.DoesNotExist:
-                    logger.warning(
-                        "Onboarding sandbox document with id %s does not exist. Skipping.",
-                        sandbox_id,
-                    )
-                    return
-
                 sandbox_document = Document.add_root(
                     title=template_document.title,
                     content=template_document.content,

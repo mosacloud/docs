@@ -32,6 +32,7 @@ export const DocsGridItem = ({ doc, dragMode = false }: DocsGridItemProps) => {
   const { isDesktop } = useResponsiveStore();
   const { flexLeft, flexRight } = useResponsiveDocGrid();
   const { spacingsTokens } = useCunninghamTheme();
+  const dateToDisplay = useDateToDisplay(doc, isInTrashbin);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -46,7 +47,7 @@ export const DocsGridItem = ({ doc, dragMode = false }: DocsGridItemProps) => {
         $direction="row"
         $width="100%"
         $align="center"
-        role="row"
+        role="listitem"
         $gap="20px"
         $padding={{ vertical: '4xs', horizontal: isDesktop ? 'base' : 'xs' }}
         $css={css`
@@ -65,7 +66,6 @@ export const DocsGridItem = ({ doc, dragMode = false }: DocsGridItemProps) => {
       >
         <Box
           $flex={flexLeft}
-          role="gridcell"
           $css={css`
             align-items: center;
             min-width: 0;
@@ -90,9 +90,15 @@ export const DocsGridItem = ({ doc, dragMode = false }: DocsGridItemProps) => {
           $align="center"
           $justify={isDesktop ? 'space-between' : 'flex-end'}
           $gap="32px"
-          role="gridcell"
         >
-          <StyledLink href={`/docs/${doc.id}`} tabIndex={-1}>
+          <StyledLink
+            href={`/docs/${doc.id}`}
+            tabIndex={-1}
+            aria-label={t('{{title}}, updated {{date}}', {
+              title: doc.title || untitledDocument,
+              date: dateToDisplay,
+            })}
+          >
             <DocsGridItemDate
               doc={doc}
               isDesktop={isDesktop}
@@ -196,22 +202,10 @@ const IconPublic = ({ isPublic }: { isPublic: boolean }) => {
   );
 };
 
-export const DocsGridItemDate = ({
-  doc,
-  isDesktop,
-  isInTrashbin,
-}: {
-  doc: Doc;
-  isDesktop: boolean;
-  isInTrashbin: boolean;
-}) => {
+const useDateToDisplay = (doc: Doc, isInTrashbin: boolean) => {
   const { data: config } = useConfig();
   const { t } = useTranslation();
   const { relativeDate, calculateDaysLeft } = useDate();
-
-  if (!isDesktop) {
-    return null;
-  }
 
   let dateToDisplay = relativeDate(doc.updated_at);
 
@@ -222,6 +216,24 @@ export const DocsGridItemDate = ({
     );
 
     dateToDisplay = `${daysLeft} ${t('days', { count: daysLeft })}`;
+  }
+
+  return dateToDisplay;
+};
+
+export const DocsGridItemDate = ({
+  doc,
+  isDesktop,
+  isInTrashbin,
+}: {
+  doc: Doc;
+  isDesktop: boolean;
+  isInTrashbin: boolean;
+}) => {
+  const dateToDisplay = useDateToDisplay(doc, isInTrashbin);
+
+  if (!isDesktop) {
+    return null;
   }
 
   return (

@@ -183,11 +183,11 @@ export const verifyDocName = async (page: Page, docName: string) => {
 };
 
 export const getGridRow = async (page: Page, title: string) => {
-  const docsGrid = page.getByRole('grid');
+  const docsGrid = page.getByTestId('docs-grid');
   await expect(docsGrid).toBeVisible();
   await expect(page.getByTestId('grid-loader')).toBeHidden();
 
-  const rows = docsGrid.getByRole('row');
+  const rows = docsGrid.getByRole('listitem');
 
   const row = rows
     .filter({
@@ -215,7 +215,7 @@ export const goToGridDoc = async (
   await expect(docsGrid).toBeVisible();
   await expect(page.getByTestId('grid-loader')).toBeHidden();
 
-  const rows = docsGrid.getByRole('row');
+  const rows = docsGrid.getByRole('listitem');
 
   const row = title
     ? rows.filter({

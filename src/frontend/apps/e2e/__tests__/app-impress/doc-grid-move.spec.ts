@@ -400,7 +400,7 @@ test.describe('Doc grid dnd mobile', () => {
     await expect(page.getByTestId('docs-grid')).toBeVisible();
     await expect(page.getByTestId('grid-loader')).toBeHidden();
 
-    await expect(docsGrid.getByRole('row').first()).toBeVisible();
+    await expect(docsGrid.getByRole('listitem').first()).toBeVisible();
     await expect(docsGrid.locator('.--docs--grid-droppable')).toHaveCount(0);
 
     await createDoc(page, 'Draggable doc mobile', browserName, 1, true);

@@ -76,7 +76,7 @@ test.describe('Documents Grid mobile', () => {
     await expect(docsGrid).toBeVisible();
     await expect(page.getByTestId('grid-loader')).toBeHidden();
 
-    const rows = docsGrid.getByRole('row');
+    const rows = docsGrid.getByRole('listitem');
     const row = rows.filter({
       hasText: 'My mocked document',
     });
@@ -287,6 +287,29 @@ test.describe('Documents Grid', () => {
         ).toBeVisible();
       }),
     );
+  });
+
+  test('opens a document with keyboard (Tab + Enter)', async ({
+    page,
+    browserName,
+  }) => {
+    await page.goto('/');
+
+    const [docTitle] = await createDoc(page, 'keyboard-nav-test', browserName);
+
+    await page.goto('/');
+    await expect(page.getByTestId('grid-loader')).toBeHidden();
+
+    const row = await getGridRow(page, docTitle);
+    const link = row.getByRole('link').first();
+
+    await link.focus();
+    await expect(link).toBeFocused();
+
+    await page.keyboard.press('Enter');
+
+    await expect(page).toHaveURL(/\/docs\//);
+    await verifyDocName(page, docTitle);
   });
 
   test('checks the infinite scroll', async ({ page }) => {

@@ -693,7 +693,9 @@ class DocumentViewSet(
                 )
                 serializer.validated_data["content"] = converted_content
                 serializer.validated_data["title"] = uploaded_file.name
+                logger.info("conversion ended successfully")
             except ConversionError as err:
+                logger.error("could not convert file content with error: %s", err)
                 raise drf.exceptions.ValidationError(
                     {"file": ["Could not convert file content"]}
                 ) from err

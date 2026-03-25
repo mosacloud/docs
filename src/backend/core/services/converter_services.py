@@ -45,6 +45,8 @@ class Converter:
     def convert(self, data, content_type, accept):
         """Convert input into other formats using external microservices."""
 
+        logger.info("converting content from %s to %s", content_type, accept)
+
         if content_type == mime_types.DOCX and accept == mime_types.YJS:
             blocknote_data = self.docspec.convert(
                 data, mime_types.DOCX, mime_types.BLOCKNOTE

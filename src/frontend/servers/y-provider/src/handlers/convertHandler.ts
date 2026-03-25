@@ -60,8 +60,12 @@ const readers: InputReader[] = [
     supportedContentTypes: [ContentTypes.YJS, ContentTypes.OctetStream],
     read: async (data) => {
       const ydoc = new Y.Doc();
-      Y.applyUpdate(ydoc, data);
-      return editor.yDocToBlocks(ydoc, 'document-store') as PartialBlock[];
+      try {
+        Y.applyUpdate(ydoc, data);
+        return editor.yDocToBlocks(ydoc, 'document-store') as PartialBlock[];
+      } finally {
+        ydoc.destroy();
+      }
     },
   },
   {
@@ -77,7 +81,14 @@ const writers: OutputWriter[] = [
   },
   {
     supportedContentTypes: [ContentTypes.YJS, ContentTypes.OctetStream],
-    write: async (blocks) => Y.encodeStateAsUpdate(createYDocument(blocks)),
+    write: async (blocks) => {
+      const ydoc = createYDocument(blocks);
+      try {
+        return Y.encodeStateAsUpdate(ydoc);
+      } finally {
+        ydoc.destroy();
+      }
+    },
   },
   {
     supportedContentTypes: [ContentTypes.Markdown, ContentTypes.XMarkdown],

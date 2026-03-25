@@ -13,9 +13,12 @@ and this project adheres to
 ### Changed
 
 - 💄(frontend) improve comments highlights #1961
-- ♿️(frontend) improve BoxButton a11y and native button semantics
-  #2103
+- ♿️(frontend) improve BoxButton a11y and native button semantics #2103
 - ♿️(frontend) improve language picker accessibility #2069
+
+### Fixed
+
+- 🐛(y-provider) destroy Y.Doc instances after each convert request #2129
 
 ## [v4.8.3] - 2026-03-23
 

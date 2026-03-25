@@ -1,6 +1,6 @@
 import { ServerBlockNoteEditor } from '@blocknote/server-util';
 import request from 'supertest';
-import { describe, expect, test, vi } from 'vitest';
+import { afterEach, describe, expect, test, vi } from 'vitest';
 import * as Y from 'yjs';
 
 vi.mock('../src/env', async (importOriginal) => {
@@ -62,7 +62,11 @@ const expectedBlocks = [
 
 console.error = vi.fn();
 
-describe('Server Tests', () => {
+describe('Conversion Testing', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   test('POST /api/convert with incorrect API key responds with 401', async () => {
     const app = initApp();
 
@@ -170,6 +174,7 @@ describe('Server Tests', () => {
   });
 
   test('POST /api/convert BlockNote to Yjs', async () => {
+    const destroySpy = vi.spyOn(Y.Doc.prototype, 'destroy');
     const app = initApp();
     const editor = ServerBlockNoteEditor.create();
     const blocks = await editor.tryParseMarkdownToBlocks(expectedMarkdown);
@@ -192,6 +197,7 @@ describe('Server Tests', () => {
     const decodedBlocks = editor.yDocToBlocks(ydoc, 'document-store');
 
     expect(decodedBlocks).toStrictEqual(expectedBlocks);
+    expect(destroySpy).toHaveBeenCalledTimes(1);
   });
 
   test('POST /api/convert BlockNote to HTML', async () => {
@@ -253,6 +259,7 @@ describe('Server Tests', () => {
   });
 
   test('POST /api/convert Yjs to JSON', async () => {
+    const destroySpy = vi.spyOn(Y.Doc.prototype, 'destroy');
     const app = initApp();
     const editor = ServerBlockNoteEditor.create();
     const blocks = await editor.tryParseMarkdownToBlocks(expectedMarkdown);
@@ -272,6 +279,7 @@ describe('Server Tests', () => {
     );
     expect(response.body).toBeInstanceOf(Array);
     expect(response.body).toStrictEqual(expectedBlocks);
+    expect(destroySpy).toHaveBeenCalledTimes(1);
   });
 
   test('POST /api/convert Markdown to JSON', async () => {
@@ -293,6 +301,7 @@ describe('Server Tests', () => {
   });
 
   test('POST /api/convert with invalid Yjs content returns 400', async () => {
+    const destroySpy = vi.spyOn(Y.Doc.prototype, 'destroy');
     const app = initApp();
     const response = await request(app)
       .post('/api/convert')
@@ -304,5 +313,6 @@ describe('Server Tests', () => {
 
     expect(response.status).toBe(400);
     expect(response.body).toStrictEqual({ error: 'Invalid content' });
+    expect(destroySpy).toHaveBeenCalledTimes(1);
   });
 });

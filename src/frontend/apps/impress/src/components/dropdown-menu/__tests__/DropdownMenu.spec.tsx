@@ -94,7 +94,7 @@ describe('<DropdownMenu />', () => {
     );
 
     const trigger = screen.getByRole('button', { name: 'Select language' });
-    expect(trigger).toHaveAttribute('aria-haspopup', 'true');
+    expect(trigger).toHaveAttribute('aria-haspopup', 'menu');
     expect(trigger).toHaveAttribute('aria-expanded', 'false');
 
     await userEvent.click(trigger);

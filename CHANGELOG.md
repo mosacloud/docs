@@ -6,6 +6,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Changed
+
+- ♿(frontend) use aria-haspopup menu on DropButton triggers #2126
+
 ## [v4.8.4] - 2026-03-25
 
 ### Added

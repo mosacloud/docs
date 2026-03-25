@@ -93,7 +93,7 @@ export const DropButton = ({
           onOpenChangeHandler(true);
         }}
         aria-label={label}
-        aria-haspopup="true"
+        aria-haspopup="menu"
         aria-expanded={isLocalOpen}
         data-testid={testId}
         $css={css`

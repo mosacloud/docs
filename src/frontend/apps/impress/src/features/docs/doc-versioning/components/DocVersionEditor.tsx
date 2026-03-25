@@ -58,6 +58,7 @@ export const DocVersionEditor = ({
       <Box $margin="large" className="--docs--doc-version-editor-error">
         <TextErrors
           causes={error.cause}
+          status={error.status}
           icon={
             error.status === 502 ? (
               <Text

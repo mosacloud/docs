@@ -12,6 +12,10 @@ and this project adheres to
 - 🐛(frontend) abort check media status unmount #2194
 - ✨(backend) order pinned documents by last updated at #2028
 
+### Changed
+
+ - ♿️(frontend) structure correctly 5xx error alerts #2128
+
 ## [v4.8.6] - 2026-04-08
 
 ### Added

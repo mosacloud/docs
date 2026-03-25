@@ -6,6 +6,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [v4.8.4] - 2026-03-25
+
 ### Added
 
 - 🚸(frontend) hint min char search users #2064
@@ -1190,7 +1192,8 @@ and this project adheres to
 - ✨(frontend) Coming Soon page (#67)
 - 🚀 Impress, project to manage your documents easily and collaboratively.
 
-[unreleased]: https://github.com/suitenumerique/docs/compare/v4.8.3...main
+[unreleased]: https://github.com/suitenumerique/docs/compare/v4.8.4...main
+[v4.8.4]: https://github.com/suitenumerique/docs/releases/v4.8.4
 [v4.8.3]: https://github.com/suitenumerique/docs/releases/v4.8.3
 [v4.8.2]: https://github.com/suitenumerique/docs/releases/v4.8.2
 [v4.8.1]: https://github.com/suitenumerique/docs/releases/v4.8.1

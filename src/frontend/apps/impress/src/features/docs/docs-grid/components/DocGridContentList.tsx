@@ -1,4 +1,9 @@
-import { DndContext, DragOverlay, Modifier } from '@dnd-kit/core';
+import {
+  DndContext,
+  DragOverlay,
+  Modifier,
+  UniqueIdentifier,
+} from '@dnd-kit/core';
 import { getEventCoordinates } from '@dnd-kit/utilities';
 import { useModal } from '@gouvfr-lasuite/cunningham-react';
 import { TreeViewMoveModeEnum } from '@gouvfr-lasuite/ui-kit';
@@ -107,6 +112,59 @@ export const DraggableDocGridContentList = ({
 
   const { t } = useTranslation();
 
+  const dndAccessibility = useMemo(
+    () => ({
+      screenReaderInstructions: {
+        draggable: t(
+          'To pick up a draggable item, press space or enter. While dragging, use the arrow keys to move the item. Press space or enter again to drop the item in its new position, or press escape to cancel.',
+        ),
+      },
+      announcements: {
+        onDragStart({ active }: { active: { id: UniqueIdentifier } }) {
+          return t('Picked up document {{id}}.', { id: active.id });
+        },
+        onDragOver({
+          active,
+          over,
+        }: {
+          active: { id: UniqueIdentifier };
+          over: { id: UniqueIdentifier } | null;
+        }) {
+          if (over) {
+            return t('Document {{activeId}} is over document {{overId}}.', {
+              activeId: active.id,
+              overId: over.id,
+            });
+          }
+          return t('Document {{id}} is no longer over a droppable area.', {
+            id: active.id,
+          });
+        },
+        onDragEnd({
+          active,
+          over,
+        }: {
+          active: { id: UniqueIdentifier };
+          over: { id: UniqueIdentifier } | null;
+        }) {
+          if (over) {
+            return t(
+              'Document {{activeId}} was dropped over document {{overId}}.',
+              { activeId: active.id, overId: over.id },
+            );
+          }
+          return t('Document {{id}} was dropped.', { id: active.id });
+        },
+        onDragCancel({ active }: { active: { id: UniqueIdentifier } }) {
+          return t('Dragging was cancelled. Document {{id}} was dropped.', {
+            id: active.id,
+          });
+        },
+      },
+    }),
+    [t],
+  );
+
   const overlayText = useMemo(() => {
     if (!canDrag) {
       return t('You must be the owner to move the document');
@@ -147,6 +205,7 @@ export const DraggableDocGridContentList = ({
         modifiers={[snapToTopLeft]}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        accessibility={dndAccessibility}
       >
         {docs.map((doc) => (
           <DraggableDocGridItem

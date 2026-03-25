@@ -145,8 +145,20 @@ export const improveHtmlAccessibility = (
   headingBlocks.forEach((block) => {
     const rawLevel = Number(block.getAttribute('data-level')) || 1;
     const level = Math.min(Math.max(rawLevel, 1), 6);
-    const heading = parsedDocument.createElement(`h${level}`);
-    moveChildNodes(block, heading);
+    const tag = `h${level}`;
+
+    const existingHeading = block.querySelector('h1, h2, h3, h4, h5, h6');
+    const heading = parsedDocument.createElement(tag);
+
+    if (existingHeading) {
+      if (existingHeading.className) {
+        heading.className = existingHeading.className;
+      }
+      moveChildNodes(existingHeading, heading);
+    } else {
+      moveChildNodes(block, heading);
+    }
+
     block.replaceWith(heading);
   });
 

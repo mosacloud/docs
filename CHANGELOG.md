@@ -12,6 +12,11 @@ and this project adheres to
 - ♿️(frontend) add contextual browser tab titles for docs routes #2120
 - ♿️(frontend) fix empty heading before section titles in HTML export #2125
 
+### Fixed
+
+- 🐛(frontend) fix tree pagination #2145
+
+
 ## [v4.8.4] - 2026-03-25
 
 ### Added

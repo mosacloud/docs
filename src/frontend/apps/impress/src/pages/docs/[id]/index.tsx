@@ -56,7 +56,11 @@ export function DocLayout() {
           const doc = await getDocChildren({ docId, page });
           return {
             children: subPageToTree(doc.results),
-            hasMore: !!doc.next,
+            pagination: {
+              currentPage: page,
+              hasMore: !!doc.next,
+              totalCount: doc.count,
+            },
           };
         }}
       >

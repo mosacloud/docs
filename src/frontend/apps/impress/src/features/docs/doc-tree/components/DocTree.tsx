@@ -22,7 +22,7 @@ import { TreeSkeleton } from '@/features/skeletons/components/TreeSkeleton';
 
 import { CLASS_DOC_TITLE } from '../../doc-header';
 import { KEY_DOC_TREE, useDocTree } from '../api/useDocTree';
-import { findIndexInTree } from '../utils';
+import { findIndexInTree, isDocNode } from '../utils';
 
 import { DocSubPageItem } from './DocSubPageItem';
 import { DocTreeItemActions } from './DocTreeItemActions';
@@ -406,15 +406,17 @@ export const DocTree = ({ currentDoc }: DocTreeProps) => {
                 undefined
               }
               canDrop={({ parentNode }) => {
-                const parentDoc = parentNode?.data.value as Doc;
-                if (!parentDoc) {
+                const parentValue = parentNode?.data.value;
+                if (!parentValue || !isDocNode(parentValue)) {
                   return currentDoc.abilities.move && isDesktop;
                 }
-                return parentDoc.abilities.move && isDesktop;
+                return parentValue.abilities.move && isDesktop;
               }}
               canDrag={(node) => {
-                const doc = node.value as Doc;
-                return doc.abilities.move && isDesktop;
+                if (!isDocNode(node.value)) {
+                  return false;
+                }
+                return node.value.abilities.move && isDesktop;
               }}
               rootNodeId={treeContext.root.id}
               renderNode={DocSubPageItem}

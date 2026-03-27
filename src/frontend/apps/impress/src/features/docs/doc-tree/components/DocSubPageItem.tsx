@@ -1,11 +1,13 @@
 import {
+  Spinner,
   TreeViewDataType,
   TreeViewItem,
   TreeViewNodeProps,
+  TreeViewNodeTypeEnum,
   useTreeContext,
 } from '@gouvfr-lasuite/ui-kit';
 import { useRouter } from 'next/navigation';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
@@ -19,6 +21,8 @@ import {
 } from '@/docs/doc-management';
 import { useLeftPanelStore } from '@/features/left-panel';
 import { useResponsiveStore } from '@/stores';
+
+import { isDocNode } from '../utils';
 
 import SubPageIcon from './../assets/sub-page-logo.svg';
 import { DocTreeItemActions } from './DocTreeItemActions';
@@ -34,6 +38,65 @@ const ItemTextCss = css`
 `;
 
 export const DocSubPageItem = (props: TreeViewNodeProps<Doc>) => {
+  if (props.node.data.value.nodeType === TreeViewNodeTypeEnum.VIEW_MORE) {
+    return <DocSubPageLoadMore {...props} />;
+  }
+
+  if (!isDocNode(props.node.data.value)) {
+    return <TreeViewItem {...props} />;
+  }
+
+  return <DocSubPageItemContent {...props} />;
+};
+
+const DocSubPageLoadMore = (props: TreeViewNodeProps<Doc>) => {
+  const treeContext = useTreeContext<Doc>();
+  const loaderRef = useRef<HTMLDivElement>(null);
+  const inFlightRef = useRef<boolean>(false);
+
+  /**
+   * Use IntersectionObserver to trigger loading more children when the "Load More" item comes into view.
+   * This allows for infinite scrolling of child nodes without needing a "Load More" button click.
+   * The observer is disconnected when the component unmounts to prevent memory leaks.
+   */
+  useEffect(() => {
+    const el = loaderRef.current;
+    const parentKey = props.node.data.parentKey;
+    if (!el || !parentKey) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || inFlightRef.current) {
+          return;
+        }
+        inFlightRef.current = true;
+        void treeContext?.treeData.handleLoadChildren(parentKey).finally(() => {
+          inFlightRef.current = false;
+        });
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <Box
+      ref={loaderRef}
+      $align="center"
+      $justify="center"
+      $padding={{ vertical: 'xs' }}
+    >
+      <Spinner size="sm" />
+    </Box>
+  );
+};
+
+const DocSubPageItemContent = (props: TreeViewNodeProps<Doc>) => {
   const doc = props.node.data.value as Doc;
   const treeContext = useTreeContext<Doc>();
   const { untitledDocument } = useTrans();

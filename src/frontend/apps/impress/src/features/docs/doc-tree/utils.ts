@@ -1,6 +1,20 @@
-import { TreeDataItem, TreeViewDataType } from '@gouvfr-lasuite/ui-kit';
+import {
+  TreeDataItem,
+  TreeViewDataType,
+  TreeViewNodeTypeEnum,
+} from '@gouvfr-lasuite/ui-kit';
 
 import { Doc } from '../doc-management';
+
+/**
+ * Type guard to check if a tree node value is a Doc (as opposed to a
+ * ui-kit synthetic node like VIEW_MORE, SEPARATOR, TITLE, or SIMPLE_NODE).
+ */
+export const isDocNode = (
+  value: TreeViewDataType<Doc>,
+): value is TreeViewDataType<Doc> & Doc => {
+  return !value.nodeType || value.nodeType === TreeViewNodeTypeEnum.NODE;
+};
 
 export const subPageToTree = (children: Doc[]): TreeViewDataType<Doc>[] => {
   children.forEach((child) => {

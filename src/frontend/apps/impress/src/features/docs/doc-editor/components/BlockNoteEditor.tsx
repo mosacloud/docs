@@ -52,7 +52,7 @@ import {
 const AIMenu = BlockNoteAI?.AIMenu;
 const AIMenuController = BlockNoteAI?.AIMenuController;
 const useAI = BlockNoteAI?.useAI;
-const localesBNAI = BlockNoteAI?.localesAI;
+const localesBNAI = BlockNoteAI?.localesAI || {};
 import {
   InterlinkingLinkInlineContent,
   InterlinkingSearchInlineContent,

@@ -56,7 +56,6 @@ interface PdfBlockComponentProps {
     InlineContentSchema,
     StyleSchema
   >;
-  contentRef: (node: HTMLElement | null) => void;
   editor: BlockNoteEditor<
     Record<'pdf', CreatePDFBlockConfig>,
     InlineContentSchema,

@@ -52,7 +52,6 @@ type UploadLoaderEditor = BlockNoteEditor<
 interface UploadLoaderBlockComponentProps {
   block: UploadLoaderBlockType;
   editor: UploadLoaderEditor;
-  contentRef: (node: HTMLElement | null) => void;
 }
 
 const UploadLoaderBlockComponent = ({

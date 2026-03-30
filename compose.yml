@@ -129,6 +129,18 @@ services:
         condition: service_healthy
         restart: true
 
+  nginx-frontend:
+    image: nginx:1.25
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src/frontend/apps/impress/conf/default.conf:/etc/nginx/conf.d/impress.conf
+      - ./src/frontend/apps/impress/out:/app
+    depends_on:
+      keycloak:
+        condition: service_healthy
+        restart: true
+
   frontend-development:
     user: "${DOCKER_USER:-1000}"
     build: 

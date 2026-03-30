@@ -214,6 +214,10 @@ build-e2e: ## build the e2e container
 	@$(COMPOSE_E2E) build y-provider $(cache)
 .PHONY: build-e2e
 
+nginx-frontend: ## build the nginx-frontend container
+	@$(COMPOSE) up --force-recreate -d nginx-frontend
+.PHONY: nginx-frontend
+
 down: ## stop and remove containers, networks, images, and volumes
 	@$(COMPOSE_E2E) down
 .PHONY: down

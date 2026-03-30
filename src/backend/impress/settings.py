@@ -866,6 +866,9 @@ class Base(Configuration):
     DOCSPEC_API_URL = values.Value(environ_name="DOCSPEC_API_URL", environ_prefix=None)
 
     # Imported file settings
+    CONVERSION_UPLOAD_ENABLED = values.BooleanValue(
+        False, environ_name="CONVERSION_UPLOAD_ENABLED", environ_prefix=None
+    )
     CONVERSION_FILE_MAX_SIZE = values.IntegerValue(
         20 * MB,
         environ_name="CONVERSION_FILE_MAX_SIZE",

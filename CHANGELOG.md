@@ -6,6 +6,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- 🔧(backend) settings CONVERSION_UPLOAD_ENABLED to control usage of docspec
+
 ### Changed
 
 - ♿(frontend) use aria-haspopup menu on DropButton triggers #2126

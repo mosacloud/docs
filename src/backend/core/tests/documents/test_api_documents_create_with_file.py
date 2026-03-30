@@ -40,7 +40,7 @@ def test_api_documents_create_with_file_anonymous():
 
 
 @patch("core.services.converter_services.Converter.convert")
-def test_api_documents_create_with_docx_file_success(mock_convert):
+def test_api_documents_create_with_docx_file_success(mock_convert, settings):
     """
     Authenticated users should be able to create documents by uploading a DOCX file.
     The file should be converted to YJS format and the title should be set from filename.
@@ -48,6 +48,8 @@ def test_api_documents_create_with_docx_file_success(mock_convert):
     user = factories.UserFactory()
     client = APIClient()
     client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     # Mock the conversion
     converted_yjs = "base64encodedyjscontent"
@@ -81,13 +83,46 @@ def test_api_documents_create_with_docx_file_success(mock_convert):
 
 
 @patch("core.services.converter_services.Converter.convert")
-def test_api_documents_create_with_markdown_file_success(mock_convert):
+def test_api_documents_create_with_docx_file_disabled(mock_convert, settings):
+    """
+    When conversion is not enabled, uploading a file should have no effect
+    """
+    user = factories.UserFactory()
+    client = APIClient()
+    client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = False
+
+    # Create a fake DOCX file
+    file_content = b"fake docx content"
+    file = BytesIO(file_content)
+    file.name = "My Important Document.docx"
+
+    response = client.post(
+        "/api/v1.0/documents/",
+        {
+            "file": file,
+        },
+        format="multipart",
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {"file": ["file upload is not allowed"]}
+
+    # Verify the converter was not called
+    mock_convert.assert_not_called()
+
+
+@patch("core.services.converter_services.Converter.convert")
+def test_api_documents_create_with_markdown_file_success(mock_convert, settings):
     """
     Authenticated users should be able to create documents by uploading a Markdown file.
     """
     user = factories.UserFactory()
     client = APIClient()
     client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     # Mock the conversion
     converted_yjs = "base64encodedyjscontent"
@@ -121,13 +156,15 @@ def test_api_documents_create_with_markdown_file_success(mock_convert):
 
 
 @patch("core.services.converter_services.Converter.convert")
-def test_api_documents_create_with_file_and_explicit_title(mock_convert):
+def test_api_documents_create_with_file_and_explicit_title(mock_convert, settings):
     """
     When both file and title are provided, the filename should override the title.
     """
     user = factories.UserFactory()
     client = APIClient()
     client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     # Mock the conversion
     converted_yjs = "base64encodedyjscontent"
@@ -153,13 +190,15 @@ def test_api_documents_create_with_file_and_explicit_title(mock_convert):
     assert document.title == "Uploaded Document.docx"
 
 
-def test_api_documents_create_with_empty_file():
+def test_api_documents_create_with_empty_file(settings):
     """
     Creating a document with an empty file should fail with a validation error.
     """
     user = factories.UserFactory()
     client = APIClient()
     client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     # Create an empty file
     file = BytesIO(b"")
@@ -179,13 +218,15 @@ def test_api_documents_create_with_empty_file():
 
 
 @patch("core.services.converter_services.Converter.convert")
-def test_api_documents_create_with_file_conversion_error(mock_convert):
+def test_api_documents_create_with_file_conversion_error(mock_convert, settings):
     """
     When conversion fails, the API should return a 400 error with appropriate message.
     """
     user = factories.UserFactory()
     client = APIClient()
     client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     # Mock the conversion to raise an error
     mock_convert.side_effect = ConversionError("Failed to convert document")
@@ -209,13 +250,15 @@ def test_api_documents_create_with_file_conversion_error(mock_convert):
 
 
 @patch("core.services.converter_services.Converter.convert")
-def test_api_documents_create_with_file_service_unavailable(mock_convert):
+def test_api_documents_create_with_file_service_unavailable(mock_convert, settings):
     """
     When the conversion service is unavailable, appropriate error should be returned.
     """
     user = factories.UserFactory()
     client = APIClient()
     client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     # Mock the conversion to raise ServiceUnavailableError
     mock_convert.side_effect = ServiceUnavailableError(
@@ -264,13 +307,15 @@ def test_api_documents_create_without_file_still_works():
 
 
 @patch("core.services.converter_services.Converter.convert")
-def test_api_documents_create_with_file_null_value(mock_convert):
+def test_api_documents_create_with_file_null_value(mock_convert, settings):
     """
     Passing file=null should be treated as no file upload.
     """
     user = factories.UserFactory()
     client = APIClient()
     client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     response = client.post(
         "/api/v1.0/documents/",
@@ -289,13 +334,17 @@ def test_api_documents_create_with_file_null_value(mock_convert):
 
 
 @patch("core.services.converter_services.Converter.convert")
-def test_api_documents_create_with_file_preserves_content_format(mock_convert):
+def test_api_documents_create_with_file_preserves_content_format(
+    mock_convert, settings
+):
     """
     Verify that the converted content is stored correctly in the document.
     """
     user = factories.UserFactory()
     client = APIClient()
     client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     # Mock the conversion with realistic base64-encoded YJS data
     converted_yjs = "AQMEBQYHCAkKCwwNDg8QERITFBUWFxgZGhscHR4fICA="
@@ -328,13 +377,15 @@ def test_api_documents_create_with_file_preserves_content_format(mock_convert):
 
 
 @patch("core.services.converter_services.Converter.convert")
-def test_api_documents_create_with_file_unicode_filename(mock_convert):
+def test_api_documents_create_with_file_unicode_filename(mock_convert, settings):
     """
     Test that Unicode characters in filenames are handled correctly.
     """
     user = factories.UserFactory()
     client = APIClient()
     client.force_login(user)
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     # Mock the conversion
     converted_yjs = "base64encodedyjscontent"
@@ -363,6 +414,7 @@ def test_api_documents_create_with_file_max_size_exceeded(settings):
     The uploaded file should not exceed the maximum size in settings.
     """
     settings.CONVERSION_FILE_MAX_SIZE = 1  # 1 byte for test
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     user = factories.UserFactory()
     client = APIClient()
@@ -389,6 +441,7 @@ def test_api_documents_create_with_file_extension_not_allowed(settings):
     The uploaded file should not have an allowed extension.
     """
     settings.CONVERSION_FILE_EXTENSIONS_ALLOWED = [".docx"]
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     user = factories.UserFactory()
     client = APIClient()

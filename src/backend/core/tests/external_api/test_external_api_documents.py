@@ -261,7 +261,7 @@ def test_external_api_documents_create_subdocument_reader_not_allowed(
 
 @patch("core.services.converter_services.Converter.convert")
 def test_external_api_documents_create_with_markdown_file_success(
-    mock_convert, user_token, resource_server_backend, user_specific_sub
+    mock_convert, user_token, resource_server_backend, user_specific_sub, settings
 ):
     """
     Users with an access token should be able to create documents through the resource
@@ -271,6 +271,8 @@ def test_external_api_documents_create_with_markdown_file_success(
 
     client = APIClient()
     client.credentials(HTTP_AUTHORIZATION=f"Bearer {user_token}")
+
+    settings.CONVERSION_UPLOAD_ENABLED = True
 
     # Mock the conversion
     converted_yjs = "base64encodedyjscontent"

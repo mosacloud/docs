@@ -680,6 +680,11 @@ class DocumentViewSet(
         # Process it if present
         uploaded_file = serializer.validated_data.pop("file", None)
 
+        if uploaded_file and not settings.CONVERSION_UPLOAD_ENABLED:
+            raise drf.exceptions.ValidationError(
+                {"file": ["file upload is not allowed"]}
+            )
+
         # If a file is uploaded, convert it to Yjs format and set as content
         if uploaded_file:
             try:

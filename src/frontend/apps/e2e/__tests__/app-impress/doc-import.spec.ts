@@ -3,6 +3,7 @@ import path from 'path';
 
 import { Page, expect, test } from '@playwright/test';
 
+import { overrideConfig } from './utils-common';
 import { getEditor } from './utils-editor';
 
 test.beforeEach(async ({ page }) => {
@@ -10,6 +11,16 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('Doc Import', () => {
+  test('import is not enabled if flag is disabled', async ({ page }) => {
+    await overrideConfig(page, {
+      CONVERSION_UPLOAD_ENABLED: false,
+    });
+
+    await page.goto('/');
+
+    await expect(page.getByLabel('Open the upload dialog')).toBeHidden();
+  });
+
   test('it imports 2 docs with the import icon', async ({ page }) => {
     const fileChooserPromise = page.waitForEvent('filechooser');
     await page.getByLabel('Open the upload dialog').click();

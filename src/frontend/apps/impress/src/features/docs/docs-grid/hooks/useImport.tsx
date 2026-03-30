@@ -112,5 +112,11 @@ export const useImport = ({ onDragOver }: UseImportProps) => {
   });
   const { mutate: importDoc, isPending } = useImportDoc();
 
-  return { getRootProps, getInputProps, open, isPending };
+  return {
+    getRootProps,
+    getInputProps,
+    open,
+    isEnabled: config?.CONVERSION_UPLOAD_ENABLED || false,
+    isPending,
+  };
 };

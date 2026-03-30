@@ -44,6 +44,7 @@ export const DocsGrid = ({
     getInputProps,
     open,
     isPending: isImportPending,
+    isEnabled: isImportEnabled,
   } = useImport({
     onDragOver: (dragOver: boolean) => {
       setIsDragOver(dragOver);
@@ -51,9 +52,10 @@ export const DocsGrid = ({
   });
 
   const withUpload =
-    !target ||
-    target === DocDefaultFilter.ALL_DOCS ||
-    target === DocDefaultFilter.MY_DOCS;
+    (!target ||
+      target === DocDefaultFilter.ALL_DOCS ||
+      target === DocDefaultFilter.MY_DOCS) &&
+    isImportEnabled;
 
   const { isDesktop } = useResponsiveStore();
   const { flexLeft, flexRight } = useResponsiveDocGrid();

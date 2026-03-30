@@ -102,3 +102,5 @@ SEARCH_INDEXER_SECRET=find-api-key-for-docs-with-exactly-50-chars-length  # Key 
 INDEXING_URL=http://find:8000/api/v1.0/documents/index/
 SEARCH_URL=http://find:8000/api/v1.0/documents/search/
 SEARCH_INDEXER_QUERY_LIMIT=50
+
+CONVERSION_UPLOAD_ENABLED=true

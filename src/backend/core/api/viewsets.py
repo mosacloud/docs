@@ -2676,6 +2676,7 @@ class ConfigView(drf.views.APIView):
             "COLLABORATION_WS_NOT_CONNECTED_READY_ONLY",
             "CONVERSION_FILE_EXTENSIONS_ALLOWED",
             "CONVERSION_FILE_MAX_SIZE",
+            "CONVERSION_UPLOAD_ENABLED",
             "CRISP_WEBSITE_ID",
             "ENVIRONMENT",
             "FRONTEND_CSS_URL",

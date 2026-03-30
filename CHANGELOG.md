@@ -20,6 +20,7 @@ and this project adheres to
 ### Fixed
 
 - 🐛(frontend) fix tree pagination #2145
+- 🐛(nginx) add page reconciliation on nginx #2154
 
 
 ## [v4.8.4] - 2026-03-25

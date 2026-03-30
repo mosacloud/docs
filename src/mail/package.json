@@ -8,7 +8,7 @@
     "mjml": "4.18.0"
   },
   "resolutions": {
-    "minimatch": "^9.0.7"
+    "minimatch": "^10.0.0"
   },
   "private": true,
   "scripts": {

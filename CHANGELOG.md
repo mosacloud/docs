@@ -9,6 +9,7 @@ and this project adheres to
 ### Added
 
 - 🔧(backend) settings CONVERSION_UPLOAD_ENABLED to control usage of docspec
+- 🥚(frontend) add easter egg on doc emoji creation #2155
 
 ### Changed
 

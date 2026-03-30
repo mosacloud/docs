@@ -169,7 +169,9 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
       label: t('Add emoji'),
       icon: <AddEmojiSVG width={24} height={24} aria-hidden="true" />,
       callback: () => {
-        updateDocEmoji(doc.id, doc.title ?? '', '📄');
+        const today = new Date();
+        const isAprilFools = today.getMonth() === 3 && today.getDate() === 1;
+        updateDocEmoji(doc.id, doc.title ?? '', isAprilFools ? '🐟' : '📄');
       },
       showSeparator: true,
       show: !emoji && doc.abilities.partial_update && !isTopRoot,

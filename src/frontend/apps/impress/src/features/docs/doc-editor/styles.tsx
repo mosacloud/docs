@@ -123,13 +123,13 @@ export const cssEditor = css`
     .bn-inline-content {
     text-decoration: none;
   }
-  h1 {
+  .bn-default-styles h1 {
     font-size: 1.875rem;
   }
-  h2 {
+  .bn-default-styles h2 {
     font-size: 1.5rem;
   }
-  h3 {
+  .bn-default-styles h3 {
     font-size: 1.25rem;
   }
   a {

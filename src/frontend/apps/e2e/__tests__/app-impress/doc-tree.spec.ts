@@ -135,7 +135,7 @@ test.describe('Doc Tree', () => {
     await expect(docTree).toBeVisible();
     await docTree.getByText('keyboard_arrow_right').click();
     await docTree
-      .getByRole('button', {
+      .getByRole('link', {
         name: `Open document ${titleChild}`,
       })
       .click();

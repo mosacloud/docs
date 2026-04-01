@@ -14,6 +14,7 @@ and this project adheres to
 ### Changed
 
 - ♻️(backend) do not paginate threads list response #2186
+- 💄(frontend) Use StyledLink for sub doc tree #2188
 
 ### Fixed
 

@@ -30,7 +30,17 @@ const defaultValues = {
 
 type ExtendedCloseEvent = CloseEvent & { wasClean: boolean };
 
+/**
+ * When a massive simultaneous disconnection occurs (e.g. infra restart), all
+ * clients would reconnect and invalidate their queries at exactly the same
+ * time, causing a possible DB spike. Adding random jitter spreads these events over a
+ * time window so the load is absorbed gradually.
+ */
+const RECONNECT_BASE_DELAY_MS = 1000;
+const RECONNECT_JITTER_MAX_MS = 3000;
+
 let reconnectTimeout: ReturnType<typeof setTimeout> | undefined;
+let lostConnectionTimeout: ReturnType<typeof setTimeout> | undefined;
 
 export const useProviderStore = create<UseCollaborationStore>((set, get) => ({
   ...defaultValues,
@@ -63,7 +73,14 @@ export const useProviderStore = create<UseCollaborationStore>((set, get) => ({
           }
 
           clearTimeout(reconnectTimeout);
-          reconnectTimeout = setTimeout(() => void provider.connect(), 1000);
+
+          // Jitter spreading for reconnection attempts
+          // Math.random() generates a random delay to avoid all clients
+          // reconnecting at the same time
+          reconnectTimeout = setTimeout(
+            () => void provider.connect(),
+            RECONNECT_BASE_DELAY_MS + Math.random() * RECONNECT_JITTER_MAX_MS,
+          );
         }
       },
       onAuthenticationFailed() {
@@ -73,13 +90,30 @@ export const useProviderStore = create<UseCollaborationStore>((set, get) => ({
         set({ isReady: true, isConnected: true });
       },
       onStatus: ({ status }) => {
-        set((state) => {
-          const nextConnected = status === WebSocketStatus.Connected;
+        const isConnected = status === WebSocketStatus.Connected;
+        const wasConnected = get().isConnected;
 
+        if (isConnected) {
+          clearTimeout(lostConnectionTimeout);
+        }
+        // If we were previously connected and now we're not,
+        // we might have lost the connection
+        else if (wasConnected) {
+          clearTimeout(lostConnectionTimeout);
+          // Jitter spreading for reconnection attempts
+          // Math.random() generates a random delay to avoid all clients
+          // reconnecting at the same time
+          lostConnectionTimeout = setTimeout(
+            () => set({ hasLostConnection: true }),
+            Math.random() * RECONNECT_JITTER_MAX_MS,
+          );
+        }
+
+        set((state) => {
           /**
            * status === WebSocketStatus.Connected does not mean we are totally connected
            * because authentication can still be in progress and failed
-           * So we only update isConnected when we loose the connection
+           * So we only update isConnected when we lose the connection
            */
           const connected =
             status !== WebSocketStatus.Connected
@@ -91,10 +125,6 @@ export const useProviderStore = create<UseCollaborationStore>((set, get) => ({
           return {
             ...connected,
             isReady: state.isReady || status === WebSocketStatus.Disconnected,
-            hasLostConnection:
-              state.isConnected && !nextConnected
-                ? true
-                : state.hasLostConnection,
           };
         });
       },
@@ -123,6 +153,7 @@ export const useProviderStore = create<UseCollaborationStore>((set, get) => ({
   },
   destroyProvider: () => {
     clearTimeout(reconnectTimeout);
+    clearTimeout(lostConnectionTimeout);
     const provider = get().provider;
     if (provider) {
       provider.destroy();

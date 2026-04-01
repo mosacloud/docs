@@ -19,6 +19,7 @@ and this project adheres to
 
 ### Fixed
 
+- ⚡️(frontend) add jitter to WS reconnection #2162
 - 🐛(frontend) fix tree pagination #2145
 - 🐛(nginx) add page reconciliation on nginx #2154
 

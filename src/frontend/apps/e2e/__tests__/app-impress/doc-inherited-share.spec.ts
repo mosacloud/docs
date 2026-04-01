@@ -17,12 +17,14 @@ test.describe('Inherited share accesses', () => {
       page.getByText('People with access via the parent document'),
     ).toBeVisible();
 
-    const user = page.getByTestId(
-      `doc-share-member-row-user.test@${browserName}.test`,
-    );
-    await expect(user).toBeVisible();
-    await expect(user.getByText(`E2E ${browserName}`)).toBeVisible();
-    await expect(user.getByText('Owner')).toBeVisible();
+    const users = page.locator('.--docs--doc-share-member-item');
+    await expect(users).toBeVisible();
+    await expect(
+      users.getByText(
+        process.env[`SIGN_IN_USERNAME_${browserName.toUpperCase()}`] || '',
+      ),
+    ).toBeVisible();
+    await expect(users.getByText('Owner')).toBeVisible();
 
     await page
       .locator('.--docs--doc-inherited-share-content')

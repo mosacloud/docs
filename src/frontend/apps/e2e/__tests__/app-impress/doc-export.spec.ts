@@ -160,6 +160,8 @@ test.describe('Doc Export', () => {
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe(`${randomDoc}.zip`);
 
+    await page.waitForTimeout(1000);
+
     const zipBuffer = await cs.toBuffer(await download.createReadStream());
     // Unzip and inspect contents
     const zip = await JSZip.loadAsync(zipBuffer);
@@ -254,6 +256,8 @@ test.describe('Doc Export', () => {
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe(`${randomDoc}.pdf`);
 
+    await page.waitForTimeout(1000);
+
     const pdfBuffer = await cs.toBuffer(await download.createReadStream());
 
     const pdfParse = new PDFParse({ data: pdfBuffer });
@@ -300,6 +304,8 @@ test.describe('Doc Export', () => {
 
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe(`${randomDocFrench}.pdf`);
+
+    await page.waitForTimeout(1000);
 
     const pdfBuffer = await cs.toBuffer(await download.createReadStream());
     const pdfString = pdfBuffer.toString('latin1');
@@ -387,6 +393,8 @@ test.describe('Doc Export', () => {
 
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe(`${randomDoc}.pdf`);
+
+    await page.waitForTimeout(1000);
 
     const pdfBuffer = await cs.toBuffer(await download.createReadStream());
 

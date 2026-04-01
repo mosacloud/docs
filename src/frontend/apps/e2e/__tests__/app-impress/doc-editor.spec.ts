@@ -28,7 +28,11 @@ test.describe('Doc Editor', () => {
   }) => {
     await createDoc(page, 'doc-toolbar', browserName, 1);
 
+    await verifyDocName(page, 'doc-toolbar');
+
     const editor = await writeInEditor({ page, text: 'test content' });
+
+    await page.waitForTimeout(1500);
 
     await editor
       .getByText('test content', {
@@ -37,10 +41,7 @@ test.describe('Doc Editor', () => {
       .selectText();
 
     const toolbar = page.locator('.bn-formatting-toolbar');
-    await expect(toolbar.getByRole('button', { name: 'Ask AI' })).toBeVisible();
-    await expect(
-      toolbar.locator('button[data-test="comment-toolbar-button"]'),
-    ).toBeVisible();
+
     await expect(toolbar.locator('button[data-test="bold"]')).toBeVisible();
     await expect(toolbar.locator('button[data-test="italic"]')).toBeVisible();
     await expect(
@@ -62,6 +63,23 @@ test.describe('Doc Editor', () => {
     ).toBeVisible();
     await expect(
       toolbar.locator('button[data-test="createLink"]'),
+    ).toBeVisible();
+
+    /**
+     * Because of how Posthog is loaded and how auth session are
+     * saved, this assertion is not reliable on test instances
+     * We will dedicate a testcase to check the AI features
+     * on test instances with a specific setup
+     */
+    if (process.env.IS_INSTANCE !== 'true') {
+      // eslint-disable-next-line playwright/no-conditional-expect
+      await expect(
+        toolbar.getByRole('button', { name: 'Ask AI' }),
+      ).toBeVisible();
+    }
+
+    await expect(
+      toolbar.locator('button[data-test="comment-toolbar-button"]'),
     ).toBeVisible();
     await expect(
       toolbar.locator('button[data-test="convertMarkdown"]'),
@@ -117,7 +135,7 @@ test.describe('Doc Editor', () => {
     let webSocketPromise = page.waitForEvent('websocket', (webSocket) => {
       return webSocket
         .url()
-        .includes('ws://localhost:4444/collaboration/ws/?room=');
+        .includes(`${process.env.COLLABORATION_WS_URL}?room=`);
     });
 
     await page
@@ -128,7 +146,7 @@ test.describe('Doc Editor', () => {
 
     let webSocket = await webSocketPromise;
     expect(webSocket.url()).toContain(
-      'ws://localhost:4444/collaboration/ws/?room=',
+      `${process.env.COLLABORATION_WS_URL}?room=`,
     );
 
     // Is connected
@@ -157,7 +175,7 @@ test.describe('Doc Editor', () => {
     webSocket = await page.waitForEvent('websocket', (webSocket) => {
       return webSocket
         .url()
-        .includes('ws://localhost:4444/collaboration/ws/?room=');
+        .includes(`${process.env.COLLABORATION_WS_URL}?room=`);
     });
     framesentPromise = webSocket.waitForEvent('framesent');
     framesent = await framesentPromise;
@@ -331,7 +349,9 @@ test.describe('Doc Editor', () => {
     const viewerImg = otherPage
       .locator('.--docs--editor-container img.bn-visual-media')
       .first();
-    await expect(viewerImg).toBeVisible();
+    await expect(viewerImg).toBeVisible({
+      timeout: 10000,
+    });
 
     // Viewer can download the image
     await viewerImg.click();
@@ -364,15 +384,16 @@ test.describe('Doc Editor', () => {
       .locator('.--docs--editor-container img.bn-visual-media')
       .first();
 
-    await expect(image).toBeVisible();
+    await expect(image).toBeVisible({
+      timeout: 10000,
+    });
 
     // Wait for the media-check to be processed
-
     await page.waitForTimeout(1000);
 
     // Check src of image
     expect(await image.getAttribute('src')).toMatch(
-      /http:\/\/localhost:8083\/media\/.*\/attachments\/.*.png/,
+      /media\/.*\/attachments\/.*.png/,
     );
 
     await expect(image).toHaveAttribute('role', 'presentation');
@@ -381,60 +402,62 @@ test.describe('Doc Editor', () => {
     await expect(image).toHaveAttribute('aria-hidden', 'true');
   });
 
-  test('it downloads unsafe files', async ({ page, browserName }) => {
-    const [randomDoc] = await createDoc(page, 'doc-editor', browserName, 1);
+  if (process.env.IS_INSTANCE !== 'true') {
+    test('it downloads unsafe files', async ({ page, browserName }) => {
+      const [randomDoc] = await createDoc(page, 'doc-editor', browserName, 1);
 
-    const fileChooserPromise = page.waitForEvent('filechooser');
-    const downloadPromise = page.waitForEvent('download', (download) => {
-      return download.suggestedFilename().includes(`html`);
+      const fileChooserPromise = page.waitForEvent('filechooser');
+      const downloadPromise = page.waitForEvent('download', (download) => {
+        return download.suggestedFilename().includes(`html`);
+      });
+      const responseCheckPromise = page.waitForResponse(
+        (response) =>
+          response.url().includes('media-check') && response.status() === 200,
+      );
+
+      await verifyDocName(page, randomDoc);
+
+      await page.locator('.ProseMirror.bn-editor').click();
+      await page.locator('.ProseMirror.bn-editor').fill('Hello World');
+
+      await page.keyboard.press('Enter');
+      await page.locator('.bn-block-outer').last().fill('/');
+      await page.getByText('Embedded file').click();
+      await page.getByText('Upload file').click();
+
+      const fileChooser = await fileChooserPromise;
+      await fileChooser.setFiles(path.join(__dirname, 'assets/test.html'));
+
+      await responseCheckPromise;
+
+      await page.locator('.bn-block-content[data-name="test.html"]').click();
+      await page.getByRole('button', { name: 'Download file' }).click();
+
+      await expect(
+        page.getByText('This file is flagged as unsafe.'),
+      ).toBeVisible();
+
+      await expect(
+        page.getByRole('button', {
+          name: 'Download',
+          exact: true,
+        }),
+      ).toBeVisible();
+
+      void page
+        .getByRole('button', {
+          name: 'Download',
+          exact: true,
+        })
+        .click();
+
+      const download = await downloadPromise;
+      expect(download.suggestedFilename()).toContain(`-unsafe.html`);
+
+      const svgBuffer = await cs.toBuffer(await download.createReadStream());
+      expect(svgBuffer.toString()).toContain('Hello svg');
     });
-    const responseCheckPromise = page.waitForResponse(
-      (response) =>
-        response.url().includes('media-check') && response.status() === 200,
-    );
-
-    await verifyDocName(page, randomDoc);
-
-    await page.locator('.ProseMirror.bn-editor').click();
-    await page.locator('.ProseMirror.bn-editor').fill('Hello World');
-
-    await page.keyboard.press('Enter');
-    await page.locator('.bn-block-outer').last().fill('/');
-    await page.getByText('Embedded file').click();
-    await page.getByText('Upload file').click();
-
-    const fileChooser = await fileChooserPromise;
-    await fileChooser.setFiles(path.join(__dirname, 'assets/test.html'));
-
-    await responseCheckPromise;
-
-    await page.locator('.bn-block-content[data-name="test.html"]').click();
-    await page.getByRole('button', { name: 'Download file' }).click();
-
-    await expect(
-      page.getByText('This file is flagged as unsafe.'),
-    ).toBeVisible();
-
-    await expect(
-      page.getByRole('button', {
-        name: 'Download',
-        exact: true,
-      }),
-    ).toBeVisible();
-
-    void page
-      .getByRole('button', {
-        name: 'Download',
-        exact: true,
-      })
-      .click();
-
-    const download = await downloadPromise;
-    expect(download.suggestedFilename()).toContain(`-unsafe.html`);
-
-    const svgBuffer = await cs.toBuffer(await download.createReadStream());
-    expect(svgBuffer.toString()).toContain('Hello svg');
-  });
+  }
 
   test('it analyzes uploads', async ({ page, browserName }) => {
     const [randomDoc] = await createDoc(page, 'doc-editor', browserName, 1);
@@ -484,144 +507,150 @@ test.describe('Doc Editor', () => {
     await expect(editor.getByText('Analyzing file...')).toBeHidden();
   });
 
-  test('it checks block editing when not connected to collab server', async ({
-    page,
-    browserName,
-  }) => {
-    test.slow();
-
-    /**
-     * The good port is 4444, but we want to simulate a not connected
-     * collaborative server.
-     * So we use a port that is not used by the collaborative server.
-     * The server will not be able to connect to the collaborative server.
-     */
-    await overrideConfig(page, {
-      COLLABORATION_WS_URL: 'ws://localhost:5555/collaboration/ws/',
-    });
-
-    await page.goto('/');
-
-    const [parentTitle] = await createDoc(
-      page,
-      'editing-blocking',
-      browserName,
-      1,
-    );
-
-    const card = page.getByLabel('It is the card information');
-    await expect(
-      card.getByText('Others are editing. Your network prevent changes.'),
-    ).toBeHidden();
-    const editor = page.locator('.ProseMirror');
-
-    await expect(editor).toHaveAttribute('contenteditable', 'true');
-
-    let responseCanEditPromise = page.waitForResponse(
-      (response) =>
-        response.url().includes(`/can-edit/`) && response.status() === 200,
-    );
-
-    await page.getByRole('button', { name: 'Share' }).click();
-
-    await updateShareLink(page, 'Public', 'Editing');
-
-    // Close the modal
-    await page.getByRole('button', { name: 'close' }).first().click();
-
-    const urlParentDoc = page.url();
-
-    const { name: childTitle } = await createRootSubPage(
+  if (process.env.COLLABORATION_WS_NOT_CONNECTED_READY_ONLY === 'true') {
+    test('it checks block editing when not connected to collab server', async ({
       page,
       browserName,
-      'editing-blocking - child',
-    );
+    }) => {
+      test.slow();
 
-    let responseCanEdit = await responseCanEditPromise;
-    expect(responseCanEdit.ok()).toBeTruthy();
-    let jsonCanEdit = (await responseCanEdit.json()) as { can_edit: boolean };
-    expect(jsonCanEdit.can_edit).toBeTruthy();
+      /**
+       * The good port is 4444, but we want to simulate a not connected
+       * collaborative server.
+       * So we use a port that is not used by the collaborative server.
+       * The server will not be able to connect to the collaborative server.
+       */
+      await overrideConfig(page, {
+        COLLABORATION_WS_URL: 'ws://localhost:5555/collaboration/ws/',
+      });
 
-    const urlChildDoc = page.url();
+      await page.goto('/');
 
-    /**
-     * We open another browser that will connect to the collaborative server
-     * and will block the current browser to edit the doc.
-     */
-    const { otherPage } = await connectOtherUserToDoc({
-      browserName,
-      docUrl: urlChildDoc,
-      docTitle: childTitle,
-      withoutSignIn: true,
+      const [parentTitle] = await createDoc(
+        page,
+        'editing-blocking',
+        browserName,
+        1,
+      );
+
+      const card = page.getByLabel('It is the card information');
+      await expect(
+        card.getByText('Others are editing. Your network prevent changes.'),
+      ).toBeHidden();
+      const editor = page.locator('.ProseMirror');
+
+      await expect(editor).toHaveAttribute('contenteditable', 'true');
+
+      let responseCanEditPromise = page.waitForResponse(
+        (response) =>
+          response.url().includes(`/can-edit/`) && response.status() === 200,
+      );
+
+      await page.getByRole('button', { name: 'Share' }).click();
+
+      await updateShareLink(page, 'Public', 'Editing');
+
+      // Close the modal
+      await page.getByRole('button', { name: 'close' }).first().click();
+
+      const urlParentDoc = page.url();
+
+      const { name: childTitle } = await createRootSubPage(
+        page,
+        browserName,
+        'editing-blocking - child',
+      );
+
+      let responseCanEdit = await responseCanEditPromise;
+      expect(responseCanEdit.ok()).toBeTruthy();
+      let jsonCanEdit = (await responseCanEdit.json()) as { can_edit: boolean };
+      expect(jsonCanEdit.can_edit).toBeTruthy();
+
+      const urlChildDoc = page.url();
+
+      /**
+       * We open another browser that will connect to the collaborative server
+       * and will block the current browser to edit the doc.
+       */
+      const { otherPage } = await connectOtherUserToDoc({
+        browserName,
+        docUrl: urlChildDoc,
+        docTitle: childTitle,
+        withoutSignIn: true,
+      });
+
+      const webSocketPromise = otherPage.waitForEvent(
+        'websocket',
+        (webSocket) => {
+          return webSocket
+            .url()
+            .includes(`${process.env.COLLABORATION_WS_URL}?room=`);
+        },
+      );
+
+      await otherPage.goto(urlChildDoc);
+
+      const webSocket = await webSocketPromise;
+      expect(webSocket.url()).toContain(
+        `${process.env.COLLABORATION_WS_URL}?room=`,
+      );
+
+      await verifyDocName(otherPage, childTitle);
+
+      await page.reload();
+
+      responseCanEdit = await page.waitForResponse(
+        (response) =>
+          response.url().includes(`/can-edit/`) && response.status() === 200,
+      );
+      expect(responseCanEdit.ok()).toBeTruthy();
+
+      jsonCanEdit = (await responseCanEdit.json()) as { can_edit: boolean };
+      expect(jsonCanEdit.can_edit).toBeFalsy();
+
+      await expect(
+        card.getByText('Others are editing. Your network prevent changes.'),
+      ).toBeVisible({
+        timeout: 10000,
+      });
+
+      await expect(editor).toHaveAttribute('contenteditable', 'false');
+
+      await expect(
+        page.getByRole('textbox', { name: 'Document title' }),
+      ).toBeHidden();
+      await expect(
+        page.getByRole('heading', { name: childTitle }),
+      ).toBeVisible();
+
+      await page.goto(urlParentDoc);
+
+      await verifyDocName(page, parentTitle);
+
+      await page.getByRole('button', { name: 'Share' }).click();
+
+      await page.getByTestId('doc-access-mode').click();
+      await page.getByRole('menuitemradio', { name: 'Reading' }).click();
+
+      // Close the modal
+      await page.getByRole('button', { name: 'close' }).first().click();
+
+      await page.goto(urlChildDoc);
+
+      await expect(editor).toHaveAttribute('contenteditable', 'true');
+
+      await expect(
+        page.getByRole('textbox', { name: 'Document title' }),
+      ).toContainText(childTitle);
+      await expect(
+        page.getByRole('heading', { name: childTitle }),
+      ).toBeHidden();
+
+      await expect(
+        card.getByText('Others are editing. Your network prevent changes.'),
+      ).toBeHidden();
     });
-
-    const webSocketPromise = otherPage.waitForEvent(
-      'websocket',
-      (webSocket) => {
-        return webSocket
-          .url()
-          .includes('ws://localhost:4444/collaboration/ws/?room=');
-      },
-    );
-
-    await otherPage.goto(urlChildDoc);
-
-    const webSocket = await webSocketPromise;
-    expect(webSocket.url()).toContain(
-      'ws://localhost:4444/collaboration/ws/?room=',
-    );
-
-    await verifyDocName(otherPage, childTitle);
-
-    await page.reload();
-
-    responseCanEdit = await page.waitForResponse(
-      (response) =>
-        response.url().includes(`/can-edit/`) && response.status() === 200,
-    );
-    expect(responseCanEdit.ok()).toBeTruthy();
-
-    jsonCanEdit = (await responseCanEdit.json()) as { can_edit: boolean };
-    expect(jsonCanEdit.can_edit).toBeFalsy();
-
-    await expect(
-      card.getByText('Others are editing. Your network prevent changes.'),
-    ).toBeVisible({
-      timeout: 10000,
-    });
-
-    await expect(editor).toHaveAttribute('contenteditable', 'false');
-
-    await expect(
-      page.getByRole('textbox', { name: 'Document title' }),
-    ).toBeHidden();
-    await expect(page.getByRole('heading', { name: childTitle })).toBeVisible();
-
-    await page.goto(urlParentDoc);
-
-    await verifyDocName(page, parentTitle);
-
-    await page.getByRole('button', { name: 'Share' }).click();
-
-    await page.getByTestId('doc-access-mode').click();
-    await page.getByRole('menuitemradio', { name: 'Reading' }).click();
-
-    // Close the modal
-    await page.getByRole('button', { name: 'close' }).first().click();
-
-    await page.goto(urlChildDoc);
-
-    await expect(editor).toHaveAttribute('contenteditable', 'true');
-
-    await expect(
-      page.getByRole('textbox', { name: 'Document title' }),
-    ).toContainText(childTitle);
-    await expect(page.getByRole('heading', { name: childTitle })).toBeHidden();
-
-    await expect(
-      card.getByText('Others are editing. Your network prevent changes.'),
-    ).toBeHidden();
-  });
+  }
 
   test('it checks if callout custom block', async ({ page, browserName }) => {
     await createDoc(page, 'doc-toolbar', browserName, 1);
@@ -868,7 +897,7 @@ test.describe('Doc Editor', () => {
 
     // Check src of pdf
     expect(await pdfIframe.getAttribute('src')).toMatch(
-      /http:\/\/localhost:8083\/media\/.*\/attachments\/.*.pdf/,
+      /\/media\/.*\/attachments\/.*.pdf/,
     );
 
     await expect(pdfIframe).toHaveAttribute('role', 'presentation');

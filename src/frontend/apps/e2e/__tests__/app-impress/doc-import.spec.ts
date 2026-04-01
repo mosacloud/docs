@@ -89,7 +89,7 @@ test.describe('Doc Import', () => {
       ).toBeVisible();
 
       /* eslint-disable playwright/no-conditional-expect */
-      if (isMDCheck) {
+      if (isMDCheck && process.env.IS_INSTANCE !== 'true') {
         await expect(
           editor.locator(
             'img[src="http://localhost:3000/assets/logo-suite-numerique.png"]',

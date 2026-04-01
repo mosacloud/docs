@@ -2,10 +2,6 @@ import { expect, test } from '@playwright/test';
 
 import { overrideConfig } from './utils-common';
 
-test.beforeEach(async ({ page }) => {
-  await page.goto('/docs/');
-});
-
 test.describe('Home page', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
@@ -23,7 +19,6 @@ test.describe('Home page', () => {
     await expect(languageButton).toBeVisible();
 
     await expect(header.getByTestId('header-icon-docs')).toBeVisible();
-    await expect(header.getByRole('heading', { name: 'Docs' })).toBeVisible();
 
     // Check the titles
     const h2 = page.locator('h2');
@@ -69,7 +64,9 @@ test.describe('Home page', () => {
       h2.getByText('A new way to organize knowledge.'),
     ).toBeVisible();
     await expect(
-      page.getByRole('button', { name: 'Start Writing' }),
+      page
+        .getByRole('button', { name: process.env.SIGN_IN_EL_TRIGGER })
+        .first(),
     ).toBeVisible();
 
     await expect(footer).toBeVisible();
@@ -178,7 +175,7 @@ test.describe('Home page', () => {
 
     // Keyclock login page
     await expect(
-      page.locator('.login-pf #kc-header-wrapper').getByText('impress'),
+      page.locator(`${process.env.SIGN_IN_EL_LOGIN_PAGE}`).getByText('impress'),
     ).toBeVisible();
   });
 });

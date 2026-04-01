@@ -116,7 +116,7 @@ test.describe('Language', () => {
     // Helper function to intercept and assert 404 response
     const check404Response = async (expectedDetail: string) => {
       const interceptedBackendResponse = await page.request.get(
-        'http://localhost:8071/api/v1.0/documents/non-existent-doc-uuid/',
+        `${process.env.BASE_API_URL}/documents/non-existent-doc-uuid/`,
       );
 
       // Assert that the intercepted error message is in the expected language

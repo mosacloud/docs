@@ -3,11 +3,11 @@ import { expect, test } from '@playwright/test';
 import {
   createDoc,
   goToGridDoc,
-  keyCloakSignIn,
   randomName,
   verifyDocName,
 } from './utils-common';
 import { connectOtherUserToDoc } from './utils-share';
+import { SignIn } from './utils-signin';
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/');
@@ -22,8 +22,7 @@ test.describe('Doc Create', () => {
       { timeout: 5000 },
     );
 
-    const header = page.locator('header').first();
-    await header.locator('h1').getByText('Docs').click();
+    await page.getByRole('button', { name: 'Back to homepage' }).click();
 
     const docsGrid = page.getByTestId('docs-grid');
     await expect(docsGrid).toBeVisible();
@@ -134,7 +133,7 @@ test.describe('Doc Create', () => {
         withoutSignIn: true,
       });
 
-    await keyCloakSignIn(otherPage, otherBrowserName, false);
+    await SignIn(otherPage, otherBrowserName, false);
 
     await verifyDocName(otherPage, 'From unlogged doc from url');
 
@@ -160,22 +159,28 @@ test.describe('Doc Create: Not logged', () => {
     browserName,
     request,
   }) => {
-    const SERVER_TO_SERVER_API_TOKENS = 'server-api-token';
+    test.skip(
+      !process.env.SERVER_TO_SERVER_API_TOKENS ||
+        !process.env[`SUB_${browserName.toUpperCase()}`] ||
+        !process.env[`SIGN_IN_USERNAME_${browserName.toUpperCase()}`],
+      'Server to server API tokens and credentials must be set',
+    );
+
     const markdown = `This is a normal text\n\n# And this is a large heading`;
     const [title] = randomName('My server way doc create', browserName, 1);
     const data = {
       title,
       content: markdown,
-      sub: `user.test@${browserName}.test`,
-      email: `user.test@${browserName}.test`,
+      sub: process.env[`SUB_${browserName.toUpperCase()}`],
+      email: process.env[`SIGN_IN_USERNAME_${browserName.toUpperCase()}`],
     };
 
     const newDoc = await request.post(
-      `http://localhost:8071/api/v1.0/documents/create-for-owner/`,
+      `${process.env.BASE_API_URL}/documents/create-for-owner/`,
       {
         data,
         headers: {
-          Authorization: `Bearer ${SERVER_TO_SERVER_API_TOKENS}`,
+          Authorization: `Bearer ${process.env.SERVER_TO_SERVER_API_TOKENS}`,
           format: 'json',
         },
       },
@@ -183,7 +188,7 @@ test.describe('Doc Create: Not logged', () => {
 
     expect(newDoc.ok()).toBeTruthy();
 
-    await keyCloakSignIn(page, browserName);
+    await SignIn(page, browserName);
 
     await goToGridDoc(page, { title });
 

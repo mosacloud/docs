@@ -4,12 +4,12 @@ import { expect, test } from '@playwright/test';
 
 import {
   createDoc,
-  expectLoginPage,
-  keyCloakSignIn,
+  getCurrentConfig,
   mockedDocument,
   verifyDocName,
 } from './utils-common';
 import { writeInEditor } from './utils-editor';
+import { SignIn, expectLoginPage } from './utils-signin';
 import { createRootSubPage } from './utils-sub-pages';
 
 test.describe('Doc Routing', () => {
@@ -54,6 +54,13 @@ test.describe('Doc Routing', () => {
   });
 
   test('checks 401 on docs/[id] page', async ({ page, browserName }) => {
+    const currentConfig = await getCurrentConfig(page);
+
+    test.skip(
+      currentConfig.FRONTEND_SILENT_LOGIN_ENABLED,
+      'This test is only relevant when silent login is disabled.',
+    );
+
     const [docTitle] = await createDoc(page, '401-doc-parent', browserName, 1);
     await verifyDocName(page, docTitle);
 
@@ -117,7 +124,7 @@ test.describe('Doc Routing: Not logged', () => {
     await page.goto(`/docs/${uuid}/`);
     await expect(page.locator('h2').getByText('Mocked document')).toBeVisible();
     await page.getByRole('button', { name: 'Login' }).click();
-    await keyCloakSignIn(page, browserName, false);
+    await SignIn(page, browserName, false);
     await expect(page.locator('h2').getByText('Mocked document')).toBeVisible();
   });
 

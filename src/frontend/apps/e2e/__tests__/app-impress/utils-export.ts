@@ -74,7 +74,9 @@ export const overrideDocContent = async ({
   const image = page
     .locator('.--docs--editor-container img.bn-visual-media[src$=".svg"]')
     .first();
-  await expect(image).toBeVisible();
+  await expect(image).toBeVisible({
+    timeout: 10000,
+  });
   await page.keyboard.press('Enter');
 
   await page.waitForTimeout(1000);

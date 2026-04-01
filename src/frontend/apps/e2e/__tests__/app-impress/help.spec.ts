@@ -7,10 +7,6 @@ import {
 } from './utils-common';
 
 test.describe('Help feature', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.goto('/');
-  });
-
   test.describe('Onboarding modal', () => {
     test('Help menu not displayed if onboarding is disabled', async ({
       page,
@@ -22,6 +18,8 @@ test.describe('Help feature', () => {
           },
         },
       });
+
+      await page.goto('/');
 
       await expect(page.getByRole('button', { name: 'New doc' })).toBeVisible();
 
@@ -41,6 +39,8 @@ test.describe('Help feature', () => {
           },
         },
       });
+
+      await page.goto('/');
 
       await page.getByRole('button', { name: 'Open help menu' }).click();
 
@@ -86,23 +86,21 @@ test.describe('Help feature', () => {
     });
 
     test('closes modal with Skip button', async ({ page }) => {
+      await page.goto('/');
+
       await page.getByRole('button', { name: 'Open help menu' }).click();
       await page.getByRole('menuitem', { name: 'Onboarding' }).click();
 
       const modal = page.getByTestId('onboarding-modal');
       await expect(modal).toBeVisible();
 
-      await expect(
-        page.getByRole('link', {
-          name: 'Learn more docs features',
-        }),
-      ).toBeHidden();
-
       await page.getByRole('button', { name: /skip/i }).click();
       await expect(modal).toBeHidden();
     });
 
     test('Modal onboarding translated correctly', async ({ page }) => {
+      await page.goto('/');
+
       // switch to french
       await waitForLanguageSwitch(page, TestLanguage.French);
 
@@ -131,6 +129,8 @@ test.describe('Help feature', () => {
       page,
       browserName,
     }) => {
+      await page.goto('/');
+
       await expect(page.getByRole('button', { name: 'New doc' })).toBeVisible();
       await expect(page.getByTestId('onboarding-modal')).toBeHidden();
 

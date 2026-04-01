@@ -1,10 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-import {
-  expectLoginPage,
-  keyCloakSignIn,
-  overrideConfig,
-} from './utils-common';
+import { overrideConfig } from './utils-common';
+import { SignIn, expectLoginPage } from './utils-signin';
 
 test.describe('Header', () => {
   test('checks all the elements are visible', async ({ page }) => {
@@ -142,27 +139,31 @@ test.describe('Header', () => {
     await expect(page.getByRole('link', { name: 'Grist' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Visio' })).toBeVisible();
   });
-});
 
-test.describe('Header: Log out', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
-
-  // eslint-disable-next-line playwright/expect-expect
-  test('checks logout button', async ({ page, browserName }) => {
+  test('it displays skip link on first TAB and focuses page heading on click', async ({
+    page,
+  }) => {
     await page.goto('/');
-    await keyCloakSignIn(page, browserName);
 
-    await page
-      .getByRole('button', {
-        name: 'Logout',
-      })
-      .click();
+    // Wait for skip link to be mounted (client-side only component)
+    const skipLink = page.getByRole('link', { name: 'Go to content' });
+    await skipLink.waitFor({ state: 'attached' });
 
-    await expectLoginPage(page);
+    // First TAB shows the skip link
+    await page.keyboard.press('Tab');
+
+    // The skip link should be visible and focused
+    await expect(skipLink).toBeFocused();
+    await expect(skipLink).toBeVisible();
+    // Clicking moves focus to the page heading
+    await skipLink.click();
+    const pageHeading = page.getByRole('heading', {
+      name: 'All docs',
+      level: 2,
+    });
+    await expect(pageHeading).toBeFocused();
   });
-});
 
-test.describe('Header: Override configuration', () => {
   test('checks the header is correctly overrided', async ({ page }) => {
     await overrideConfig(page, {
       FRONTEND_THEME: 'dsfr',
@@ -190,28 +191,20 @@ test.describe('Header: Override configuration', () => {
   });
 });
 
-test.describe('Header: Skip to Content', () => {
-  test('it displays skip link on first TAB and focuses page heading on click', async ({
-    page,
-  }) => {
+test.describe('Header: Log out', () => {
+  test.use({ storageState: { cookies: [], origins: [] } });
+
+  // eslint-disable-next-line playwright/expect-expect
+  test('checks logout button', async ({ page, browserName }) => {
     await page.goto('/');
+    await SignIn(page, browserName);
 
-    // Wait for skip link to be mounted (client-side only component)
-    const skipLink = page.getByRole('link', { name: 'Go to content' });
-    await skipLink.waitFor({ state: 'attached' });
+    await page
+      .getByRole('button', {
+        name: 'Logout',
+      })
+      .click();
 
-    // First TAB shows the skip link
-    await page.keyboard.press('Tab');
-
-    // The skip link should be visible and focused
-    await expect(skipLink).toBeFocused();
-    await expect(skipLink).toBeVisible();
-    // Clicking moves focus to the page heading
-    await skipLink.click();
-    const pageHeading = page.getByRole('heading', {
-      name: 'All docs',
-      level: 2,
-    });
-    await expect(pageHeading).toBeFocused();
+    await expectLoginPage(page);
   });
 });

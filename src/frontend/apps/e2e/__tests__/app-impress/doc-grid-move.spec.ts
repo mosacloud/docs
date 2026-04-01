@@ -22,11 +22,10 @@ test.describe('Doc grid move', () => {
     browserName,
   }) => {
     await page.goto('/');
-    const header = page.locator('header').first();
     await createDoc(page, 'Draggable doc', browserName, 1);
-    await header.locator('h1').getByText('Docs').click();
+    await page.getByRole('button', { name: 'Back to homepage' }).click();
     await createDoc(page, 'Droppable doc', browserName, 1);
-    await header.locator('h1').getByText('Docs').click();
+    await page.getByRole('button', { name: 'Back to homepage' }).click();
 
     const response = await page.waitForResponse(
       (response) =>
@@ -333,9 +332,14 @@ test.describe('Doc grid move', () => {
     // The other user should receive the access request and be able to approve it
     await otherPage.getByRole('button', { name: 'Share' }).click();
     await expect(otherPage.getByText('Access Requests')).toBeVisible();
-    await expect(otherPage.getByText(`E2E ${browserName}`)).toBeVisible();
+    await expect(
+      otherPage.getByText(
+        process.env[`USERNAME_${browserName.toUpperCase()}`] || '',
+      ),
+    ).toBeVisible();
 
-    const emailRequest = `user.test@${browserName}.test`;
+    const emailRequest =
+      process.env[`SIGN_IN_USERNAME_${browserName.toUpperCase()}`] || '';
     await expect(otherPage.getByText(emailRequest)).toBeVisible();
     const container = otherPage.getByTestId(
       `doc-share-access-request-row-${emailRequest}`,
@@ -348,7 +352,11 @@ test.describe('Doc grid move', () => {
 
     await expect(otherPage.getByText('Access Requests')).toBeHidden();
     await expect(otherPage.getByText('Share with 2 users')).toBeVisible();
-    await expect(otherPage.getByText(`E2E ${browserName}`)).toBeVisible();
+    await expect(
+      otherPage.getByText(
+        process.env[`USERNAME_${browserName.toUpperCase()}`] || '',
+      ),
+    ).toBeVisible();
 
     // The first user should now be able to move the doc
     await page.reload();

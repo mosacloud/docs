@@ -149,8 +149,10 @@ test.describe('Document list members', () => {
     await page.getByRole('button', { name: 'Share' }).click();
     const list = page.getByTestId('doc-share-quick-search');
     await expect(list).toBeVisible();
+    const emailRequest =
+      process.env[`SIGN_IN_USERNAME_${browserName.toUpperCase()}`] || '';
     const currentUser = list.getByTestId(
-      `doc-share-member-row-user.test@${browserName}.test`,
+      `doc-share-member-row-${emailRequest}`,
     );
     const currentUserRole = currentUser.getByTestId('doc-role-dropdown');
     await expect(currentUser).toBeVisible();
@@ -214,8 +216,9 @@ test.describe('Document list members', () => {
 
     const list = page.getByTestId('doc-share-quick-search');
 
-    const emailMyself = `user.test@${browserName}.test`;
-    const mySelf = list.getByTestId(`doc-share-member-row-${emailMyself}`);
+    const emailRequest =
+      process.env[`SIGN_IN_USERNAME_${browserName.toUpperCase()}`] || '';
+    const mySelf = list.getByTestId(`doc-share-member-row-${emailRequest}`);
     const mySelfRole = mySelf.getByTestId('doc-role-dropdown');
 
     const userOwnerEmail = await addNewMember(page, 0, 'Owner');

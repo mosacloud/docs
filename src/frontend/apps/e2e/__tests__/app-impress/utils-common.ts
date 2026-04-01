@@ -18,7 +18,7 @@ export const CONFIG = {
   AI_FEATURE_LEGACY_ENABLED: true,
   API_USERS_SEARCH_QUERY_MIN_LENGTH: 3,
   CRISP_WEBSITE_ID: null,
-  COLLABORATION_WS_URL: 'ws://localhost:4444/collaboration/ws/',
+  COLLABORATION_WS_URL: process.env.COLLABORATION_WS_URL,
   COLLABORATION_WS_NOT_CONNECTED_READY_ONLY: true,
   CONVERSION_UPLOAD_ENABLED: true,
   CONVERSION_FILE_EXTENSIONS_ALLOWED: ['.docx', '.md'],
@@ -29,7 +29,7 @@ export const CONFIG = {
   FRONTEND_HOMEPAGE_FEATURE_ENABLED: true,
   FRONTEND_SILENT_LOGIN_ENABLED: false,
   FRONTEND_THEME: null,
-  MEDIA_BASE_URL: 'http://localhost:8083',
+  MEDIA_BASE_URL: process.env.MEDIA_BASE_URL,
   LANGUAGES: [
     ['en-us', 'English'],
     ['fr-fr', 'Français'],
@@ -62,29 +62,18 @@ export const overrideConfig = async (
     }
   });
 
-export const keyCloakSignIn = async (
-  page: Page,
-  browserName: string,
-  fromHome = true,
-) => {
-  if (fromHome) {
-    await page.getByRole('button', { name: 'Start Writing' }).first().click();
-  }
+export const getCurrentConfig = async (page: Page) => {
+  const responsePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes('/config/') && response.status() === 200,
+  );
 
-  const login = `user-e2e-${browserName}`;
-  const password = `password-e2e-${browserName}`;
+  await page.goto('/');
 
-  await expect(
-    page.locator('.login-pf #kc-header-wrapper').getByText('impress'),
-  ).toBeVisible();
+  const response = await responsePromise;
+  expect(response.ok()).toBeTruthy();
 
-  if (await page.getByLabel('Restart login').isVisible()) {
-    await page.getByLabel('Restart login').click();
-  }
-
-  await page.getByRole('textbox', { name: 'username' }).fill(login);
-  await page.getByRole('textbox', { name: 'password' }).fill(password);
-  await page.click('button[type="submit"]', { force: true });
+  return (await response.json()) as typeof CONFIG;
 };
 
 export const getOtherBrowserName = (browserName: BrowserName) => {
@@ -209,8 +198,11 @@ export const goToGridDoc = async (
   page: Page,
   { nthRow = 1, title }: GoToGridDocOptions = {},
 ) => {
-  const header = page.locator('header').first();
-  await header.locator('h1').getByText('Docs').click();
+  if (
+    await page.getByRole('button', { name: 'Back to homepage' }).isVisible()
+  ) {
+    await page.getByRole('button', { name: 'Back to homepage' }).click();
+  }
 
   const docsGrid = page.getByTestId('docs-grid');
   await expect(docsGrid).toBeVisible();
@@ -324,13 +316,6 @@ export const mockedListDocs = async (page: Page, data: object[] = []) => {
     }
   });
 };
-
-export const expectLoginPage = async (page: Page) =>
-  await expect(
-    page.getByRole('heading', { name: 'Collaborative writing' }),
-  ).toBeVisible({
-    timeout: 10000,
-  });
 
 // language helper
 export const TestLanguage = {

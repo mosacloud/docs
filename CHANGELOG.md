@@ -9,6 +9,7 @@ and this project adheres to
 ### Added
 
 - 🚸(frontend) allow opening "@page" links with ctrl/command/middle-mouse click
+- ✅ E2E - Any instance friendly #2142
 
 ## [v4.8.5] - 2026-04-03
 

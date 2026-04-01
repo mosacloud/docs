@@ -3,9 +3,9 @@ import { Page, chromium, expect } from '@playwright/test';
 import {
   BrowserName,
   getOtherBrowserName,
-  keyCloakSignIn,
   verifyDocName,
 } from './utils-common';
+import { SignIn } from './utils-signin';
 
 export type Role = 'Administrator' | 'Owner' | 'Editor' | 'Reader';
 export type LinkReach = 'Private' | 'Connected' | 'Public';
@@ -131,14 +131,14 @@ export const connectOtherUserToDoc = async ({
       .getByRole('main', { name: 'Main content' })
       .getByLabel('Login');
     const loginFromHome = otherPage.getByRole('button', {
-      name: 'Start Writing',
+      name: process.env.SIGN_IN_EL_TRIGGER,
     });
 
     await loginFromApp.or(loginFromHome).first().click({
       timeout: 15000,
     });
 
-    await keyCloakSignIn(otherPage, otherBrowserName, false);
+    await SignIn(otherPage, otherBrowserName, false);
   }
   if (docTitle) {
     await verifyDocName(otherPage, docTitle);

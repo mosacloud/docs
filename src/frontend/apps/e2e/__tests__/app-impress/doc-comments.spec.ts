@@ -58,10 +58,14 @@ test.describe('Doc Comments', () => {
     await page.getByRole('button', { name: '👍' }).click();
 
     await expect(
-      thread.getByRole('img', { name: `E2E ${browserName}` }).first(),
+      thread
+        .getByRole('img', { name: `${process.env.FIRST_NAME} ${browserName}` })
+        .first(),
     ).toBeVisible();
     await expect(thread.getByText('This is a comment').first()).toBeVisible();
-    await expect(thread.getByText(`E2E ${browserName}`).first()).toBeVisible();
+    await expect(
+      thread.getByText(`${process.env.FIRST_NAME} ${browserName}`).first(),
+    ).toBeVisible();
     await expect(thread.locator('.bn-comment-reaction')).toHaveText('👍1');
 
     const urlCommentDoc = page.url();
@@ -85,7 +89,7 @@ test.describe('Doc Comments', () => {
       otherThread.getByText('This is a comment').first(),
     ).toBeVisible();
     await expect(
-      otherThread.getByText(`E2E ${browserName}`).first(),
+      otherThread.getByText(`${process.env.FIRST_NAME} ${browserName}`).first(),
     ).toBeVisible();
     await expect(otherThread.locator('.bn-comment-reaction')).toHaveText('👍2');
 
@@ -98,13 +102,19 @@ test.describe('Doc Comments', () => {
 
     // We check that the second user can see the comment he just made
     await expect(
-      otherThread.getByRole('img', { name: `E2E ${otherBrowserName}` }).first(),
+      otherThread
+        .getByRole('img', {
+          name: `${process.env.FIRST_NAME} ${otherBrowserName}`,
+        })
+        .first(),
     ).toBeVisible();
     await expect(
       otherThread.getByText('This is a comment from the other user').first(),
     ).toBeVisible();
     await expect(
-      otherThread.getByText(`E2E ${otherBrowserName}`).first(),
+      otherThread
+        .getByText(`${process.env.FIRST_NAME} ${otherBrowserName}`)
+        .first(),
     ).toBeVisible();
 
     // We check that the first user can see the comment made by the second user in real time
@@ -112,7 +122,7 @@ test.describe('Doc Comments', () => {
       thread.getByText('This is a comment from the other user').first(),
     ).toBeVisible();
     await expect(
-      thread.getByText(`E2E ${otherBrowserName}`).first(),
+      thread.getByText(`${process.env.FIRST_NAME} ${otherBrowserName}`).first(),
     ).toBeVisible();
 
     await cleanup();
@@ -134,7 +144,7 @@ test.describe('Doc Comments', () => {
 
     await expect(editor.getByText('Hello')).toHaveCSS(
       'background-color',
-      'color(srgb 0.882353 0.831373 0.717647 / 0.4)',
+      /color\(srgb\s+[\d\s.]+\s+\/\s+0\.4\)/,
     );
 
     await editor.first().click();
@@ -201,7 +211,7 @@ test.describe('Doc Comments', () => {
 
     await expect(editor.getByText('Hello')).toHaveCSS(
       'background-color',
-      'color(srgb 0.882353 0.831373 0.717647 / 0.4)',
+      /color\(srgb\s+[\d\s.]+\s+\/\s+0\.4\)/,
     );
 
     await editor.first().click();
@@ -267,11 +277,15 @@ test.describe('Doc Comments', () => {
 
     await expect(otherEditor.getByText('Hello')).toHaveCSS(
       'background-color',
-      'color(srgb 0.882353 0.831373 0.717647 / 0.4)',
+      /color\(srgb\s+[\d\s.]+\s+\/\s+0\.4\)/,
     );
 
     // We change the role of the second user to reader
-    await updateRoleUser(page, 'Reader', `user.test@${otherBrowserName}.test`);
+    await updateRoleUser(
+      page,
+      'Reader',
+      process.env[`SIGN_IN_USERNAME_${otherBrowserName.toUpperCase()}`] || '',
+    );
 
     // With the reader role, the second user cannot see comments
     await otherPage.reload();
@@ -296,13 +310,21 @@ test.describe('Doc Comments', () => {
     // Anonymous user can see and add comments
     await otherPage.getByRole('button', { name: 'Logout' }).click();
 
+    await expect(
+      otherPage
+        .getByRole('button', { name: process.env.SIGN_IN_EL_TRIGGER })
+        .first(),
+    ).toBeVisible({
+      timeout: 10000,
+    });
+
     await otherPage.goto(urlCommentDoc);
 
     await verifyDocName(otherPage, docTitle);
 
     await expect(otherEditor.getByText('Hello')).toHaveCSS(
       'background-color',
-      'color(srgb 0.882353 0.831373 0.717647 / 0.4)',
+      /color\(srgb\s+[\d\s.]+\s+\/\s+0\.4\)/,
     );
     await otherEditor.getByText('Hello').click();
     await expect(
@@ -348,7 +370,7 @@ test.describe('Doc Comments', () => {
 
     await expect(editor1.getByText('Document One')).toHaveCSS(
       'background-color',
-      'color(srgb 0.882353 0.831373 0.717647 / 0.4)',
+      /color\(srgb\s+[\d\s.]+\s+\/\s+0\.4\)/,
     );
 
     await editor1.getByText('Document One').click();

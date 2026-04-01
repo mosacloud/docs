@@ -2,12 +2,11 @@ import { expect, test } from '@playwright/test';
 
 import {
   createDoc,
-  expectLoginPage,
-  keyCloakSignIn,
+  getOtherBrowserName,
   updateDocTitle,
   verifyDocName,
 } from './utils-common';
-import { addNewMember } from './utils-share';
+import { addNewMember, connectOtherUserToDoc } from './utils-share';
 import {
   addChild,
   clickOnAddRootSubPage,
@@ -28,10 +27,10 @@ test.describe('Doc Tree', () => {
 
       const response = {
         count: 40,
-        next: `http://localhost:8071/api/v1.0/documents/anything/children/?page=${parseInt(pageId) + 1}`,
+        next: `${process.env.BASE_API_URL}/documents/anything/children/?page=${parseInt(pageId) + 1}`,
         previous:
           parseInt(pageId) > 1
-            ? `http://localhost:8071/api/v1.0/documents/anything/children/?page=${parseInt(pageId) - 1}`
+            ? `${process.env.BASE_API_URL}/documents/anything/children/?page=${parseInt(pageId) - 1}`
             : null,
         results: Array.from({ length: 20 }, (_, i) => ({
           id: `doc-child-${pageId}-${i}`,
@@ -142,8 +141,8 @@ test.describe('Doc Tree', () => {
       .click();
 
     await expect(docTree.getByText('doc-child-1-19')).toBeVisible();
-    await expect(docTree.locator('.c__spinner')).toBeVisible();
     await docTree.getByText('doc-child-1-19').hover();
+    await expect(docTree.locator('.c__spinner')).toBeVisible();
     await expect(
       docTree.getByText('doc-child-2-1', {
         exact: true,
@@ -264,8 +263,7 @@ test.describe('Doc Tree', () => {
       page.getByRole('textbox', { name: 'Document title' }),
     ).not.toHaveText(docChild);
 
-    const header = page.locator('header').first();
-    await header.locator('h1').getByText('Docs').click();
+    await page.getByRole('button', { name: 'Back to homepage' }).click();
     await expect(page.getByText(docChild)).toBeVisible();
   });
 
@@ -281,11 +279,14 @@ test.describe('Doc Tree', () => {
 
     await page.getByRole('button', { name: 'Share' }).click();
 
-    await addNewMember(page, 0, 'Owner', 'impress');
+    const otherBrowserName = getOtherBrowserName(browserName);
+    await addNewMember(page, 0, 'Owner', otherBrowserName);
 
     const list = page.getByTestId('doc-share-quick-search');
+    const currentEmail =
+      process.env[`SIGN_IN_USERNAME_${browserName.toUpperCase()}`] || '';
     const currentUser = list.getByTestId(
-      `doc-share-member-row-user.test@${browserName}.test`,
+      `doc-share-member-row-${currentEmail}`,
     );
     const currentUserRole = currentUser.getByTestId('doc-role-dropdown');
     await currentUserRole.click();
@@ -492,18 +493,11 @@ test.describe('Doc Tree', () => {
     await expect(row.getByText('😀')).toBeHidden();
     await expect(titleEmojiPicker).toBeHidden();
   });
-});
-
-test.describe('Doc Tree: Inheritance', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
 
   test('A child inherit from the parent', async ({ page, browserName }) => {
     // test.slow() to extend timeout since this scenario chains Keycloak login + redirects,
     // doc creation/navigation and async doc-tree loading (/documents/:id/tree), which can exceed 30s (especially in CI).
     test.slow();
-
-    await page.goto('/');
-    await keyCloakSignIn(page, browserName);
 
     const [docParent] = await createDoc(
       page,
@@ -531,22 +525,19 @@ test.describe('Doc Tree: Inheritance', () => {
       'doc-tree-inheritance-child',
     );
 
-    const urlDoc = page.url();
+    const docUrl = page.url();
 
-    await page
-      .getByRole('button', {
-        name: 'Logout',
-      })
-      .click();
+    const { otherPage, cleanup } = await connectOtherUserToDoc({
+      browserName,
+      docUrl,
+      withoutSignIn: true,
+      docTitle: docChild,
+    });
 
-    await expectLoginPage(page);
-
-    await page.goto(urlDoc);
-
-    await expect(page.locator('h2').getByText(docChild)).toBeVisible();
-
-    const docTree = page.getByTestId('doc-tree');
+    const docTree = otherPage.getByTestId('doc-tree');
     await expect(docTree).toBeVisible({ timeout: 10000 });
     await expect(docTree.getByText(docParent)).toBeVisible();
+
+    await cleanup();
   });
 });

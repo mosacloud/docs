@@ -1,14 +1,9 @@
 import { expect, test } from '@playwright/test';
 
-import {
-  BROWSERS,
-  createDoc,
-  keyCloakSignIn,
-  randomName,
-  verifyDocName,
-} from './utils-common';
+import { BROWSERS, createDoc, randomName, verifyDocName } from './utils-common';
 import { writeInEditor } from './utils-editor';
 import { connectOtherUserToDoc, updateRoleUser } from './utils-share';
+import { SignIn } from './utils-signin';
 import { createRootSubPage } from './utils-sub-pages';
 
 test.describe('Document create member', () => {
@@ -99,7 +94,7 @@ test.describe('Document create member', () => {
       list.getByTestId(`doc-share-add-member-${users[1].email}`),
     ).toBeVisible();
     await expect(
-      list.getByText(`${users[1].full_name || users[1].email}`),
+      list.getByText(`${users[1].full_name || users[1].email}`).first(),
     ).toBeVisible();
 
     // Select email and verify tag
@@ -302,9 +297,14 @@ test.describe('Document create member', () => {
     await page.getByRole('button', { name: 'Share' }).click();
 
     await expect(page.getByText('Access Requests')).toBeVisible();
-    await expect(page.getByText(`E2E ${otherBrowserName}`)).toBeVisible();
+    await expect(
+      page.getByText(
+        process.env[`USERNAME_${otherBrowserName.toUpperCase()}`] || '',
+      ),
+    ).toBeVisible();
 
-    const emailRequest = `user.test@${otherBrowserName}.test`;
+    const emailRequest =
+      process.env[`SIGN_IN_USERNAME_${otherBrowserName.toUpperCase()}`] || '';
     await expect(page.getByText(emailRequest)).toBeVisible();
     const container = page.getByTestId(
       `doc-share-access-request-row-${emailRequest}`,
@@ -315,7 +315,11 @@ test.describe('Document create member', () => {
 
     await expect(page.getByText('Access Requests')).toBeHidden();
     await expect(page.getByText('Share with 2 users')).toBeVisible();
-    await expect(page.getByText(`E2E ${otherBrowserName}`)).toBeVisible();
+    await expect(
+      page.getByText(
+        process.env[`USERNAME_${otherBrowserName.toUpperCase()}`] || '',
+      ),
+    ).toBeVisible();
 
     // Other user verifies he has access
     await otherPage.reload();
@@ -343,7 +347,7 @@ test.describe('Document create member: Multiple login', () => {
     test.slow();
 
     await page.goto('/');
-    await keyCloakSignIn(page, browserName);
+    await SignIn(page, browserName);
 
     const [docParent] = await createDoc(
       page,
@@ -370,7 +374,7 @@ test.describe('Document create member: Multiple login', () => {
 
     const otherBrowser = BROWSERS.find((b) => b !== browserName);
 
-    await keyCloakSignIn(page, otherBrowser!);
+    await SignIn(page, otherBrowser!);
 
     await expect(page.getByTestId('header-logo-link')).toBeVisible({
       timeout: 10000,

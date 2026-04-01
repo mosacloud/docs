@@ -1,6 +1,6 @@
 import { FullConfig, FullProject, chromium, expect } from '@playwright/test';
 
-import { keyCloakSignIn } from './utils-common';
+import { SignIn } from './utils-signin';
 
 const saveStorageState = async (
   browserConfig: FullProject<unknown, unknown>,
@@ -22,7 +22,7 @@ const saveStorageState = async (
     await page.content();
     await expect(page.getByText('Docs').first()).toBeVisible();
 
-    await keyCloakSignIn(page, browserName);
+    await SignIn(page, browserName);
 
     await expect(
       page.locator('header').first().getByRole('button', {

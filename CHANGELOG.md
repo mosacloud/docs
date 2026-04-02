@@ -6,6 +6,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [v4.8.5] - 2026-04-03
+
 ### Added
 
 - 🔧(backend) settings CONVERSION_UPLOAD_ENABLED to control usage of docspec
@@ -1211,7 +1213,8 @@ and this project adheres to
 - ✨(frontend) Coming Soon page (#67)
 - 🚀 Impress, project to manage your documents easily and collaboratively.
 
-[unreleased]: https://github.com/suitenumerique/docs/compare/v4.8.4...main
+[unreleased]: https://github.com/suitenumerique/docs/compare/v4.8.5...main
+[v4.8.5]: https://github.com/suitenumerique/docs/releases/v4.8.5
 [v4.8.4]: https://github.com/suitenumerique/docs/releases/v4.8.4
 [v4.8.3]: https://github.com/suitenumerique/docs/releases/v4.8.3
 [v4.8.2]: https://github.com/suitenumerique/docs/releases/v4.8.2

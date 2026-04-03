@@ -40,6 +40,7 @@ jobs:
           images: mosacloud/docs-backend
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=dev,enable={{is_default_branch}}
             type=raw,value=${{ steps.version.outputs.version }}-mosa.${{ github.run_number }},enable={{is_default_branch}}
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -93,6 +94,7 @@ jobs:
           images: mosacloud/docs-frontend
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=dev,enable={{is_default_branch}}
             type=raw,value=${{ steps.version.outputs.version }}-mosa.${{ github.run_number }},enable={{is_default_branch}}
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -149,6 +151,7 @@ jobs:
           images: mosacloud/docs-frontend-mit
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=dev,enable={{is_default_branch}}
             type=raw,value=${{ steps.version.outputs.version }}-mosa.${{ github.run_number }},enable={{is_default_branch}}
             type=ref,event=pr
             type=semver,pattern={{version}}
@@ -205,6 +208,7 @@ jobs:
           images: mosacloud/docs-y-provider
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=dev,enable={{is_default_branch}}
             type=raw,value=${{ steps.version.outputs.version }}-mosa.${{ github.run_number }},enable={{is_default_branch}}
             type=ref,event=pr
             type=semver,pattern={{version}}

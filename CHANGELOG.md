@@ -6,6 +6,10 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- 🚸(frontend) allow opening "@page" links with ctrl/command/middle-mouse click
+
 ## [v4.8.5] - 2026-04-03
 
 ### Added

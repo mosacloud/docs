@@ -124,10 +124,27 @@ export const LinkSelected = ({
 
   const { emoji, titleWithoutEmoji } = getEmojiAndTitle(title);
   const router = useRouter();
+  const href = `/docs/${docId}/`;
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
-    void router.push(`/docs/${docId}/`);
+
+    // If ctrl or command is pressed, it opens a new tab. If shift is pressed, it opens a new window
+    if (e.metaKey || e.ctrlKey || e.shiftKey) {
+      window.open(href, '_blank');
+      return;
+    }
+    void router.push(href);
+  };
+
+  // This triggers on middle-mouse click
+  const handleAuxClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.button !== 1) {
+      return;
+    }
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(href, '_blank');
   };
 
   return (
@@ -135,6 +152,7 @@ export const LinkSelected = ({
       as="span"
       className="--docs--interlinking-link-inline-content"
       onClick={handleClick}
+      onAuxClick={handleAuxClick}
       draggable="false"
       $css={css`
         display: inline;

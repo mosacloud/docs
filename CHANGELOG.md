@@ -11,6 +11,10 @@ and this project adheres to
 - 🚸(frontend) allow opening "@page" links with ctrl/command/middle-mouse click
 - ✅ E2E - Any instance friendly #2142
 
+### Fixed
+
+- 🐛(frontend) Fix drop cursor creating columns #2185
+
 ## [v4.8.5] - 2026-04-03
 
 ### Added

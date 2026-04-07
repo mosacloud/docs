@@ -13,6 +13,9 @@ env:
   DOCKER_USER: 1001:127
   REGISTRY: ghcr.io
 
+permissions:
+  contents: read
+
 jobs:
   build-and-push-backend:
     runs-on: ubuntu-latest

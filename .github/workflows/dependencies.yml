@@ -14,6 +14,9 @@ on:
         type: boolean
         default: false
 
+permissions:
+  contents: read
+
 jobs:
   front-dependencies-installation:
     if: ${{ inputs.with-front-dependencies-installation == true }}

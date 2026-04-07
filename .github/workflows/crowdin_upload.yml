@@ -6,6 +6,9 @@ on:
     branches: 
       - main
 
+permissions:
+  contents: read
+
 jobs:
   install-dependencies:
     uses: ./.github/workflows/dependencies.yml

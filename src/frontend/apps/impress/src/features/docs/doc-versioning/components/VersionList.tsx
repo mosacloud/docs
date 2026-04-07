@@ -62,7 +62,6 @@ const VersionListState = ({
         >
           <TextErrors
             causes={error.cause}
-            status={error.status}
             icon={
               error.status === 502 ? (
                 <Icon iconName="wifi_off" $theme="danger" />

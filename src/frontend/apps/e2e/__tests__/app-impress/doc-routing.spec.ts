@@ -33,6 +33,48 @@ test.describe('Doc Routing', () => {
     await expect(page).toHaveURL(/\/docs\/$/);
   });
 
+  test('checks 500 refresh retries original document request', async ({
+    page,
+    browserName,
+  }) => {
+    const [docTitle] = await createDoc(page, 'doc-routing-500', browserName, 1);
+    await verifyDocName(page, docTitle);
+
+    const docId = page.url().split('/docs/')[1]?.split('/')[0];
+    // While true, every doc GET fails (including React Query retries) so we
+    // reliably land on /500. Set to false before refresh so the doc loads again.
+    let failDocumentGet = true;
+
+    await page.route(/\**\/documents\/\**/, async (route) => {
+      const request = route.request();
+      if (
+        failDocumentGet &&
+        request.method().includes('GET') &&
+        docId &&
+        request.url().includes(`/documents/${docId}/`)
+      ) {
+        await route.fulfill({
+          status: 500,
+          json: { detail: 'Internal Server Error' },
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    await page.reload();
+
+    await expect(page).toHaveURL(/\/500\/?\?from=/, { timeout: 15000 });
+
+    const refreshButton = page.getByRole('button', { name: 'Refresh page' });
+    await expect(refreshButton).toBeVisible();
+
+    failDocumentGet = false;
+    await refreshButton.click();
+
+    await verifyDocName(page, docTitle);
+  });
+
   test('checks 404 on docs/[id] page', async ({ page }) => {
     await page.waitForTimeout(300);
 

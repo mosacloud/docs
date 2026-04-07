@@ -15,6 +15,10 @@ and this project adheres to
 
 - 🐛(frontend) Fix drop cursor creating columns #2185
 
+### Fixed
+
+- 🐛 Fixed side effects between comments and versioning #2183
+
 ## [v4.8.5] - 2026-04-03
 
 ### Added

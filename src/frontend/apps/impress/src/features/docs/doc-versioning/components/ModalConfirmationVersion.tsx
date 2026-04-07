@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { createGlobalStyle } from 'styled-components';
 
 import { Box, Text } from '@/components';
+import { useEditorStore } from '@/docs/doc-editor/stores';
 import {
   Doc,
   base64ToYDoc,
@@ -47,6 +48,7 @@ export const ModalConfirmationVersion = ({
   const { t } = useTranslation();
   const { toast } = useToastProvider();
   const { provider } = useProviderStore();
+  const { threadStore } = useEditorStore();
   const { mutate: updateDoc } = useUpdateDoc({
     listInvalidQueries: [KEY_LIST_DOC_VERSIONS],
     onSuccess: () => {
@@ -65,6 +67,8 @@ export const ModalConfirmationVersion = ({
         provider.document,
         base64ToYDoc(version.content),
       );
+
+      threadStore?.refreshThreads();
 
       onDisplaySuccess();
     },

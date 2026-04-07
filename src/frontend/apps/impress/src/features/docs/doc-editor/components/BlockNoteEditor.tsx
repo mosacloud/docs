@@ -303,11 +303,13 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
 interface BlockNoteReaderProps {
   docId: Doc['id'];
   initialContent: Y.XmlFragment;
+  isMainEditor?: boolean;
 }
 
 export const BlockNoteReader = ({
   docId,
   initialContent,
+  isMainEditor = true,
 }: BlockNoteReaderProps) => {
   const { user } = useAuth();
   const { setEditor } = useEditorStore();
@@ -336,12 +338,19 @@ export const BlockNoteReader = ({
   );
 
   useEffect(() => {
+    if (!isMainEditor) {
+      return;
+    }
+
     setEditor(editor);
 
     return () => {
+      if (!isMainEditor) {
+        return;
+      }
       setEditor(undefined);
     };
-  }, [setEditor, editor]);
+  }, [setEditor, editor, isMainEditor]);
 
   useHeadings(editor);
 

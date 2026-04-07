@@ -133,14 +133,20 @@ test.describe('Doc Version', () => {
     const [randomDoc] = await createDoc(page, 'doc-version', browserName, 1);
     await verifyDocName(page, randomDoc);
 
-    await page.locator('.bn-block-outer').last().click();
-    await page.locator('.bn-block-outer').last().fill('Hello');
+    const editor = await writeInEditor({ page, text: 'Hello' });
+
+    // Add a comment
+    await editor.getByText('Hello').selectText();
+    await page.getByRole('button', { name: 'Add comment' }).click();
+
+    const thread = page.locator('.bn-thread');
+    await thread.getByRole('paragraph').first().fill('This is a comment');
+    await thread.locator('[data-test="save"]').click();
 
     await goToGridDoc(page, {
       title: randomDoc,
     });
 
-    const editor = page.locator('.ProseMirror');
     await expect(editor.getByText('Hello')).toBeVisible();
     await page.locator('.bn-block-outer').last().click();
     await page.keyboard.press('Enter');
@@ -151,6 +157,11 @@ test.describe('Doc Version', () => {
     });
 
     await expect(page.getByText('World')).toBeVisible();
+
+    await editor.getByText('Hello').click();
+    await thread.getByText('This is a comment').first().hover();
+    await thread.locator('[data-test="resolve"]').click();
+    await expect(thread).toBeHidden();
 
     await page.getByLabel('Open the document options').click();
     await page.getByRole('menuitem', { name: 'Version history' }).click();
@@ -175,7 +186,21 @@ test.describe('Doc Version', () => {
 
     await page.waitForTimeout(500);
 
-    await expect(page.getByText('Hello')).toBeVisible();
-    await expect(page.getByText('World')).toBeHidden();
+    await expect(editor.getByText('Hello')).toBeVisible();
+    await expect(editor.getByText('World')).toBeHidden();
+
+    // The old comment is not restored
+    await expect(editor.getByText('Hello')).toHaveCSS(
+      'background-color',
+      'rgba(0, 0, 0, 0)',
+    );
+
+    // We can add a new comment
+    await editor.getByText('Hello').selectText();
+    await page.getByRole('button', { name: 'Add comment' }).click();
+
+    await thread.getByRole('paragraph').first().fill('This is a comment');
+    await thread.locator('[data-test="save"]').click();
+    await expect(editor.getByText('Hello')).toHaveClass('bn-thread-mark');
   });
 });

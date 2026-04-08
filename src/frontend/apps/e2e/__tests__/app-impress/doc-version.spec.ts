@@ -142,6 +142,7 @@ test.describe('Doc Version', () => {
     const thread = page.locator('.bn-thread');
     await thread.getByRole('paragraph').first().fill('This is a comment');
     await thread.locator('[data-test="save"]').click();
+    await expect(thread).toBeHidden();
 
     await goToGridDoc(page, {
       title: randomDoc,

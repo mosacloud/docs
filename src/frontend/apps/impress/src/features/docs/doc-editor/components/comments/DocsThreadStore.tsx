@@ -1,7 +1,7 @@
 import { CommentBody, ThreadStore } from '@blocknote/core/comments';
 import type { Awareness } from 'y-protocols/awareness';
 
-import { APIError, APIList, errorCauses, fetchAPI } from '@/api';
+import { APIError, errorCauses, fetchAPI } from '@/api';
 import { Doc } from '@/features/docs/doc-management';
 
 import { useEditorStore } from '../../stores';
@@ -15,7 +15,7 @@ import {
   ServerThread,
 } from './types';
 
-type ServerThreadListResponse = APIList<ServerThread>;
+type ServerThreadListResponse = ServerThread[];
 
 export class DocsThreadStore extends ThreadStore {
   protected static COMMENTS_PING = 'commentsPing';
@@ -335,7 +335,7 @@ export class DocsThreadStore extends ThreadStore {
 
     const threads = (await response.json()) as ServerThreadListResponse;
     const next = new Map<string, ClientThreadData>();
-    threads.results.forEach((thread) => {
+    threads.forEach((thread) => {
       const threadData: ClientThreadData = serverThreadToClientThread(thread);
       next.set(thread.id, threadData);
     });

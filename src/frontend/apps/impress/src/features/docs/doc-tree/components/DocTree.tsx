@@ -1,3 +1,4 @@
+import { ButtonElement } from '@gouvfr-lasuite/cunningham-react';
 import {
   OpenMap,
   TreeView,
@@ -44,7 +45,7 @@ export const DocTree = ({ currentDoc }: DocTreeProps) => {
     treeContext?.treeData.selectedNode?.id === treeContext.root.id;
   const rootItemRef = useRef<HTMLDivElement>(null);
   const rootActionsRef = useRef<HTMLDivElement>(null);
-  const rootButtonOptionRef = useRef<HTMLButtonElement | null>(null);
+  const rootButtonOptionRef = useRef<ButtonElement | null>(null);
 
   const { t } = useTranslation();
 

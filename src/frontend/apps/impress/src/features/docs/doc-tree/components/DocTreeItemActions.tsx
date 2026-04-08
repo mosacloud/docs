@@ -1,4 +1,8 @@
-import { useModal } from '@gouvfr-lasuite/cunningham-react';
+import {
+  Button,
+  ButtonElement,
+  useModal,
+} from '@gouvfr-lasuite/cunningham-react';
 import {
   DropdownMenu,
   DropdownMenuOption,
@@ -10,7 +14,9 @@ import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
-import { Box, BoxButton, Icon } from '@/components';
+import AddSVG from '@/assets/icons/ui-kit/add.svg';
+import MoreHorizSVG from '@/assets/icons/ui-kit/more_horiz.svg';
+import { Box, Icon } from '@/components';
 import {
   Doc,
   ModalRemoveDoc,
@@ -33,7 +39,7 @@ type DocTreeItemActionsProps = {
   onOpenChange?: (isOpen: boolean) => void;
   parentId?: string | null;
   actionsRef?: React.RefObject<HTMLDivElement | null>;
-  buttonOptionRef?: React.RefObject<HTMLButtonElement | null>;
+  buttonOptionRef?: React.RefObject<ButtonElement | null>;
 };
 
 export const DocTreeItemActions = ({
@@ -48,7 +54,7 @@ export const DocTreeItemActions = ({
 }: DocTreeItemActionsProps) => {
   const internalActionsRef = useRef<HTMLDivElement | null>(null);
   const targetActionsRef = actionsRef ?? internalActionsRef;
-  const internalButtonRef = useRef<HTMLButtonElement | null>(null);
+  const internalButtonRef = useRef<ButtonElement | null>(null);
   const targetButtonRef = buttonOptionRef ?? internalButtonRef;
   const router = useRouter();
   const { t } = useTranslation();
@@ -179,15 +185,27 @@ export const DocTreeItemActions = ({
         $direction="row"
         $align="center"
         className="--docs--doc-tree-item-actions"
-        $gap="4px"
+        $gap="4xs"
         tabIndex={-1}
+        $css={css`
+          & button {
+            height: 24px;
+            width: 24px;
+            padding: 0;
+            justify-content: center;
+            &:focus-visible {
+              box-shadow: 0 0 0 2px
+                var(--c--contextuals--border--semantic--brand--primary);
+            }
+          }
+        `}
       >
         <DropdownMenu
           options={options}
           isOpen={isOpen}
           onOpenChange={onOpenChange}
         >
-          <BoxButton
+          <Button
             ref={targetButtonRef}
             onClick={(e) => {
               e.stopPropagation();
@@ -196,25 +214,18 @@ export const DocTreeItemActions = ({
             }}
             aria-label={t('More options')}
             tabIndex={-1}
-            $theme="brand"
-            $variation="secondary"
-            $css={css`
-              &:focus-visible {
-                outline-offset: -2px;
-                border-radius: var(--c--globals--spacings--st);
-              }
-            `}
+            color="brand"
+            variant="tertiary"
+            size="small"
           >
             <Icon
-              iconName="more_horiz"
-              variant="filled"
-              $theme="brand"
-              $variation="secondary"
+              $color="inherit"
+              icon={<MoreHorizSVG width={16} height={16} aria-hidden="true" />}
             />
-          </BoxButton>
+          </Button>
         </DropdownMenu>
         {doc.abilities.children_create && (
-          <BoxButton
+          <Button
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
@@ -223,20 +234,18 @@ export const DocTreeItemActions = ({
                 parentId: doc.id,
               });
             }}
-            $theme="brand"
-            $variation="secondary"
             aria-label={t('Add a sub page')}
             data-testid="doc-tree-item-actions-add-child"
             tabIndex={-1}
-            $css={css`
-              &:focus-visible {
-                outline-offset: -2px;
-                border-radius: var(--c--globals--spacings--st);
-              }
-            `}
+            color="brand"
+            variant="tertiary"
+            size="small"
           >
-            <Icon variant="filled" $color="inherit" iconName="add_box" />
-          </BoxButton>
+            <Icon
+              $color="inherit"
+              icon={<AddSVG width={16} height={16} aria-hidden="true" />}
+            />
+          </Button>
         )}
       </Box>
       {deleteModal.isOpen && (

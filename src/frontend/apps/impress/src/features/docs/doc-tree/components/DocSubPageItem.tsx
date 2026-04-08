@@ -1,3 +1,4 @@
+import { ButtonElement } from '@gouvfr-lasuite/cunningham-react';
 import {
   Spinner,
   TreeViewDataType,
@@ -159,7 +160,7 @@ const DocSubPageItemContent = (props: TreeViewNodeProps<Doc>) => {
   const ariaLabel = docTitle;
   const isDisabled = !!doc.deleted_at;
   const actionsRef = useRef<HTMLDivElement>(null);
-  const buttonOptionRef = useRef<HTMLButtonElement | null>(null);
+  const buttonOptionRef = useRef<ButtonElement | null>(null);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     const target = e.target as HTMLElement | null;
@@ -203,9 +204,12 @@ const DocSubPageItemContent = (props: TreeViewNodeProps<Doc>) => {
           display: ${menuOpen || !isDesktop ? 'flex' : 'none'};
           right: var(--c--globals--spacings--0);
         }
+        .c__tree-view--node {
+          padding-right: var(--c--globals--spacings--xxxs);
+          height: 32px;
+        }
         .c__tree-view--node.isFocused {
           outline: none !important;
-          box-shadow: 0 0 0 2px var(--c--globals--colors--brand-500) !important;
           border-radius: var(--c--globals--spacings--st);
           .light-doc-item-actions {
             display: flex;

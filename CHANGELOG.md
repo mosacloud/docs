@@ -19,6 +19,7 @@ and this project adheres to
 
 - 🐛(frontend) Fix drop cursor creating columns #2185
 - 🐛 Fixed side effects between comments and versioning #2183
+- 🐛(frontend) Firefox child doc visual #2188
 
 ## [v4.8.5] - 2026-04-03
 

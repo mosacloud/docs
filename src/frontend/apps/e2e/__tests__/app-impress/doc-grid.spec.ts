@@ -97,7 +97,7 @@ test.describe('Document grid item options', () => {
 
     await expect(page.getByText(docTitle)).toBeVisible();
     const row = await getGridRow(page, docTitle);
-    await row.getByText(`more_horiz`).click();
+    await row.getByRole('button', { name: /Open the menu of actions/ }).click();
 
     await page.getByRole('menuitem', { name: 'Share' }).click();
 
@@ -114,7 +114,7 @@ test.describe('Document grid item options', () => {
     const row = await getGridRow(page, docTitle);
 
     // Pin
-    await row.getByText(`more_horiz`).click();
+    await row.getByRole('button', { name: /Open the menu of actions/ }).click();
     await page.getByRole('menuitem', { name: 'Pin' }).click();
 
     // Check is pinned
@@ -123,7 +123,7 @@ test.describe('Document grid item options', () => {
     await expect(leftPanelFavorites.getByText(docTitle)).toBeVisible();
 
     // Unpin
-    await row.getByText(`more_horiz`).click();
+    await row.getByRole('button', { name: /Open the menu of actions/ }).click();
     await page.getByText('Unpin').click();
 
     // Check is unpinned
@@ -140,7 +140,7 @@ test.describe('Document grid item options', () => {
 
     await expect(page.getByText(docTitle)).toBeVisible();
     const row = await getGridRow(page, docTitle);
-    await row.getByText(`more_horiz`).click();
+    await row.getByRole('button', { name: /Open the menu of actions/ }).click();
 
     await page.getByRole('menuitem', { name: 'Delete' }).click();
 

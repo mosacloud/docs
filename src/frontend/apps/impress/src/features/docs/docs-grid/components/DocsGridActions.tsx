@@ -9,6 +9,7 @@ import DocMoveInSVG from '@/assets/icons/ui-kit/doc-move-in.svg';
 import GroupSVG from '@/assets/icons/ui-kit/group.svg';
 import KeepSVG from '@/assets/icons/ui-kit/keep.svg';
 import KeepOffSVG from '@/assets/icons/ui-kit/keep_off.svg';
+import MoreHorizSVG from '@/assets/icons/ui-kit/more_horiz.svg';
 import { DropdownMenu, DropdownMenuOption, Icon } from '@/components';
 import {
   Doc,
@@ -145,7 +146,7 @@ export const DocsGridActions = ({ doc }: DocsGridActionsProps) => {
       >
         <Icon
           data-testid={`docs-grid-actions-button-${doc.id}`}
-          iconName="more_horiz"
+          icon={<MoreHorizSVG width={16} height={16} aria-hidden="true" />}
           $theme="brand"
           $variation="secondary"
           $css={css`

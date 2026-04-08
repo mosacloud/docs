@@ -255,7 +255,7 @@ test.describe('Doc Tree', () => {
         hasText: docChild,
       });
     await child.hover();
-    const menu = child.getByText(`more_horiz`);
+    const menu = child.getByRole('button', { name: /More options/ });
     await menu.click();
     await page.getByText('Move to my docs').click();
 
@@ -317,7 +317,7 @@ test.describe('Doc Tree', () => {
         hasText: docChild,
       });
     await child.hover();
-    const menu = child.getByText(`more_horiz`);
+    const menu = child.getByRole('button', { name: /More options/ });
     await menu.click();
 
     await expect(
@@ -464,7 +464,7 @@ test.describe('Doc Tree', () => {
 
     // Check Remove emoji is not present initially
     await row.hover();
-    const menu = row.getByText(`more_horiz`);
+    const menu = row.getByRole('button', { name: /More options/ });
     await menu.click();
     await expect(
       page.getByRole('menuitem', { name: 'Remove emoji' }),

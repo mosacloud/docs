@@ -342,7 +342,7 @@ def test_api_documents_threads_list_public_document_link_role_higher_than_reader
         f"/api/v1.0/documents/{document.id!s}/threads/",
     )
     assert response.status_code == 200
-    assert response.json()["count"] == 3
+    assert len(response.json()) == 3
 
 
 def test_api_documents_threads_list_authenticated_document_anonymous_user():
@@ -406,7 +406,7 @@ def test_api_documents_threads_list_authenticated_document(link_role):
         f"/api/v1.0/documents/{document.id!s}/threads/",
     )
     assert response.status_code == 200
-    assert response.json()["count"] == 3
+    assert len(response.json()) == 3
 
 
 def test_api_documents_threads_list_restricted_document_anonymous_user():
@@ -473,7 +473,7 @@ def test_api_documents_threads_list_restricted_document_editor(role):
         f"/api/v1.0/documents/{document.id!s}/threads/",
     )
     assert response.status_code == 200
-    assert response.json()["count"] == 3
+    assert len(response.json()) == 3
 
 
 # Retrieve

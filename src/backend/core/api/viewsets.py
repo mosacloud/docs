@@ -2757,7 +2757,7 @@ class ThreadViewSet(
     """Thread API: list/create threads and nested comment operations."""
 
     permission_classes = [permissions.CommentPermission]
-    pagination_class = Pagination
+    pagination_class = None
     serializer_class = serializers.ThreadSerializer
     queryset = models.Thread.objects.select_related("creator", "document").filter(
         resolved=False

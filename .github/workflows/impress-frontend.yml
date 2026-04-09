@@ -164,7 +164,13 @@ jobs:
 
           LAST_FAILED_FLAG=""
           if [ "${{ github.run_attempt }}" != "1" ]; then
-            LAST_FAILED_FLAG="--last-failed"
+            LAST_RUN_FILE="apps/e2e/test-results/.last-run.json"
+            if [ -f "$LAST_RUN_FILE" ]; then
+              FAILED_COUNT=$(jq '.failedTests | length' "$LAST_RUN_FILE" 2>/dev/null || echo "0")
+              if [ "${FAILED_COUNT:-0}" -gt "0" ]; then
+                LAST_FAILED_FLAG="--last-failed"
+              fi
+            fi
           fi
           
           yarn e2e:test --project='chromium' $LAST_FAILED_FLAG
@@ -246,7 +252,13 @@ jobs:
 
           LAST_FAILED_FLAG=""
           if [ "${{ github.run_attempt }}" != "1" ]; then
-            LAST_FAILED_FLAG="--last-failed"
+            LAST_RUN_FILE="apps/e2e/test-results/.last-run.json"
+            if [ -f "$LAST_RUN_FILE" ]; then
+              FAILED_COUNT=$(jq '.failedTests | length' "$LAST_RUN_FILE" 2>/dev/null || echo "0")
+              if [ "${FAILED_COUNT:-0}" -gt "0" ]; then
+                LAST_FAILED_FLAG="--last-failed"
+              fi
+            fi
           fi
 
           yarn e2e:test --project=firefox --project=webkit $LAST_FAILED_FLAG

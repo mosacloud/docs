@@ -8,7 +8,8 @@ and this project adheres to
 
 ### Fixed
 
-🐛(frontend) abort check media status unmount #2194
+- 🐛(frontend) abort check media status unmount #2194
+- ✨(backend) order pinned documents by last updated at #2028
 
 ## [v4.8.6] - 2026-04-08
 

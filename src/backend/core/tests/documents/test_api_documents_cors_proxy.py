@@ -255,7 +255,7 @@ def test_api_docs_cors_proxy_invalid_url(url_to_fetch):
         f"/api/v1.0/documents/{document.id!s}/cors-proxy/?url={url_to_fetch}"
     )
     assert response.status_code == 400
-    assert response.json() == ["Enter a valid URL."]
+    assert response.json() == {"detail": "['Enter a valid URL.']"}
 
 
 @unittest.mock.patch("core.api.viewsets.socket.getaddrinfo")

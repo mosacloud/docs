@@ -2135,7 +2135,7 @@ class DocumentViewSet(
         url_validator = URLValidator(schemes=["http", "https"])
         try:
             url_validator(url)
-        except drf.exceptions.ValidationError as e:
+        except ValidationError as e:
             return drf.response.Response(
                 {"detail": str(e)},
                 status=drf.status.HTTP_400_BAD_REQUEST,

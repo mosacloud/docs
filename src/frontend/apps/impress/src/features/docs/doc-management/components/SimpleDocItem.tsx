@@ -38,7 +38,15 @@ export const SimpleDocItem = ({
   const { isDesktop } = useResponsiveStore();
   const { untitledDocument } = useTrans();
   const { isChild } = useDocUtils(doc);
-  const { relativeDate } = useDate();
+  const { relativeDate, formatDate } = useDate();
+  const docTitle = doc.title || untitledDocument;
+  const docRelativeUpdate = relativeDate(doc.updated_at);
+  const itemAriaLabel = `${t('Open document {{title}}', { title: docTitle })}. ${t(
+    'Last update: {{update}}',
+    {
+      update: formatDate(doc.updated_at),
+    },
+  )}`;
 
   return (
     <Box
@@ -47,8 +55,7 @@ export const SimpleDocItem = ({
       $overflow="auto"
       $width="100%"
       className="--docs--simple-doc-item"
-      role="presentation"
-      aria-label={`${t('Open document {{title}}', { title: doc.title || untitledDocument })}`}
+      aria-label={itemAriaLabel}
     >
       <Box
         $direction="row"
@@ -90,7 +97,7 @@ export const SimpleDocItem = ({
           $css={ItemTextCss}
           data-testid="doc-title"
         >
-          {doc.title || untitledDocument}
+          {docTitle}
         </Text>
         {(!isDesktop || showAccesses) && (
           <Box
@@ -101,7 +108,7 @@ export const SimpleDocItem = ({
             aria-hidden="true"
           >
             <Text $size="xs" $variation="tertiary">
-              {relativeDate(doc.updated_at)}
+              {docRelativeUpdate}
             </Text>
           </Box>
         )}

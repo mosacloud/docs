@@ -14,14 +14,15 @@ and this project adheres to
 
 ### Changed
 
- - ♿️(frontend) structure correctly 5xx error alerts #2128
+- ♿️(frontend) structure correctly 5xx error alerts #2128
+- ♿️(frontend) make doc search result labels uniquely identifiable #2212
 
 ## [v4.8.6] - 2026-04-08
 
 ### Added
 
-- 🚸(frontend) allow opening "@page" links with 
-ctrl/command/middle-mouse click #2170
+- 🚸(frontend) allow opening "@page" links with
+  ctrl/command/middle-mouse click #2170
 - ✅ E2E - Any instance friendly #2142
 
 ### Changed

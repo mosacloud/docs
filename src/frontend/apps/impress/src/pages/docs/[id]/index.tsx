@@ -6,7 +6,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Box, Icon, Loading, TextErrors } from '@/components';
+import { Loading } from '@/components';
 import { DEFAULT_QUERY_RETRY } from '@/core';
 import {
   Doc,
@@ -105,7 +105,7 @@ const DocPage = ({ id }: DocProps) => {
   const { setCurrentDoc } = useDocStore();
   const { addTask } = useBroadcastStore();
   const queryClient = useQueryClient();
-  const { replace } = useRouter();
+  const { replace, asPath } = useRouter();
   useCollaboration(doc?.id, doc?.content);
   const { t } = useTranslation();
   const { authenticated } = useAuth();
@@ -191,43 +191,39 @@ const DocPage = ({ id }: DocProps) => {
   }, [addTask, doc?.id, queryClient]);
 
   useEffect(() => {
-    if (!isError || !error?.status || ![404, 401].includes(error.status)) {
+    if (!isError || !error?.status || [403].includes(error.status)) {
       return;
     }
-
-    let replacePath = `/${error.status}`;
 
     if (error.status === 401) {
       if (authenticated) {
         queryClient.setQueryData([KEY_AUTH], null);
       }
       setAuthUrl();
+      void replace('/401');
+      return;
     }
 
-    void replace(replacePath);
-  }, [isError, error?.status, replace, authenticated, queryClient]);
+    if (error.status === 404) {
+      void replace('/404');
+      return;
+    }
+
+    if (error.status === 502) {
+      void replace('/offline');
+      return;
+    }
+
+    const fromPath = encodeURIComponent(asPath);
+    void replace(`/500?from=${fromPath}`);
+  }, [isError, error?.status, replace, authenticated, queryClient, asPath]);
 
   if (isError && error?.status) {
-    if ([404, 401].includes(error.status)) {
-      return <Loading />;
-    }
-
     if (error.status === 403) {
       return <DocPage403 id={id} />;
     }
 
-    return (
-      <Box $margin="large">
-        <TextErrors
-          causes={error.cause}
-          icon={
-            error.status === 502 ? (
-              <Icon iconName="wifi_off" $theme="danger" $withThemeInherited />
-            ) : undefined
-          }
-        />
-      </Box>
-    );
+    return <Loading />;
   }
 
   if (!doc) {

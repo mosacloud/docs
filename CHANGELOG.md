@@ -6,12 +6,23 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- 🚸(frontend) redirect on current url tab after 401 #2197
+- 🐛(frontend) abort check media status unmount #2194
+- ✨(backend) order pinned documents by last updated at #2028
+
+### Changed
+
+- ♿️(frontend) structure correctly 5xx error alerts #2128
+- ♿️(frontend) make doc search result labels uniquely identifiable #2212
+
 ## [v4.8.6] - 2026-04-08
 
 ### Added
 
-- 🚸(frontend) allow opening "@page" links with 
-ctrl/command/middle-mouse click #2170
+- 🚸(frontend) allow opening "@page" links with
+  ctrl/command/middle-mouse click #2170
 - ✅ E2E - Any instance friendly #2142
 
 ### Changed
@@ -43,7 +54,7 @@ ctrl/command/middle-mouse click #2170
 - ⚡️(frontend) add jitter to WS reconnection #2162
 - 🐛(frontend) fix tree pagination #2145
 - 🐛(nginx) add page reconciliation on nginx #2154
-
+- 🐛(backend) fix race condition in reconciliation requests CSV import #2153
 
 ## [v4.8.4] - 2026-03-25
 
@@ -64,6 +75,10 @@ ctrl/command/middle-mouse click #2170
 
 - 🐛(y-provider) destroy Y.Doc instances after each convert request #2129
 - 🐛(backend) remove deleted sub documents in favorite_list endpoint #2083
+
+### Fixed
+
+- 🐛(backend) create_for_owner: add accesses before saving doc content #2124
 
 ## [v4.8.3] - 2026-03-23
 

@@ -834,6 +834,7 @@ class DocumentViewSet(
         queryset = self.queryset.filter(path_list)
         queryset = queryset.filter(id__in=favorite_documents_ids)
         queryset = queryset.filter(ancestors_deleted_at__isnull=True)
+        queryset = queryset.order_by("-updated_at")
         queryset = queryset.annotate_user_roles(user)
         queryset = queryset.annotate(
             is_favorite=db.Value(True, output_field=db.BooleanField())
@@ -2135,7 +2136,7 @@ class DocumentViewSet(
         url_validator = URLValidator(schemes=["http", "https"])
         try:
             url_validator(url)
-        except drf.exceptions.ValidationError as e:
+        except ValidationError as e:
             return drf.response.Response(
                 {"detail": str(e)},
                 status=drf.status.HTTP_400_BAD_REQUEST,

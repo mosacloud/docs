@@ -1,13 +1,6 @@
-import crypto from 'crypto';
-
 import { expect, test } from '@playwright/test';
 
-import {
-  createDoc,
-  getCurrentConfig,
-  mockedDocument,
-  verifyDocName,
-} from './utils-common';
+import { createDoc, getCurrentConfig, verifyDocName } from './utils-common';
 import { writeInEditor } from './utils-editor';
 import { SignIn, expectLoginPage } from './utils-signin';
 import { createRootSubPage } from './utils-sub-pages';
@@ -38,6 +31,48 @@ test.describe('Doc Routing', () => {
     await page.goto('/docs/');
     await expect(buttonCreateHomepage).toBeVisible();
     await expect(page).toHaveURL(/\/docs\/$/);
+  });
+
+  test('checks 500 refresh retries original document request', async ({
+    page,
+    browserName,
+  }) => {
+    const [docTitle] = await createDoc(page, 'doc-routing-500', browserName, 1);
+    await verifyDocName(page, docTitle);
+
+    const docId = page.url().split('/docs/')[1]?.split('/')[0];
+    // While true, every doc GET fails (including React Query retries) so we
+    // reliably land on /500. Set to false before refresh so the doc loads again.
+    let failDocumentGet = true;
+
+    await page.route(/\**\/documents\/\**/, async (route) => {
+      const request = route.request();
+      if (
+        failDocumentGet &&
+        request.method().includes('GET') &&
+        docId &&
+        request.url().includes(`/documents/${docId}/`)
+      ) {
+        await route.fulfill({
+          status: 500,
+          json: { detail: 'Internal Server Error' },
+        });
+      } else {
+        await route.continue();
+      }
+    });
+
+    await page.reload();
+
+    await expect(page).toHaveURL(/\/500\/?\?from=/, { timeout: 15000 });
+
+    const refreshButton = page.getByRole('button', { name: 'Refresh page' });
+    await expect(refreshButton).toBeVisible();
+
+    failDocumentGet = false;
+    await refreshButton.click();
+
+    await verifyDocName(page, docTitle);
   });
 
   test('checks 404 on docs/[id] page', async ({ page }) => {
@@ -119,13 +154,53 @@ test.describe('Doc Routing: Not logged', () => {
     page,
     browserName,
   }) => {
-    const uuid = crypto.randomUUID();
-    await mockedDocument(page, { link_reach: 'public', id: uuid });
-    await page.goto(`/docs/${uuid}/`);
-    await expect(page.locator('h2').getByText('Mocked document')).toBeVisible();
-    await page.getByRole('button', { name: 'Login' }).click();
+    await page.goto('/');
+    await SignIn(page, browserName);
+
+    const [docTitle1] = await createDoc(page, 'doc-login-1', browserName, 1);
+    await verifyDocName(page, docTitle1);
+
+    const page2 = await page.context().newPage();
+    await page2.goto('/');
+    const [docTitle2] = await createDoc(page2, 'doc-login-2', browserName, 1);
+    await verifyDocName(page2, docTitle2);
+
+    // Remove cookies `docs_sessionid` to simulate the user being logged out
+    await page2.context().clearCookies();
+    await page2.reload();
+
+    // Tab 2 - 401 triggered, user should be redirected to login page
+    await expect(
+      page2
+        .getByRole('main', { name: 'Main content' })
+        .getByRole('button', { name: 'Login' }),
+    ).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Tab 1 - 401 triggered, user should be redirected to login page
+    await page.reload();
+    await expect(
+      page
+        .getByRole('main', { name: 'Main content' })
+        .getByRole('button', { name: 'Login' }),
+    ).toBeVisible({
+      timeout: 10000,
+    });
+
+    // Reconnected
+    await page
+      .getByRole('main', { name: 'Main content' })
+      .getByRole('button', { name: 'Login' })
+      .click();
     await SignIn(page, browserName, false);
-    await expect(page.locator('h2').getByText('Mocked document')).toBeVisible();
+
+    // Tab 1 - Should be on its doc
+    await verifyDocName(page, docTitle1);
+
+    // Tab 2 - Should be on its doc
+    await page2.reload();
+    await verifyDocName(page2, docTitle2);
   });
 
   // eslint-disable-next-line playwright/expect-expect

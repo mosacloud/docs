@@ -40,7 +40,7 @@ export const hocuspocusServer = new Server({
 
     try {
       const document = await fetchDocument(
-        { name: documentName, withoutContent: true },
+        { name: documentName },
         requestHeaders,
       );
 

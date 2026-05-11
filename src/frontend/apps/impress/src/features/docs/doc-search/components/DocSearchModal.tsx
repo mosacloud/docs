@@ -36,6 +36,7 @@ const DocSearchModalGlobal = ({
 }: DocSearchModalGlobalProps) => {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<Doc[]>([]);
   const restoreFocus = useFocusStore((state) => state.restoreFocus);
   const router = useRouter();
   const [search, setSearch] = useState('');
@@ -120,9 +121,10 @@ const DocSearchModalGlobal = ({
             )}
             {search && (
               <DocSearchContent
-                groupName={t('Select a document')}
+                groupName={results.length ? t('Select a document') : ''}
                 search={search}
                 onSelect={handleSelect}
+                onResults={setResults}
                 onLoadingChange={setLoading}
                 target={
                   filters.target === DocSearchTarget.CURRENT

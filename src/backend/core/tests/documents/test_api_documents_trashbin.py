@@ -83,7 +83,7 @@ def test_api_documents_trashbin_format():
             "descendants": False,
             "cors_proxy": False,
             "comment": False,
-            "content": False,
+            "formatted_content": False,
             "destroy": False,
             "duplicate": False,
             "favorite": False,
@@ -95,6 +95,8 @@ def test_api_documents_trashbin_format():
                 "restricted": None,
             },
             "mask": False,
+            "content_patch": False,
+            "content_retrieve": True,
             "media_auth": False,
             "media_check": False,
             "move": False,  # Can't move a deleted document

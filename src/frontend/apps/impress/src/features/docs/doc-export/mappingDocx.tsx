@@ -1,5 +1,4 @@
 import { docxDefaultSchemaMappings } from '@blocknote/xl-docx-exporter';
-import { TextRun } from 'docx';
 
 import {
   blockMappingCalloutDocx,
@@ -48,7 +47,6 @@ export const docxDocsSchemaMappings: DocsExporterDocx['mappings'] = {
   },
   inlineContentMapping: {
     ...docxDefaultSchemaMappings.inlineContentMapping,
-    interlinkingSearchInline: () => new TextRun(''),
     interlinkingLinkInline: inlineContentMappingInterlinkingLinkDocx,
   },
   styleMapping: {

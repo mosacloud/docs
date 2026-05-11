@@ -100,10 +100,9 @@ backend:
     - uvicorn
     - --app-dir=/app
     - --host=0.0.0.0
-    - --timeout-graceful-shutdown=300
-    - --limit-max-requests=20000
     - --lifespan=off
     - --reload
+    - --reload-dir=/app
     - "impress.asgi:application"
 
   createsuperuser:
@@ -120,10 +119,6 @@ backend:
         echo "Database is ready"
         python manage.py createsuperuser --email admin@example.com --password admin
     restartPolicy: Never
-
-  themeCustomization:
-    enabled: true
-    file_content: {{ readFile "./configuration/theme/demo.json" }}
 
   # Extra volume mounts to manage our local custom CA and avoid to set ssl_verify: false
   extraVolumeMounts:
@@ -179,7 +174,7 @@ docSpec:
   image:
     repository: ghcr.io/docspecio/api
     pullPolicy: IfNotPresent
-    tag: "2.6.3"
+    tag: "3.0.1"
 
   probes:
     liveness:

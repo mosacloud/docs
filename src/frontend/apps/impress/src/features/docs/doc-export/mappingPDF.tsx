@@ -30,7 +30,6 @@ export const pdfDocsSchemaMappings: DocsExporterPDF['mappings'] = {
   },
   inlineContentMapping: {
     ...pdfDefaultSchemaMappings.inlineContentMapping,
-    interlinkingSearchInline: () => <></>,
     interlinkingLinkInline: inlineContentMappingInterlinkingLinkPDF,
   },
   styleMapping: {

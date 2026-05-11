@@ -10,10 +10,12 @@ export interface UseResponsiveStore {
   screenWidth: number;
   setScreenSize: (size: ScreenSize) => void;
   isDesktop: boolean;
+  isLargeScreen: boolean;
   initializeResizeListener: () => () => void;
 }
 
 const initialState = {
+  isLargeScreen: false,
   isMobile: false,
   isSmallMobile: false,
   isTablet: false,
@@ -24,6 +26,7 @@ const initialState = {
 
 export const useResponsiveStore = create<UseResponsiveStore>((set) => ({
   isDesktop: initialState.isDesktop,
+  isLargeScreen: initialState.isLargeScreen,
   isMobile: initialState.isMobile,
   isSmallMobile: initialState.isSmallMobile,
   isTablet: initialState.isTablet,
@@ -40,6 +43,7 @@ export const useResponsiveStore = create<UseResponsiveStore>((set) => ({
           isMobile: true,
           isTablet: true,
           isSmallMobile: true,
+          isLargeScreen: false,
         });
       } else if (width < 768) {
         set({
@@ -48,6 +52,7 @@ export const useResponsiveStore = create<UseResponsiveStore>((set) => ({
           isTablet: true,
           isMobile: true,
           isSmallMobile: false,
+          isLargeScreen: false,
         });
       } else if (width >= 768 && width < 1024) {
         set({
@@ -56,6 +61,7 @@ export const useResponsiveStore = create<UseResponsiveStore>((set) => ({
           isTablet: true,
           isMobile: false,
           isSmallMobile: false,
+          isLargeScreen: true,
         });
       } else {
         set({
@@ -64,6 +70,7 @@ export const useResponsiveStore = create<UseResponsiveStore>((set) => ({
           isTablet: false,
           isMobile: false,
           isSmallMobile: false,
+          isLargeScreen: true,
         });
       }
 

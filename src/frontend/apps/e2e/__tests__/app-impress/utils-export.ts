@@ -27,25 +27,16 @@ export const overrideDocContent = async ({
   browserName: BrowserName;
 }) => {
   // Override content prop with assets/base-content-test-pdf.txt
-  await page.route(/\**\/documents\/\**/, async (route) => {
+  await page.route(/.*\/documents\/[^/]+\/content\/$/, async (route) => {
     const request = route.request();
-    if (
-      request.method().includes('GET') &&
-      !request.url().includes('page=') &&
-      !request.url().includes('versions') &&
-      !request.url().includes('accesses') &&
-      !request.url().includes('invitations')
-    ) {
+    if (request.method() === 'GET') {
       const response = await route.fetch();
-      const json = await response.json();
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      json.content = fs.readFileSync(
-        path.join(__dirname, 'assets/base-content-test-pdf.txt'),
-        'utf-8',
-      );
       void route.fulfill({
         response,
-        body: JSON.stringify(json),
+        body: fs.readFileSync(
+          path.join(__dirname, 'assets/base-content-test-pdf.txt'),
+          'utf-8',
+        ),
       });
     } else {
       await route.continue();

@@ -4,6 +4,7 @@ import path from 'path';
 import { Locator, Page, TestInfo, expect } from '@playwright/test';
 
 import theme_customization from '../../../../../backend/impress/configuration/theme/default.json';
+import { version as packageJsonVersion } from '../../package.json';
 
 export type BrowserName = 'chromium' | 'firefox' | 'webkit';
 export const BROWSERS: BrowserName[] = ['chromium', 'webkit', 'firefox'];
@@ -13,11 +14,12 @@ export const CONFIG = {
     name: 'Docs AI',
     color: '#8bc6ff',
   },
-  AI_FEATURE_ENABLED: true,
-  AI_FEATURE_BLOCKNOTE_ENABLED: true,
+  AI_FEATURE_ENABLED: false,
+  AI_FEATURE_BLOCKNOTE_ENABLED: false,
   AI_FEATURE_LEGACY_ENABLED: true,
   API_USERS_SEARCH_QUERY_MIN_LENGTH: 3,
   CRISP_WEBSITE_ID: null,
+  COLLABORATION_WS_INACTIVITY_TIMEOUT: 15,
   COLLABORATION_WS_URL: process.env.COLLABORATION_WS_URL,
   COLLABORATION_WS_NOT_CONNECTED_READY_ONLY: true,
   CONVERSION_UPLOAD_ENABLED: true,
@@ -39,6 +41,7 @@ export const CONFIG = {
   ],
   LANGUAGE_CODE: 'en-us',
   POSTHOG_KEY: {},
+  RELEASE_VERSION: packageJsonVersion,
   SENTRY_DSN: null,
   TRASHBIN_CUTOFF_DAYS: 30,
   theme_customization,
@@ -131,6 +134,13 @@ export const createDoc = async (
       await openHeaderMenu(page);
     }
 
+    const responsePromiseCreateDoc = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/v1.0/documents/') &&
+        response.status() === 201 &&
+        response.request().method() === 'POST',
+    );
+
     await page
       .getByRole('button', {
         name: 'New doc',
@@ -142,34 +152,46 @@ export const createDoc = async (
       waitUntil: 'networkidle',
     });
 
+    const responseCreateDoc = await responsePromiseCreateDoc;
+    expect(responseCreateDoc.ok()).toBeTruthy();
+    const { id: docId } = (await responseCreateDoc.json()) as { id: string };
+
+    const responsePromiseUpdateDoc = page.waitForResponse(
+      (response) =>
+        response.url().includes(`/api/v1.0/documents/${docId}`) &&
+        response.status() === 200 &&
+        response.request().method() === 'PATCH',
+    );
+
     const input = page.getByLabel('Document title');
-    await expect(input).toBeVisible();
-    await expect(input).toHaveText('');
+    await expect(input).toBeVisible({
+      timeout: 10000,
+    });
+    await expect(input).toHaveText('', {
+      timeout: 10000,
+    });
 
     await input.fill(randomDocs[i]);
-    await input.blur();
+    void input.blur();
+
+    const responseUpdateDoc = await responsePromiseUpdateDoc;
+    expect(responseUpdateDoc.ok()).toBeTruthy();
   }
 
   return randomDocs;
 };
 
 export const verifyDocName = async (page: Page, docName: string) => {
-  await expect(
-    page.getByLabel('It is the card information about the document.'),
-  ).toBeVisible({
+  const card = page.getByLabel(
+    'It is the card information about the document.',
+  );
+  await expect(card).toBeVisible({
     timeout: 10000,
   });
 
-  /*replace toHaveText with toContainText to handle cases where emojis or other characters might be added*/
-  try {
-    await expect(
-      page.getByRole('textbox', { name: 'Document title' }),
-    ).toContainText(docName, {
-      timeout: 3000,
-    });
-  } catch {
-    await expect(page.getByRole('heading', { name: docName })).toBeVisible();
-  }
+  await expect(card).toHaveText(new RegExp(docName), {
+    timeout: 10000,
+  });
 };
 
 export const getGridRow = async (page: Page, title: string) => {
@@ -231,11 +253,9 @@ export const updateDocTitle = async (page: Page, title: string) => {
   const input = page.getByRole('textbox', { name: 'Document title' });
   await expect(input).toHaveText('');
   await expect(input).toBeVisible();
-  await input.click();
   await input.fill(title, {
     force: true,
   });
-  await input.click();
   await input.blur();
   await verifyDocName(page, title);
 };
@@ -250,22 +270,18 @@ export const waitForResponseCreateDoc = (page: Page) => {
 };
 
 export const mockedDocument = async (page: Page, data: object) => {
-  await page.route(/\**\/documents\/\**/, async (route) => {
+  // document/[ID]/ or document/[ID]/tree/ routes
+  let uuid: string | undefined;
+  await page.route(/.*\/documents\/[^/]+\/(?:$|tree\/.*)/, async (route) => {
     const request = route.request();
-    if (
-      request.method().includes('GET') &&
-      !request.url().includes('page=') &&
-      !request.url().includes('versions') &&
-      !request.url().includes('accesses') &&
-      !request.url().includes('invitations')
-    ) {
+    if (request.method().includes('GET') && !request.url().includes('page=')) {
+      uuid = request.url().match(/\/documents\/([^/]+)\//)?.[1];
       const { abilities, ...doc } = data as unknown as {
         abilities?: Record<string, unknown>;
       };
       await route.fulfill({
         json: {
-          id: 'mocked-document-id',
-          content: '',
+          id: uuid,
           title: 'Mocked document',
           path: '000000',
           abilities: {
@@ -299,6 +315,19 @@ export const mockedDocument = async (page: Page, data: object) => {
       await route.continue();
     }
   });
+
+  await page.route(/.*\/documents\/[^/]+\/content\/$/, async (route) => {
+    const request = route.request();
+    if (request.method().includes('GET')) {
+      await route.fulfill({
+        body: '',
+      });
+    } else {
+      await route.continue();
+    }
+  });
+
+  return uuid;
 };
 
 export const mockedListDocs = async (page: Page, data: object[] = []) => {

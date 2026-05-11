@@ -18,6 +18,7 @@ from django.utils.translation import gettext_lazy as _
 
 import sentry_sdk
 from configurations import Configuration, values
+from corsheaders.defaults import default_headers
 from csp.constants import NONE
 from lasuite.configuration.values import SecretFileValue
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -127,6 +128,12 @@ class Base(Configuration):
     )
     SEARCH_INDEXER_QUERY_LIMIT = values.PositiveIntegerValue(
         default=50, environ_name="SEARCH_INDEXER_QUERY_LIMIT", environ_prefix=None
+    )
+
+    MEDIA_AUTH_ORIGINAL_URL_HEADER = values.Value(
+        default="HTTP_X_ORIGINAL_URL",
+        environ_name="MEDIA_AUTH_ORIGINAL_URL_HEADER",
+        environ_prefix=None,
     )
 
     # Static files (CSS, JavaScript, Images)
@@ -500,6 +507,11 @@ class Base(Configuration):
         environ_name="COLLABORATION_WS_NOT_CONNECTED_READY_ONLY",
         environ_prefix=None,
     )
+    COLLABORATION_WS_INACTIVITY_TIMEOUT = values.IntegerValue(
+        None,
+        environ_name="COLLABORATION_WS_INACTIVITY_TIMEOUT",
+        environ_prefix=None,
+    )
 
     # Frontend
     FRONTEND_THEME = values.Value(
@@ -801,8 +813,30 @@ class Base(Configuration):
         environ_name="AI_ALLOW_REACH_FROM",
         environ_prefix=None,
     )
-    AI_API_KEY = SecretFileValue(None, environ_name="AI_API_KEY", environ_prefix=None)
-    AI_BASE_URL = values.Value(None, environ_name="AI_BASE_URL", environ_prefix=None)
+
+    MISTRAL_SDK_BASE_URL = values.Value(
+        None, environ_name="MISTRAL_SDK_BASE_URL", environ_prefix=None
+    )
+    MISTRAL_SDK_API_KEY = SecretFileValue(
+        None, environ_name="MISTRAL_SDK_API_KEY", environ_prefix=None
+    )
+
+    OPENAI_SDK_API_KEY = SecretFileValue(
+        default=SecretFileValue(  # retrocompatibility
+            None,
+            environ_name="AI_API_KEY",
+            environ_prefix=None,
+        ),
+        environ_name="OPENAI_SDK_API_KEY",
+        environ_prefix=None,
+    )
+    OPENAI_SDK_BASE_URL = values.Value(
+        default=values.Value(  # retrocompatibility
+            None, environ_name="AI_BASE_URL", environ_prefix=None
+        ),
+        environ_name="OPENAI_SDK_BASE_URL",
+        environ_prefix=None,
+    )
     AI_BOT = values.DictValue(
         default={
             "name": _("Docs AI"),
@@ -1048,6 +1082,16 @@ class Base(Configuration):
         ),
     }
 
+    CONTENT_METADATA_CACHE_TIMEOUT = values.IntegerValue(
+        60 * 60 * 24, environ_name="CONTENT_METADATA_CACHE_TIMEOUT", environ_prefix=None
+    )
+
+    TREEBEARD_PATH_COMPUTE_RETRY_MAX_ATTEMPTS = values.IntegerValue(
+        10,
+        environ_name="TREEBEARD_PATH_COMPUTE_RETRY_MAX_ATTEMPTS",
+        environ_prefix=None,
+    )
+
     # pylint: disable=invalid-name
     @property
     def ENVIRONMENT(self):
@@ -1138,6 +1182,11 @@ class Base(Configuration):
                 }
             )
 
+        if cls.OPENAI_SDK_API_KEY and cls.MISTRAL_SDK_API_KEY:
+            raise ValueError(
+                "Both OPENAI_SDK and MISTRAL_SDK parameters can not be set simultaneously."
+            )
+
 
 class Build(Base):
     """Settings used when the application is built.
@@ -1170,6 +1219,12 @@ class Development(Base):
     ALLOWED_HOSTS = ["*"]
     CORS_ALLOW_ALL_ORIGINS = True
     CSRF_TRUSTED_ORIGINS = ["http://localhost:8072", "http://localhost:3000"]
+    CORS_ALLOW_HEADERS = (
+        *default_headers,
+        "if-none-match",
+        "if-modified-since",
+    )
+    CORS_EXPOSE_HEADERS = ["ETag"]
     DEBUG = True
 
     USE_SWAGGER = True

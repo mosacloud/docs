@@ -1,3 +1,5 @@
+import { css } from 'styled-components';
+
 import { Box, Text } from '@/components';
 import {
   QuickSearchItemContent,
@@ -38,11 +40,24 @@ export const SearchUserRow = ({
             background={isInvitation ? colorsTokens['gray-400'] : undefined}
           />
           <Box $direction="column">
-            <Text $size="sm" $weight="500">
+            <Text
+              $size="sm"
+              $weight="500"
+              $css={css`
+                line-break: anywhere;
+              `}
+            >
               {hasFullName ? user.full_name : user.email}
             </Text>
             {hasFullName && (
-              <Text $size="xs" $margin={{ top: '-2px' }} $variation="secondary">
+              <Text
+                $size="xs"
+                $margin={{ top: '-2px' }}
+                $variation="secondary"
+                $css={css`
+                  line-break: anywhere;
+                `}
+              >
                 {user.email}
               </Text>
             )}

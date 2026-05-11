@@ -1,5 +1,5 @@
 import { Command } from 'cmdk';
-import { PropsWithChildren, ReactNode, useId, useRef, useState } from 'react';
+import { PropsWithChildren, ReactNode, useId, useRef } from 'react';
 
 import { hasChildrens } from '@/utils/children';
 
@@ -24,6 +24,7 @@ export type QuickSearchData<T> = {
 };
 
 export type QuickSearchProps = {
+  isSelectByDefault?: boolean;
   onFilter?: (str: string) => void;
   inputValue?: string;
   inputContent?: ReactNode;
@@ -36,6 +37,7 @@ export type QuickSearchProps = {
 };
 
 export const QuickSearch = ({
+  isSelectByDefault,
   onFilter,
   inputContent,
   inputValue,
@@ -47,13 +49,6 @@ export const QuickSearch = ({
 }: PropsWithChildren<QuickSearchProps>) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const listId = useId();
-  /**
-   * Hack to prevent cmdk from auto-selecting the first element on open
-   *
-   * TODO: Find a clean solution to prevent cmdk from auto-selecting
-   * the first element on open
-   */
-  const [selectedValue, _] = useState('__none__');
 
   return (
     <>
@@ -65,7 +60,7 @@ export const QuickSearch = ({
           ref={ref}
           tabIndex={-1}
           disablePointerSelection
-          value={selectedValue}
+          value={!isSelectByDefault ? '__none__' : undefined}
         >
           {showInput && (
             <QuickSearchInput

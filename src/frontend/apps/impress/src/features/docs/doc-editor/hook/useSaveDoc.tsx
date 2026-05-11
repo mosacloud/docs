@@ -1,23 +1,36 @@
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 
-import { useUpdateDoc } from '@/docs/doc-management/';
+import { COMMENT_UPDATE_ORIGIN } from '@/docs/doc-editor/components/comments/DocsThreadStore';
+import { useDocContentUpdate } from '@/docs/doc-management/api/useDocContentUpdate';
+import { useProviderStore } from '@/docs/doc-management/stores/useProviderStore';
 import { KEY_LIST_DOC_VERSIONS } from '@/docs/doc-versioning/api/useDocVersions';
+import { useIsOffline } from '@/features/service-worker';
 import { toBase64 } from '@/utils/string';
 import { isFirefox } from '@/utils/userAgent';
 
 const SAVE_INTERVAL = 60000;
 
-export const useSaveDoc = (
-  docId: string,
-  yDoc: Y.Doc,
-  isConnectedToCollabServer: boolean,
-) => {
-  const { mutate: updateDoc } = useUpdateDoc({
+export const useSaveDoc = (docId: string, yDoc: Y.Doc) => {
+  /**
+   * isSynced is more reliable than isConnected in this cases
+   * because it indicates that the content is fully synchronised
+   * with the yjs server
+   */
+  const { isSynced: isConnectedToCollabServer } = useProviderStore();
+
+  const { isOffline } = useIsOffline();
+  const isSavingRef = useRef(false);
+  const { mutate: updateDocContent } = useDocContentUpdate({
     listInvalidQueries: [KEY_LIST_DOC_VERSIONS],
+    isOptimistic: isOffline, // Enable optimistic updates when offline, to update the cache immediately
     onSuccess: () => {
+      isSavingRef.current = false;
       setIsLocalChange(false);
+    },
+    onError: () => {
+      isSavingRef.current = false;
     },
   });
   const [isLocalChange, setIsLocalChange] = useState<boolean>(false);
@@ -53,6 +66,16 @@ export const useSaveDoc = (
       const isAIChange =
         !transaction.local && transactionOrigin !== PROVIDER_ORIGIN_CONSTRUCTOR;
 
+      /**
+       * notifySubscribers generate a transaction that can be
+       * interpreted as a local change.
+       * We intercept the update with this origin to
+       * avoid marking the change as local.
+       */
+      if (transaction.origin === COMMENT_UPDATE_ORIGIN) {
+        return;
+      }
+
       setIsLocalChange(transaction.local || isAIChange);
     };
 
@@ -64,18 +87,19 @@ export const useSaveDoc = (
   }, [yDoc]);
 
   const saveDoc = useCallback(() => {
-    if (!isLocalChange) {
+    if (!isLocalChange || isSavingRef.current) {
       return false;
     }
 
-    updateDoc({
+    isSavingRef.current = true;
+    updateDocContent({
       id: docId,
       content: toBase64(Y.encodeStateAsUpdate(yDoc)),
       websocket: isConnectedToCollabServer,
     });
 
     return true;
-  }, [isLocalChange, updateDoc, docId, yDoc, isConnectedToCollabServer]);
+  }, [isLocalChange, updateDocContent, docId, yDoc, isConnectedToCollabServer]);
 
   const router = useRouter();
 

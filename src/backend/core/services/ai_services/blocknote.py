@@ -7,15 +7,17 @@ import os
 import queue
 import threading
 from collections.abc import AsyncIterator, Iterator
+from functools import cache
 from typing import Any, Dict, Union
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 from langfuse import get_client
-from langfuse.openai import OpenAI as OpenAI_Langfuse
 from pydantic_ai import Agent, DeferredToolRequests
+from pydantic_ai.models.mistral import MistralModel
 from pydantic_ai.models.openai import OpenAIChatModel
+from pydantic_ai.providers.mistral import MistralProvider
 from pydantic_ai.providers.openai import OpenAIProvider
 from pydantic_ai.tools import ToolDefinition
 from pydantic_ai.toolsets.external import ExternalToolset
@@ -23,13 +25,6 @@ from pydantic_ai.ui import SSE_CONTENT_TYPE
 from pydantic_ai.ui.vercel_ai import VercelAIAdapter
 from pydantic_ai.ui.vercel_ai.request_types import RequestData, TextUIPart, UIMessage
 from rest_framework.request import Request
-
-from core import enums
-
-if settings.LANGFUSE_PUBLIC_KEY:
-    OpenAI = OpenAI_Langfuse
-else:
-    from openai import OpenAI
 
 log = logging.getLogger(__name__)
 
@@ -63,50 +58,6 @@ IDs ALWAYS end with "$". Use ids EXACTLY as provided.
 
 Return ONLY the JSON tool input. No prose, no markdown.
 """
-
-AI_ACTIONS = {
-    "prompt": (
-        "Answer the prompt using markdown formatting for structure and emphasis. "
-        "Return the content directly without wrapping it in code blocks or markdown delimiters. "
-        "Preserve the language and markdown formatting. "
-        "Do not provide any other information. "
-        "Preserve the language."
-    ),
-    "correct": (
-        "Correct grammar and spelling of the markdown text, "
-        "preserving language and markdown formatting. "
-        "Do not provide any other information. "
-        "Preserve the language."
-    ),
-    "rephrase": (
-        "Rephrase the given markdown text, "
-        "preserving language and markdown formatting. "
-        "Do not provide any other information. "
-        "Preserve the language."
-    ),
-    "summarize": (
-        "Summarize the markdown text, preserving language and markdown formatting. "
-        "Do not provide any other information. "
-        "Preserve the language."
-    ),
-    "beautify": (
-        "Add formatting to the text to make it more readable. "
-        "Do not provide any other information. "
-        "Preserve the language."
-    ),
-    "emojify": (
-        "Add emojis to the important parts of the text. "
-        "Do not provide any other information. "
-        "Preserve the language."
-    ),
-}
-
-AI_TRANSLATE = (
-    "Keep the same html structure and formatting. "
-    "Translate the content in the html to the specified language {language:s}. "
-    "Check the translation for accuracy and make any necessary corrections. "
-    "Do not provide any other information."
-)
 
 
 def convert_async_generator_to_sync(async_gen: AsyncIterator[str]) -> Iterator[str]:
@@ -143,46 +94,40 @@ def convert_async_generator_to_sync(async_gen: AsyncIterator[str]) -> Iterator[s
         thread.join()
 
 
-class AIService:
-    """Service class for AI-related operations."""
-
-    def __init__(self):
-        """Ensure that the AI configuration is set properly."""
-        if (
-            settings.AI_BASE_URL is None
-            or settings.AI_API_KEY is None
-            or settings.AI_MODEL is None
-        ):
-            raise ImproperlyConfigured("AI configuration not set")
-        self.client = OpenAI(base_url=settings.AI_BASE_URL, api_key=settings.AI_API_KEY)
-
-    def call_ai_api(self, system_content, text):
-        """Helper method to call the OpenAI API and process the response."""
-        response = self.client.chat.completions.create(
-            model=settings.AI_MODEL,
-            messages=[
-                {"role": "system", "content": system_content},
-                {"role": "user", "content": text},
-            ],
+@cache
+def configure_pydantic_model_provider() -> OpenAIChatModel | MistralModel:
+    """Configure a pydantic Model and return it."""
+    if (
+        settings.OPENAI_SDK_API_KEY
+        and settings.OPENAI_SDK_BASE_URL
+        and settings.AI_MODEL
+    ):
+        return OpenAIChatModel(
+            settings.AI_MODEL,
+            provider=OpenAIProvider(
+                api_key=settings.OPENAI_SDK_API_KEY,
+                base_url=settings.OPENAI_SDK_BASE_URL,
+            ),
         )
 
-        content = response.choices[0].message.content
+    if (
+        settings.MISTRAL_SDK_API_KEY
+        and settings.MISTRAL_SDK_BASE_URL
+        and settings.AI_MODEL
+    ):
+        return MistralModel(
+            settings.AI_MODEL,
+            provider=MistralProvider(
+                api_key=settings.MISTRAL_SDK_API_KEY,
+                base_url=settings.MISTRAL_SDK_BASE_URL,
+            ),
+        )
 
-        if not content:
-            raise RuntimeError("AI response does not contain an answer")
+    raise ImproperlyConfigured("AI configuration not set")
 
-        return {"answer": content}
 
-    def transform(self, text, action):
-        """Transform text based on specified action."""
-        system_content = AI_ACTIONS[action]
-        return self.call_ai_api(system_content, text)
-
-    def translate(self, text, language):
-        """Translate text to a specified language."""
-        language_display = enums.ALL_LANGUAGES.get(language, language)
-        system_content = AI_TRANSLATE.format(language=language_display)
-        return self.call_ai_api(system_content, text)
+class AIService:
+    """Service class for AI-related operations."""
 
     @staticmethod
     def inject_document_state_messages(
@@ -324,13 +269,9 @@ class AIService:
             langfuse.auth_check()
             Agent.instrument_all()
 
-        model = OpenAIChatModel(
-            settings.AI_MODEL,
-            provider=OpenAIProvider(
-                base_url=settings.AI_BASE_URL, api_key=settings.AI_API_KEY
-            ),
+        agent = Agent(
+            configure_pydantic_model_provider(), instrument=instrument_enabled
         )
-        agent = Agent(model, instrument=instrument_enabled)
 
         accept = request.META.get("HTTP_ACCEPT", SSE_CONTENT_TYPE)
 

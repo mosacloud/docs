@@ -17,8 +17,8 @@ import { toBase64 } from '@/utils/string';
 import { useProviderStore } from '../stores';
 import { Doc } from '../types';
 
+import { useDocContentUpdate } from './useDocContentUpdate';
 import { KEY_LIST_DOC } from './useDocs';
-import { useUpdateDoc } from './useUpdateDoc';
 
 interface DuplicateDocPayload {
   docId: string;
@@ -62,7 +62,7 @@ export function useDuplicateDoc(options?: DuplicateDocOptions) {
   const { t } = useTranslation();
   const { provider } = useProviderStore();
 
-  const { mutateAsync: updateDoc } = useUpdateDoc({
+  const { mutateAsync: updateDocContent } = useDocContentUpdate({
     listInvalidQueries: [KEY_LIST_DOC_VERSIONS],
   });
 
@@ -75,7 +75,7 @@ export function useDuplicateDoc(options?: DuplicateDocOptions) {
         provider.document.guid === variables.docId;
 
       if (canSave) {
-        await updateDoc({
+        await updateDocContent({
           id: variables.docId,
           content: toBase64(Y.encodeStateAsUpdate(provider.document)),
         });

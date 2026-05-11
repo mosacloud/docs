@@ -31,9 +31,8 @@ backend:
     DJANGO_EMAIL_URL_APP: https://{{ .Values.feature }}-docs.{{ .Values.domain }}
     DJANGO_EMAIL_USE_SSL: False
     FRONTEND_SILENT_LOGIN_ENABLED: True
-    LOGGING_LEVEL_HANDLERS_CONSOLE: ERROR
-    LOGGING_LEVEL_LOGGERS_ROOT: INFO
-    LOGGING_LEVEL_LOGGERS_APP: INFO
+    LOGGING_LEVEL_LOGGERS_ROOT: DEBUG
+    LOGGING_LEVEL_LOGGERS_APP: DEBUG
     OIDC_USERINFO_SHORTNAME_FIELD: "first_name"
     OIDC_USERINFO_FULLNAME_FIELDS: "name"
     OIDC_OP_JWKS_ENDPOINT: https://{{ .Values.feature }}-docs-keycloak.{{ .Values.domain }}/realms/docs/protocol/openid-connect/certs
@@ -154,7 +153,7 @@ docSpec:
   image:
     repository: ghcr.io/docspecio/api
     pullPolicy: IfNotPresent
-    tag: "2.6.3"
+    tag: "3.0.1"
 
   probes:
     liveness:

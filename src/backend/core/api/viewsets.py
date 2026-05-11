@@ -3,6 +3,7 @@
 # pylint: disable=too-many-lines
 
 import base64
+import datetime as dt
 import ipaddress
 import json
 import logging
@@ -43,11 +44,13 @@ from rest_framework import filters, status, viewsets
 from rest_framework import response as drf_response
 from rest_framework.permissions import AllowAny
 from rest_framework.views import APIView
+from treebeard.exceptions import InvalidMoveToDescendant
 
 from core import authentication, choices, enums, models
 from core.api.filters import remove_accents
 from core.services import mime_types
-from core.services.ai_services import AIService
+from core.services.ai_services.blocknote import AIService
+from core.services.ai_services.legacy import get_legacy_ai_service
 from core.services.collaboration_services import CollaborationService
 from core.services.converter_services import (
     ConversionError,
@@ -64,11 +67,10 @@ from core.services.search_indexers import (
     get_visited_document_ids_of,
 )
 from core.tasks.mail import send_ask_for_access_mail
-from core.utils import (
-    extract_attachments,
-    filter_descendants,
-    users_sharing_documents_with,
-)
+from core.utils.paths import filter_descendants
+from core.utils.treebeard import create_tree_node_with_retry
+from core.utils.users import users_sharing_documents_with
+from core.utils.yjs import extract_attachments
 
 from ..enums import FeatureFlag, SearchType
 from . import permissions, serializers, utils
@@ -705,18 +707,12 @@ class DocumentViewSet(
                     {"file": ["Could not convert file content"]}
                 ) from err
 
-        with transaction.atomic():
-            # locks the table to ensure safe concurrent access
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    f'LOCK TABLE "{models.Document._meta.db_table}" '  # noqa: SLF001
-                    "IN SHARE ROW EXCLUSIVE MODE;"
-                )
-
-            obj = models.Document.add_root(
+        obj = create_tree_node_with_retry(
+            lambda: models.Document.add_root(
                 creator=self.request.user,
                 **serializer.validated_data,
             )
+        )
         serializer.instance = obj
         models.DocumentAccess.objects.create(
             document=obj,
@@ -776,17 +772,15 @@ class DocumentViewSet(
     def perform_update(self, serializer):
         """Check rules about collaboration."""
         if (
-            serializer.validated_data.get("websocket", False)
-            or not settings.COLLABORATION_WS_NOT_CONNECTED_READY_ONLY
+            not serializer.validated_data.get("websocket", False)
+            and settings.COLLABORATION_WS_NOT_CONNECTED_READY_ONLY
+            and not self._can_user_edit_document(serializer.instance.id, set_cache=True)
         ):
-            return super().perform_update(serializer)
+            raise drf.exceptions.PermissionDenied(
+                "You are not allowed to edit this document."
+            )
 
-        if self._can_user_edit_document(serializer.instance.id, set_cache=True):
-            return super().perform_update(serializer)
-
-        raise drf.exceptions.PermissionDenied(
-            "You are not allowed to edit this document."
-        )
+        return super().perform_update(serializer)
 
     @drf.decorators.action(
         detail=True,
@@ -834,6 +828,7 @@ class DocumentViewSet(
         queryset = self.queryset.filter(path_list)
         queryset = queryset.filter(id__in=favorite_documents_ids)
         queryset = queryset.filter(ancestors_deleted_at__isnull=True)
+        queryset = queryset.order_by("-updated_at")
         queryset = queryset.annotate_user_roles(user)
         queryset = queryset.annotate(
             is_favorite=db.Value(True, output_field=db.BooleanField())
@@ -961,7 +956,13 @@ class DocumentViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        document.move(target_document, pos=position)
+        try:
+            document.move(target_document, pos=position)
+        except InvalidMoveToDescendant:
+            return drf.response.Response(
+                {"target_document_id": "Cannot move a document to its own descendant."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Make sure we have at least one owner
         if (
@@ -989,7 +990,10 @@ class DocumentViewSet(
         Restore a soft-deleted document if it was deleted less than x days ago.
         """
         document = self.get_object()
-        document.restore()
+        try:
+            document.restore()
+        except RuntimeError as err:
+            raise drf.exceptions.ValidationError({"detail": str(err)}) from err
 
         return drf_response.Response(
             {"detail": "Document has been successfully restored."},
@@ -1012,16 +1016,12 @@ class DocumentViewSet(
             )
             serializer.is_valid(raise_exception=True)
 
-            with transaction.atomic():
-                # "select_for_update" locks the table to ensure safe concurrent access
-                locked_parent = models.Document.objects.select_for_update().get(
-                    pk=document.pk
-                )
-
-                child_document = locked_parent.add_child(
+            child_document = create_tree_node_with_retry(
+                lambda: document.add_child(
                     creator=request.user,
                     **serializer.validated_data,
                 )
+            )
 
             # Set the created instance to the serializer
             serializer.instance = child_document
@@ -1108,30 +1108,6 @@ class DocumentViewSet(
         queryset = filters.OrderingFilter().filter_queryset(
             self.request, queryset, self
         )
-
-        return self.get_response_for_queryset(queryset)
-
-    @drf.decorators.action(
-        detail=True,
-        methods=["get"],
-        ordering=["path"],
-    )
-    def descendants(self, request, *args, **kwargs):
-        """Deprecated endpoint to list descendants of a document."""
-        logger.warning(
-            "The 'descendants' endpoint is deprecated and will be removed in a future release. "
-            "The search endpoint should be used for all document retrieval use cases."
-        )
-        document = self.get_object()
-
-        queryset = document.get_descendants().filter(ancestors_deleted_at__isnull=True)
-        queryset = self.filter_queryset(queryset)
-
-        filterset = DocumentFilter(request.GET, queryset=queryset)
-        if not filterset.is_valid():
-            raise drf.exceptions.ValidationError(filterset.errors)
-
-        queryset = filterset.qs
 
         return self.get_response_for_queryset(queryset)
 
@@ -1776,10 +1752,13 @@ class DocumentViewSet(
 
     def _auth_get_original_url(self, request):
         """
-        Extracts and parses the original URL from the "HTTP_X_ORIGINAL_URL" header.
+        Extracts and parses the original URL from the configured parameter header.
         Raises PermissionDenied if the header is missing.
 
-        The original url is passed by nginx in the "HTTP_X_ORIGINAL_URL" header.
+        The original url is passed by reverse proxy in the header specified by the
+        MEDIA_AUTH_ORIGINAL_URL_HEADER setting.
+
+        For nginx (the default) this is set to HTTP_X_ORIGINAL_URL.
         See corresponding ingress configuration in Helm chart and read about the
         nginx.ingress.kubernetes.io/auth-url annotation to understand how the Nginx ingress
         is configured to do this.
@@ -1790,9 +1769,14 @@ class DocumentViewSet(
         reasons.
         """
         # Extract the original URL from the request header
-        original_url = request.META.get("HTTP_X_ORIGINAL_URL")
+        original_url = request.META.get(settings.MEDIA_AUTH_ORIGINAL_URL_HEADER)
         if not original_url:
-            logger.debug("Missing HTTP_X_ORIGINAL_URL header in subrequest")
+            logger.debug(
+                "Missing %s header in subrequest. "
+                "Maybe you need to set MEDIA_AUTH_ORIGINAL_URL_HEADER correctly for your ingress"
+                " proxy.",
+                settings.MEDIA_AUTH_ORIGINAL_URL_HEADER,
+            )
             raise drf.exceptions.PermissionDenied()
 
         logger.debug("Original url: '%s'", original_url)
@@ -1873,6 +1857,167 @@ class DocumentViewSet(
         request = utils.generate_s3_authorization_headers(key)
 
         return drf.response.Response("authorized", headers=request.headers, status=200)
+
+    @drf.decorators.action(detail=True, methods=["patch"])
+    def content(self, request, *args, **kwargs):
+        """Update the raw Yjs content of a document stored in S3."""
+        document = self.get_object()
+
+        serializer = serializers.DocumentContentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if (
+            not serializer.validated_data.get("websocket", False)
+            and settings.COLLABORATION_WS_NOT_CONNECTED_READY_ONLY
+            and not self._can_user_edit_document(document.id, set_cache=True)
+        ):
+            raise drf.exceptions.PermissionDenied(
+                "You are not allowed to edit this document."
+            )
+
+        content = serializer.validated_data["content"]
+        try:
+            extracted_attachments = set(extract_attachments(content))
+        except ValueError:
+            return drf_response.Response(
+                "invalid yjs document", status=status.HTTP_400_BAD_REQUEST
+            )
+
+        existing_attachments = set(document.attachments or [])
+        new_attachments = extracted_attachments - existing_attachments
+
+        # Ensure we update attachments the request user is allowed to read
+        if new_attachments:
+            attachments_documents = (
+                models.Document.objects.filter(
+                    attachments__overlap=list(new_attachments)
+                )
+                .only("path", "attachments")
+                .order_by("path")
+            )
+
+            user = self.request.user
+            readable_per_se_paths = (
+                models.Document.objects.readable_per_se(user)
+                .order_by("path")
+                .values_list("path", flat=True)
+            )
+            readable_attachments_paths = filter_descendants(
+                [doc.path for doc in attachments_documents],
+                readable_per_se_paths,
+                skip_sorting=True,
+            )
+
+            readable_attachments = set()
+            for attachments_document in attachments_documents:
+                if attachments_document.path not in readable_attachments_paths:
+                    continue
+                readable_attachments.update(
+                    set(attachments_document.attachments) & new_attachments
+                )
+
+            # Update attachments with readable keys
+            document.attachments = list(existing_attachments | readable_attachments)
+        document.content = content
+        document.save()
+        cache.delete(utils.get_content_metadata_cache_key(document.id))
+
+        return drf_response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @content.mapping.get
+    def content_retrieve(self, request, *args, **kwargs):
+        """
+        Retrieve the raw content file from s3 and stream it.
+
+        We implement a HTTP cache based on the ETag and LastModified headers.
+        The ETag and LastModified are retrieved in the S3 get_object operation to be consistent with
+        the content Body retrieved at the same time. These metadata are saved in cache for
+        future requests.
+        We check in the request if the ETag is present in the If-None-Match header and if it's the
+        same as the one from the S3 get_object, we return a 304 response.
+        If the ETag is not present or not the same, we do the same check based on the LastModified
+        value if present in the If-Modified-Since header.
+        """
+        document = self.get_object()
+        # The S3 call to fetch the document can take time and the database
+        # connection is useless in this process. Hence we are closing it now
+        # to prevent having a massive number of database connections during
+        # the web-socket re-connection burst.
+        connection.close()
+
+        if_none_match, if_modified_since_dt = utils.parse_http_conditional_headers(
+            request
+        )
+
+        # First check if a cache is existing to return earlier a 304 without reaching s3
+        # if etag or last_modified have not changed.
+        cache_key = utils.get_content_metadata_cache_key(document.id)
+        if content_metadata := cache.get(cache_key):
+            if (if_none_match and if_none_match == content_metadata.get("etag")) or (
+                if_modified_since_dt
+                and dt.datetime.fromisoformat(content_metadata.get("last_modified"))
+                <= if_modified_since_dt
+            ):
+                return drf_response.Response(status=status.HTTP_304_NOT_MODIFIED)
+
+        # Prepare get_object S3 operation. The get_object manages ETag and last_modified
+        # headers will raise a 304 client error if one of them matches the value existing in
+        # S3.
+        get_object_kwargs = {
+            "Bucket": default_storage.bucket_name,
+            "Key": document.file_key,
+        }
+        if if_none_match:
+            get_object_kwargs["IfNoneMatch"] = if_none_match
+        if if_modified_since_dt:
+            get_object_kwargs["IfModifiedSince"] = if_modified_since_dt
+
+        try:
+            s3_response = default_storage.connection.meta.client.get_object(
+                **get_object_kwargs
+            )
+        except ClientError as exc:
+            code = exc.response["Error"]["Code"]
+            match code:
+                case "304" | "PreconditionFailed" | "NotModified":
+                    return drf_response.Response(status=status.HTTP_304_NOT_MODIFIED)
+                case "NoSuchKey" | "404":
+                    return StreamingHttpResponse(
+                        b"", content_type="text/plain", status=200
+                    )
+                case _:
+                    raise
+
+        last_modified = s3_response["LastModified"]
+        etag = s3_response["ETag"]
+        size = s3_response["ContentLength"]
+
+        # Refresh the metadata cache
+        cache.set(
+            cache_key,
+            {
+                "last_modified": last_modified.isoformat(),
+                "etag": etag,
+            },
+            settings.CONTENT_METADATA_CACHE_TIMEOUT,
+        )
+
+        def _stream(body):
+            yield from body.iter_chunks()
+            body.close()
+
+        response = StreamingHttpResponse(
+            streaming_content=_stream(s3_response["Body"]),
+            content_type="text/plain",
+            status=status.HTTP_200_OK,
+        )
+
+        response["Content-Length"] = size
+        response["ETag"] = etag
+        response["Last-Modified"] = last_modified.strftime("%a, %d %b %Y %H:%M:%S %Z")
+        response["Cache-Control"] = "private, no-cache"
+
+        return response
 
     @drf.decorators.action(detail=True, methods=["get"], url_path="media-check")
     def media_check(self, request, *args, **kwargs):
@@ -1975,13 +2120,16 @@ class DocumentViewSet(
         # Check permissions first
         self.get_object()
 
+        if not settings.AI_FEATURE_ENABLED or not settings.AI_FEATURE_LEGACY_ENABLED:
+            raise ValidationError("AI feature is not enabled.")
+
         serializer = serializers.AITransformSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         text = serializer.validated_data["text"]
         action = serializer.validated_data["action"]
 
-        response = AIService().transform(text, action)
+        response = get_legacy_ai_service().transform(text, action)
 
         return drf.response.Response(response, status=drf.status.HTTP_200_OK)
 
@@ -2003,13 +2151,16 @@ class DocumentViewSet(
         # Check permissions first
         self.get_object()
 
+        if not settings.AI_FEATURE_ENABLED or not settings.AI_FEATURE_LEGACY_ENABLED:
+            raise ValidationError("AI feature is not enabled.")
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         text = serializer.validated_data["text"]
         language = serializer.validated_data["language"]
 
-        response = AIService().translate(text, language)
+        response = get_legacy_ai_service().translate(text, language)
 
         return drf.response.Response(response, status=drf.status.HTTP_200_OK)
 
@@ -2120,7 +2271,7 @@ class DocumentViewSet(
         GET /api/v1.0/documents/<resource_id>/cors-proxy
         Act like a proxy to fetch external resources and bypass CORS restrictions.
         """
-        url = request.query_params.get("url")
+        url = request.query_params.get("url", "").strip()
         if not url:
             return drf.response.Response(
                 {"detail": "Missing 'url' query parameter"},
@@ -2135,7 +2286,7 @@ class DocumentViewSet(
         url_validator = URLValidator(schemes=["http", "https"])
         try:
             url_validator(url)
-        except drf.exceptions.ValidationError as e:
+        except ValidationError as e:
             return drf.response.Response(
                 {"detail": str(e)},
                 status=drf.status.HTTP_400_BAD_REQUEST,
@@ -2192,10 +2343,10 @@ class DocumentViewSet(
     @drf.decorators.action(
         detail=True,
         methods=["get"],
-        url_path="content",
-        name="Get document content in different formats",
+        url_path="formatted-content",
+        name="Convert document content to different formats",
     )
-    def content(self, request, pk=None):
+    def formatted_content(self, request, pk=None):
         """
         Retrieve document content in different formats (JSON, Markdown, HTML).
 
@@ -2666,6 +2817,7 @@ class ConfigView(drf.views.APIView):
             "API_USERS_SEARCH_QUERY_MIN_LENGTH",
             "COLLABORATION_WS_URL",
             "COLLABORATION_WS_NOT_CONNECTED_READY_ONLY",
+            "COLLABORATION_WS_INACTIVITY_TIMEOUT",
             "CONVERSION_FILE_EXTENSIONS_ALLOWED",
             "CONVERSION_FILE_MAX_SIZE",
             "CONVERSION_UPLOAD_ENABLED",
@@ -2689,6 +2841,7 @@ class ConfigView(drf.views.APIView):
                 dict_settings[setting] = getattr(settings, setting)
 
         dict_settings["theme_customization"] = self._load_theme_customization()
+        dict_settings["RELEASE_VERSION"] = settings.RELEASE
 
         return drf.response.Response(dict_settings)
 

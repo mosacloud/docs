@@ -104,6 +104,9 @@ test.describe('Doc Header', () => {
       browserName,
       1,
     );
+
+    await writeInEditor({ page, text: 'Hello Content' });
+
     await page.getByRole('button', { name: 'Share' }).click();
     await updateShareLink(page, 'Public', 'Editing');
 
@@ -116,7 +119,9 @@ test.describe('Doc Header', () => {
       docTitle,
     });
 
-    // Wait for other page to sync
+    await expect(otherPage.getByText('Hello Content')).toBeVisible();
+
+    // Wait for other page to broadcast sync
     await page.waitForTimeout(1000);
 
     await page.keyboard.press('Escape');
@@ -124,9 +129,8 @@ test.describe('Doc Header', () => {
     await expect(elTitle).toBeVisible();
     await elTitle.fill('Hello World');
     await elTitle.blur();
-    await verifyDocName(page, 'Hello World');
 
-    // Wait for other page to sync
+    // Wait for other page to broadcast sync
     await page.waitForTimeout(1000);
 
     // Check other user page
@@ -142,6 +146,36 @@ test.describe('Doc Header', () => {
     await verifyDocName(page, 'Hello Other World');
 
     await cleanup();
+  });
+
+  test('it pastes plain text in the title without keeping formatting', async ({
+    page,
+    browserName,
+  }) => {
+    await createDoc(page, 'doc-title-paste', browserName, 1);
+
+    const docTitle = page.getByRole('textbox', { name: 'Document title' });
+    await docTitle.click();
+    await page.keyboard.press('Control+a');
+
+    await page.evaluate(() => {
+      const el = document.querySelector('[aria-label="Document title"]');
+      if (!el) {
+        return;
+      }
+
+      const dt = new DataTransfer();
+      dt.setData('text/plain', 'Pasted plain text');
+      dt.setData('text/html', '<b><em>Pasted plain text</em></b>');
+      el.dispatchEvent(
+        new ClipboardEvent('paste', { clipboardData: dt, bubbles: true }),
+      );
+    });
+
+    await docTitle.blur();
+    await expect(docTitle).toHaveText('Pasted plain text');
+    // Ensure formatting tags from text/html were not inserted.
+    await expect(docTitle.locator('b, em, strong, i')).toHaveCount(0);
   });
 
   test('it updates the title doc adding a leading emoji', async ({
@@ -179,7 +213,8 @@ test.describe('Doc Header', () => {
     await optionMenu.click();
     await expect(removeEmojiMenuItem).toBeHidden();
     await addEmojiMenuItem.click();
-    await expect(emojiPicker).toHaveText('📄');
+    // The 1 April the emoji is a fish
+    await expect(emojiPicker).toHaveText(/📄|🐟/);
 
     // Change emoji
     await emojiPicker.click({
@@ -521,7 +556,6 @@ test.describe('Doc Header', () => {
       name: 'Share',
       exact: true,
     });
-    await expect(shareButton).toBeVisible();
 
     await shareButton.click();
     await page.getByRole('button', { name: 'Copy link' }).click();
@@ -532,10 +566,8 @@ test.describe('Doc Header', () => {
     );
     const clipboardContent = await handle.jsonValue();
 
-    const origin = await page.evaluate(() => window.location.origin);
-    expect(clipboardContent.trim()).toMatch(
-      `${origin}/docs/mocked-document-id/`,
-    );
+    const url = page.url();
+    expect(clipboardContent.trim()).toMatch(url);
   });
 
   test('it pins a document', async ({ page, browserName }) => {

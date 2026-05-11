@@ -43,7 +43,7 @@ describe('useSaveDoc', () => {
 
     const addEventListenerSpy = vi.spyOn(window, 'addEventListener');
 
-    renderHook(() => useSaveDoc(docId, yDoc, true), {
+    renderHook(() => useSaveDoc(docId, yDoc), {
       wrapper: AppWrapper,
     });
 
@@ -65,17 +65,16 @@ describe('useSaveDoc', () => {
   it('should save when there are local changes', async () => {
     vi.useFakeTimers();
     const yDoc = new Y.Doc();
-    const docId = 'test-doc-id';
+    const docId = self.crypto.randomUUID();
 
-    fetchMock.patch('http://test.jest/api/v1.0/documents/test-doc-id/', {
+    fetchMock.patch(`http://test.jest/api/v1.0/documents/${docId}/content/`, {
       body: JSON.stringify({
-        id: 'test-doc-id',
+        id: docId,
         content: 'test-content',
-        title: 'test-title',
       }),
     });
 
-    renderHook(() => useSaveDoc(docId, yDoc, true), {
+    renderHook(() => useSaveDoc(docId, yDoc), {
       wrapper: AppWrapper,
     });
 
@@ -94,7 +93,7 @@ describe('useSaveDoc', () => {
 
     await waitFor(() => {
       expect(fetchMock.lastCall()?.[0]).toBe(
-        'http://test.jest/api/v1.0/documents/test-doc-id/',
+        `http://test.jest/api/v1.0/documents/${docId}/content/`,
       );
     });
   });
@@ -104,15 +103,17 @@ describe('useSaveDoc', () => {
     const yDoc = new Y.Doc();
     const docId = 'test-doc-id';
 
-    fetchMock.patch('http://test.jest/api/v1.0/documents/test-doc-id/', {
-      body: JSON.stringify({
-        id: 'test-doc-id',
-        content: 'test-content',
-        title: 'test-title',
-      }),
-    });
+    fetchMock.patch(
+      'http://test.jest/api/v1.0/documents/test-doc-id/content/',
+      {
+        body: JSON.stringify({
+          id: 'test-doc-id',
+          content: 'test-content',
+        }),
+      },
+    );
 
-    renderHook(() => useSaveDoc(docId, yDoc, true), {
+    renderHook(() => useSaveDoc(docId, yDoc), {
       wrapper: AppWrapper,
     });
 
@@ -132,7 +133,7 @@ describe('useSaveDoc', () => {
     const docId = 'test-doc-id';
     const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
 
-    const { unmount } = renderHook(() => useSaveDoc(docId, yDoc, true), {
+    const { unmount } = renderHook(() => useSaveDoc(docId, yDoc), {
       wrapper: AppWrapper,
     });
 

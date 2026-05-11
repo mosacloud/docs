@@ -131,7 +131,7 @@ test.describe('Language', () => {
     await waitForLanguageSwitch(page, TestLanguage.French);
 
     // Check for French 404 response
-    await check404Response('Pas trouvé.');
+    await check404Response('Non trouvé.');
   });
 
   test('it check translations of the slash menu when changing language', async ({

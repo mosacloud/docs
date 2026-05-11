@@ -99,9 +99,8 @@ export const useShortcuts = (
         event.preventDefault();
         editor.insertInlineContent([
           {
-            type: 'interlinkingSearchInline',
+            type: 'interlinkingLinkInline',
             props: {
-              disabled: false,
               trigger: '@',
             },
           },

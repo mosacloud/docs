@@ -6,16 +6,14 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Box, Icon, Loading, TextErrors } from '@/components';
+import { Loading } from '@/components';
 import { DEFAULT_QUERY_RETRY } from '@/core';
 import {
   Doc,
   DocPage403,
   KEY_DOC,
-  useCollaboration,
   useDoc,
   useDocStore,
-  useProviderStore,
   useTrans,
 } from '@/docs/doc-management/';
 import { KEY_AUTH, setAuthUrl, useAuth } from '@/features/auth';
@@ -24,7 +22,6 @@ import { getDocChildren, subPageToTree } from '@/features/docs/doc-tree/';
 import { DocEditorSkeleton, useSkeletonStore } from '@/features/skeletons';
 import { MainLayout } from '@/layouts';
 import { MAIN_LAYOUT_ID } from '@/layouts/conf';
-import { useBroadcastStore } from '@/stores/useBroadcastStore';
 import { NextPageWithLayout } from '@/types/next';
 
 const DocEditor = dynamic(
@@ -78,7 +75,6 @@ interface DocProps {
 }
 
 const DocPage = ({ id }: DocProps) => {
-  const { hasLostConnection, resetLostConnection } = useProviderStore();
   const { isSkeletonVisible, setIsSkeletonVisible } = useSkeletonStore();
   const {
     data: docQuery,
@@ -88,7 +84,7 @@ const DocPage = ({ id }: DocProps) => {
   } = useDoc(
     { id },
     {
-      staleTime: 0,
+      staleTime: 30000, // 30 seconds - We keep the data fresh as it is a highly collaborative page
       queryKey: [KEY_DOC, { id }],
       retryDelay: 1000,
       retry: (failureCount, error) => {
@@ -103,10 +99,8 @@ const DocPage = ({ id }: DocProps) => {
 
   const [doc, setDoc] = useState<Doc>();
   const { setCurrentDoc } = useDocStore();
-  const { addTask } = useBroadcastStore();
   const queryClient = useQueryClient();
-  const { replace } = useRouter();
-  useCollaboration(doc?.id, doc?.content);
+  const { replace, asPath } = useRouter();
   const { t } = useTranslation();
   const { authenticated } = useAuth();
   const { untitledDocument } = useTrans();
@@ -144,16 +138,6 @@ const DocPage = ({ id }: DocProps) => {
     };
   }, [id]);
 
-  // Invalidate when provider store reports a lost connection
-  useEffect(() => {
-    if (hasLostConnection && doc?.id) {
-      void queryClient.invalidateQueries({
-        queryKey: [KEY_DOC, { id: doc.id }],
-      });
-      resetLostConnection();
-    }
-  }, [hasLostConnection, doc?.id, queryClient, resetLostConnection]);
-
   useEffect(() => {
     if (!docQuery || isFetching) {
       return;
@@ -174,60 +158,40 @@ const DocPage = ({ id }: DocProps) => {
     };
   }, [setCurrentDoc, setIsSkeletonVisible]);
 
-  /**
-   * We add a broadcast task to reset the query cache
-   * when the document visibility changes.
-   */
   useEffect(() => {
-    if (!doc?.id) {
+    if (!isError || !error?.status || [403].includes(error.status)) {
       return;
     }
-
-    addTask(`${KEY_DOC}-${doc.id}`, () => {
-      void queryClient.invalidateQueries({
-        queryKey: [KEY_DOC, { id: doc.id }],
-      });
-    });
-  }, [addTask, doc?.id, queryClient]);
-
-  useEffect(() => {
-    if (!isError || !error?.status || ![404, 401].includes(error.status)) {
-      return;
-    }
-
-    let replacePath = `/${error.status}`;
 
     if (error.status === 401) {
       if (authenticated) {
         queryClient.setQueryData([KEY_AUTH], null);
       }
       setAuthUrl();
+      void replace('/401');
+      return;
     }
 
-    void replace(replacePath);
-  }, [isError, error?.status, replace, authenticated, queryClient]);
+    if (error.status === 404) {
+      void replace('/404');
+      return;
+    }
+
+    if (error.status === 502) {
+      void replace('/offline');
+      return;
+    }
+
+    const fromPath = encodeURIComponent(asPath);
+    void replace(`/500?from=${fromPath}`);
+  }, [isError, error?.status, replace, authenticated, queryClient, asPath]);
 
   if (isError && error?.status) {
-    if ([404, 401].includes(error.status)) {
-      return <Loading />;
-    }
-
     if (error.status === 403) {
       return <DocPage403 id={id} />;
     }
 
-    return (
-      <Box $margin="large">
-        <TextErrors
-          causes={error.cause}
-          icon={
-            error.status === 502 ? (
-              <Icon iconName="wifi_off" $theme="danger" $withThemeInherited />
-            ) : undefined
-          }
-        />
-      </Box>
-    );
+    return <Loading />;
   }
 
   if (!doc) {

@@ -438,3 +438,92 @@ def test_api_documents_move_authenticated_deleted_target_as_sibling(position):
     # Verify that the document has not moved
     document.refresh_from_db()
     assert document.is_root() is True
+
+
+@pytest.mark.parametrize("position", enums.MoveNodePositionChoices.values)
+def test_api_documents_move_to_descendant(position):
+    """
+    Moving a document to one of its descendants should return a validation error.
+    """
+    user = factories.UserFactory()
+    client = APIClient()
+    client.force_login(user)
+
+    # Create a hierarchy: parent -> child -> grandchild
+    parent = factories.DocumentFactory(users=[(user, "owner")])
+    child = factories.DocumentFactory(parent=parent, users=[(user, "owner")])
+    grandchild = factories.DocumentFactory(parent=child, users=[(user, "owner")])
+
+    # Try moving parent to child (descendant)
+    response = client.post(
+        f"/api/v1.0/documents/{parent.id!s}/move/",
+        data={"target_document_id": str(child.id), "position": position},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "target_document_id": "Cannot move a document to its own descendant."
+    }
+
+    # Try moving parent to grandchild
+    response = client.post(
+        f"/api/v1.0/documents/{parent.id!s}/move/",
+        data={"target_document_id": str(grandchild.id), "position": position},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "target_document_id": "Cannot move a document to its own descendant."
+    }
+
+    # Try moving child to grandchild (still descendant)
+    response = client.post(
+        f"/api/v1.0/documents/{child.id!s}/move/",
+        data={"target_document_id": str(grandchild.id), "position": position},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "target_document_id": "Cannot move a document to its own descendant."
+    }
+
+    # Ensure documents have not moved
+    parent.refresh_from_db()
+    child.refresh_from_db()
+    grandchild.refresh_from_db()
+    assert parent.is_root() is True
+    assert child.is_child_of(parent) is True
+    assert grandchild.is_child_of(child) is True
+
+
+@pytest.mark.parametrize(
+    "position",
+    [
+        enums.MoveNodePositionChoices.FIRST_CHILD,
+        enums.MoveNodePositionChoices.LAST_CHILD,
+    ],
+)
+def test_api_documents_move_to_self(position):
+    """
+    Moving a document to itself should return a validation error.
+    """
+    user = factories.UserFactory()
+    client = APIClient()
+    client.force_login(user)
+
+    document = factories.DocumentFactory(users=[(user, "owner")])
+
+    # Try moving document to itself
+    response = client.post(
+        f"/api/v1.0/documents/{document.id!s}/move/",
+        data={"target_document_id": str(document.id), "position": position},
+    )
+
+    assert response.status_code == 400
+    assert response.json() == {
+        "target_document_id": "Cannot move a document to its own descendant."
+    }
+
+    # Ensure document has not moved
+    document.refresh_from_db()
+    assert document.is_root() is True

@@ -11,6 +11,7 @@ import { Box, Card } from '@/components';
 import { useCunninghamTheme } from '@/cunningham';
 import { Doc, Role } from '@/docs/doc-management';
 import { User } from '@/features/auth';
+import { useResponsiveStore } from '@/stores';
 
 import { useCreateDocAccess, useCreateDocInvitation } from '../api';
 import { OptionType } from '../types';
@@ -38,7 +39,7 @@ export const DocShareAddMemberList = ({
 }: Props) => {
   const { t } = useTranslation();
   const { toast } = useToastProvider();
-
+  const { isSmallMobile } = useResponsiveStore();
   const [isLoading, setIsLoading] = useState(false);
   const { spacingsTokens } = useCunninghamTheme();
   const [invitationRole, setInvitationRole] = useState<Role>(Role.EDITOR);
@@ -118,14 +119,15 @@ export const DocShareAddMemberList = ({
     <Card
       className="--docs--doc-share-add-member-list"
       data-testid="doc-share-add-member-list"
-      $direction="row"
-      $align="center"
+      $direction={isSmallMobile ? 'column' : 'row'}
+      $align={isSmallMobile ? 'stretch' : 'center'}
       $padding={spacingsTokens.sm}
       $scope="surface"
       $theme="tertiary"
       $variation=""
       $border="1px solid var(--c--contextuals--border--surface--primary)"
       $margin={{ bottom: 'sm' }}
+      $gap={spacingsTokens.xs}
     >
       <Box
         $direction="row"
@@ -142,7 +144,12 @@ export const DocShareAddMemberList = ({
           />
         ))}
       </Box>
-      <Box $direction="row" $align="center" $gap={spacingsTokens.xs}>
+      <Box
+        $direction="row"
+        $align="center"
+        $gap={spacingsTokens.xs}
+        $margin={{ left: isSmallMobile ? 'auto' : '' }}
+      >
         <DocRoleDropdown
           canUpdate={canShare}
           currentRole={invitationRole}
@@ -154,6 +161,7 @@ export const DocShareAddMemberList = ({
           disabled={isLoading}
           aria-label={inviteLabel}
           data-testid="doc-share-invite-button"
+          size={isSmallMobile ? 'small' : 'medium'}
         >
           {t('Invite')}
         </Button>

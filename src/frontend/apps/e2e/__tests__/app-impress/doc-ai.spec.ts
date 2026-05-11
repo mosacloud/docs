@@ -66,6 +66,8 @@ if (process.env.IS_INSTANCE !== 'true') {
           name: 'Albert AI',
           color: '#8bc6ff',
         },
+        AI_FEATURE_ENABLED: true,
+        AI_FEATURE_BLOCKNOTE_ENABLED: true,
       });
 
       await mockAIResponse(page);
@@ -131,6 +133,8 @@ if (process.env.IS_INSTANCE !== 'true') {
           name: 'Albert AI',
           color: '#8bc6ff',
         },
+        AI_FEATURE_ENABLED: true,
+        AI_FEATURE_BLOCKNOTE_ENABLED: true,
       });
 
       await mockAIResponse(page);
@@ -166,6 +170,11 @@ if (process.env.IS_INSTANCE !== 'true') {
       page,
       browserName,
     }) => {
+      await overrideConfig(page, {
+        AI_FEATURE_ENABLED: true,
+        AI_FEATURE_LEGACY_ENABLED: true,
+      });
+
       await page.route(/.*\/ai-translate\//, async (route) => {
         const request = route.request();
         if (request.method().includes('POST')) {
@@ -229,6 +238,11 @@ if (process.env.IS_INSTANCE !== 'true') {
         page,
         browserName,
       }) => {
+        await overrideConfig(page, {
+          AI_FEATURE_ENABLED: true,
+          AI_FEATURE_LEGACY_ENABLED: true,
+        });
+
         await mockedDocument(page, {
           accesses: [
             {
@@ -303,6 +317,11 @@ if (process.env.IS_INSTANCE !== 'true') {
     });
 
     test(`it checks ai_proxy ability`, async ({ page, browserName }) => {
+      await overrideConfig(page, {
+        AI_FEATURE_ENABLED: true,
+        AI_FEATURE_LEGACY_ENABLED: true,
+      });
+
       await mockedDocument(page, {
         accesses: [
           {

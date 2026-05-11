@@ -63,7 +63,7 @@ export const DocShareModal = ({ doc, onClose, isRootDoc = true }: Props) => {
   const API_USERS_SEARCH_QUERY_MIN_LENGTH =
     config?.API_USERS_SEARCH_QUERY_MIN_LENGTH || 5;
 
-  const { isDesktop } = useResponsiveStore();
+  const { isLargeScreen } = useResponsiveStore();
 
   /**
    * The modal content height is calculated based on the viewport height.
@@ -75,7 +75,7 @@ export const DocShareModal = ({ doc, onClose, isRootDoc = true }: Props) => {
    * - 690px is the height of the content in desktop
    * This ensures that the modal content is always visible and does not overflow.
    */
-  const modalContentHeight = isDesktop
+  const modalContentHeight = isLargeScreen
     ? 'min(690px, calc(100dvh - 2em - 12px - 34px))'
     : `calc(100dvh - 34px)`;
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
@@ -181,7 +181,7 @@ export const DocShareModal = ({ doc, onClose, isRootDoc = true }: Props) => {
         closeOnClickOutside
         data-testid="doc-share-modal"
         aria-label={t('Share the document')}
-        size={isDesktop ? ModalSize.LARGE : ModalSize.FULL}
+        size={isLargeScreen ? ModalSize.LARGE : ModalSize.FULL}
         aria-modal="true"
         onClose={onClose}
         title={
@@ -289,7 +289,7 @@ export const DocShareModal = ({ doc, onClose, isRootDoc = true }: Props) => {
                     />
                   )}
                   {showMemberSection && isRootDoc && (
-                    <Box $padding={{ horizontal: 'base', top: 'base' }}>
+                    <Box $padding={{ top: 'base' }}>
                       <QuickSearchGroupAccessRequest doc={doc} />
                       <QuickSearchGroupInvitation doc={doc} />
                       <QuickSearchGroupMember doc={doc} />

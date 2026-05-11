@@ -78,19 +78,6 @@ test.describe('Config', () => {
     expect(webSocket.url()).toContain(`${process.env.COLLABORATION_WS_URL}`);
   });
 
-  test('it checks that Crisp is trying to init from config endpoint', async ({
-    page,
-  }) => {
-    await overrideConfig(page, {
-      CRISP_WEBSITE_ID: '1234',
-    });
-
-    await page.goto('/');
-
-    const crispElement = page.locator('#crisp-chatbox');
-    await expect(crispElement).toBeAttached();
-  });
-
   test('it checks FRONTEND_CSS_URL config', async ({ page }) => {
     await overrideConfig(page, {
       FRONTEND_CSS_URL: 'http://localhost:123465/css/style.css',

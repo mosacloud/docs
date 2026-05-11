@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useAnalytics } from '@/libs';
 
@@ -12,6 +12,12 @@ export const useAuth = () => {
   const { pathname } = useRouter();
   const { trackEvent } = useAnalytics();
   const [hasTracked, setHasTracked] = useState(authStates.isFetched);
+  const isAuthLoading =
+    authStates.fetchStatus !== 'idle' || authStates.isLoading;
+  const hasInitiallyLoaded = useRef(false);
+  if (authStates.isFetched) {
+    hasInitiallyLoaded.current = true;
+  }
   const [pathAllowed, setPathAllowed] = useState<boolean>(
     !regexpUrlsAuth.some((regexp) => !!pathname.match(regexp)),
   );
@@ -35,6 +41,8 @@ export const useAuth = () => {
     user,
     authenticated: !!user && authStates.isSuccess,
     pathAllowed,
+    hasInitiallyLoaded: hasInitiallyLoaded.current,
+    isAuthLoading,
     ...authStates,
   };
 };

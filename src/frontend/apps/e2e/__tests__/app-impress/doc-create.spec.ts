@@ -52,29 +52,7 @@ test.describe('Doc Create', () => {
     ).toBeVisible();
   });
 
-  test('it creates a sub doc from interlinking dropdown', async ({
-    page,
-    browserName,
-  }) => {
-    const [title] = await createDoc(page, 'my-new-slash-doc', browserName, 1);
-
-    await verifyDocName(page, title);
-
-    await page.locator('.bn-block-outer').last().fill('/');
-    await page.getByText('Link a doc').first().click();
-    await page
-      .locator('.quick-search-container')
-      .getByText('New sub-doc')
-      .click();
-
-    const input = page.getByRole('textbox', { name: 'Document title' });
-    await expect(input).toHaveText('', { timeout: 10000 });
-    await expect(
-      page.locator('.c__tree-view--row-content').getByText('Untitled document'),
-    ).toBeVisible();
-  });
-
-  test('it creates a doc with link "/doc/new/', async ({
+  test('it creates a doc with link "/docs/new/"', async ({
     page,
     browserName,
   }) => {

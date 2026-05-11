@@ -10,12 +10,8 @@ import { createGlobalStyle } from 'styled-components';
 
 import { Box, Text } from '@/components';
 import { useEditorStore } from '@/docs/doc-editor/stores';
-import {
-  Doc,
-  base64ToYDoc,
-  useProviderStore,
-  useUpdateDoc,
-} from '@/docs/doc-management/';
+import { Doc, base64ToYDoc, useProviderStore } from '@/docs/doc-management/';
+import { useDocContentUpdate } from '@/docs/doc-management/api/useDocContentUpdate';
 
 import { useDocVersion } from '../api';
 import { KEY_LIST_DOC_VERSIONS } from '../api/useDocVersions';
@@ -49,7 +45,7 @@ export const ModalConfirmationVersion = ({
   const { toast } = useToastProvider();
   const { provider } = useProviderStore();
   const { threadStore } = useEditorStore();
-  const { mutate: updateDoc } = useUpdateDoc({
+  const { mutate: updateDocContent } = useDocContentUpdate({
     listInvalidQueries: [KEY_LIST_DOC_VERSIONS],
     onSuccess: () => {
       const onDisplaySuccess = () => {
@@ -104,7 +100,7 @@ export const ModalConfirmationVersion = ({
                 return;
               }
 
-              updateDoc({
+              updateDocContent({
                 id: docId,
                 content: version.content,
               });

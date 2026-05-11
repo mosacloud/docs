@@ -6,12 +6,78 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- ⚡️(frontend) add skeleton on content loading #2254
+- ⚡️(frontend) close websocket connection when user change tab #2264
+
+### Changed
+
+- 🏗️(core) migrate from pip to uv
+
+### Fixed
+
+- 🩺(project) reload app if front and back unsync #2276
+- 🐛(frontend) fix patch and comments #2273
+- 🐛(frontend) interlinking are exported correctly in print mode #2269
+- 💬(frontend) add missing link in onboarding description #2233
+- 🐛(frontend) sanitize pasted and dropped content in document title #2210
+- 🐛(frontend) Emoji menu doesn't display above comment box #2229
+- 🐛(frontend) Block menu doesn't stay open on 1st line #2229 
+- 🐛(frontend) The "+" on the first line of a new doc doesn't work #2229
+- 🐛(backend) manage race condition between GET and PATCH content #2271
+- 🐛(backend) replace document creation table locks with retry strategy #2274
+
+### Security
+
+- 🔒️(frontend) sanitize color during collaboration #2270
+
+
+
+## [v5.0.0] - 2026-04-08
+
+### Added
+
+- ✨(backend) create a dedicated endpoint to update document content #2171
+- ⚡️(backend) stream s3 file content with a dedicated endpoint #2171
+- ✨(backend) allow to use new ai feature using mistral sdk #2193
+
+### Changed
+
+- ♻️(backend) rename documents content endpoint in `formatted-content` (BC)
+- 🚸(frontend) show Crisp from the help menu #2222
+- ♿️(frontend) structure correctly 5xx error alerts #2128
+- ♿️(frontend) make doc search result labels uniquely identifiable #2212
+- ⬆️(backend) upgrade docspec to v3.0.x and adapt converter API #2220
+- ✨(backend) make forward auth request uri header configurable #2241
+- ♿️(frontend) fix sidebar resize handle for screen readers #2122
+
+### Fixed
+
+- 🚸(frontend) redirect on current url tab after 401 #2197
+- 🐛(frontend) abort check media status unmount #2194
+- ✨(backend) order pinned documents by last updated at #2028
+- 🐛(frontend) fix app shallow reload #2231
+- 🐛(frontend) fix interlinking modal clipping #2213
+- 🛂(frontend) fix cannot manage member on small screen #2226
+- 🐛(backend) load jwks url when OIDC_RS_PRIVATE_KEY_STR is set
+- 🐛(backend) Prevent moving document to its own descendant or self #2208
+- 🐛(backend) return 400 when restoring a non-deleted document #2225
+- 🐛(backend) fix race condition in reconciliation requests CSV import #2153
+- 🐛(backend) create_for_owner: add accesses before saving doc content #2124
+- 🐛(backend) enforce emoji validation for reactions #1965
+
+### Removed
+
+- 🔥(backend) remove deprecated descendants endpoint #2243
+- 🔥(backend) remove content in document responses #2171
+
 ## [v4.8.6] - 2026-04-08
 
 ### Added
 
-- 🚸(frontend) allow opening "@page" links with 
-ctrl/command/middle-mouse click #2170
+- 🚸(frontend) allow opening "@page" links with
+  ctrl/command/middle-mouse click #2170
 - ✅ E2E - Any instance friendly #2142
 
 ### Changed
@@ -44,7 +110,6 @@ ctrl/command/middle-mouse click #2170
 - 🐛(frontend) fix tree pagination #2145
 - 🐛(nginx) add page reconciliation on nginx #2154
 
-
 ## [v4.8.4] - 2026-03-25
 
 ### Added
@@ -64,6 +129,7 @@ ctrl/command/middle-mouse click #2170
 
 - 🐛(y-provider) destroy Y.Doc instances after each convert request #2129
 - 🐛(backend) remove deleted sub documents in favorite_list endpoint #2083
+
 
 ## [v4.8.3] - 2026-03-23
 
@@ -1232,7 +1298,8 @@ ctrl/command/middle-mouse click #2170
 - ✨(frontend) Coming Soon page (#67)
 - 🚀 Impress, project to manage your documents easily and collaboratively.
 
-[unreleased]: https://github.com/suitenumerique/docs/compare/v4.8.6...main
+[unreleased]: https://github.com/suitenumerique/docs/compare/v5.0.0...main
+[v5.0.0]: https://github.com/suitenumerique/docs/releases/v5.0.0
 [v4.8.6]: https://github.com/suitenumerique/docs/releases/v4.8.6
 [v4.8.5]: https://github.com/suitenumerique/docs/releases/v4.8.5
 [v4.8.4]: https://github.com/suitenumerique/docs/releases/v4.8.4

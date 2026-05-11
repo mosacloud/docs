@@ -53,7 +53,6 @@ export interface Doc {
   title?: string;
   children?: Doc[];
   childrenCount?: number;
-  content?: Base64;
   created_at: string;
   creator: string;
   deleted_at: string | null;
@@ -82,9 +81,12 @@ export interface Doc {
     children_list: boolean;
     collaboration_auth: boolean;
     comment: boolean;
+    content_patch: boolean;
+    content_retrieve: boolean;
     destroy: boolean;
     duplicate: boolean;
     favorite: boolean;
+    formatted_content: boolean;
     invite_owner: boolean;
     link_configuration: boolean;
     media_auth: boolean;

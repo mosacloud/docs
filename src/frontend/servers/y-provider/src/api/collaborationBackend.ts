@@ -75,11 +75,10 @@ async function fetch<T>(
 }
 
 export function fetchDocument(
-  { name, withoutContent }: { name: string; withoutContent?: boolean },
+  { name }: { name: string },
   requestHeaders: IncomingHttpHeaders,
 ): Promise<Doc> {
-  const params = withoutContent ? '?without_content=true' : '';
-  return fetch<Doc>(`/api/v1.0/documents/${name}/${params}`, requestHeaders);
+  return fetch<Doc>(`/api/v1.0/documents/${name}/`, requestHeaders);
 }
 
 export function fetchCurrentUser(

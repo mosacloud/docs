@@ -15,14 +15,13 @@ import { useCreateBlockNote } from '@blocknote/react';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import { useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { css } from 'styled-components';
 import type { Awareness } from 'y-protocols/awareness';
 import * as Y from 'yjs';
 
 import { Box, TextErrors } from '@/components';
 import { useConfig } from '@/core';
 import { useCunninghamTheme } from '@/cunningham';
-import { Doc, useProviderStore } from '@/docs/doc-management';
+import { Doc } from '@/docs/doc-management';
 import { avatarUrlFromName, useAuth } from '@/features/auth';
 import { useAnalytics } from '@/libs/Analytics';
 
@@ -35,14 +34,14 @@ import {
   useUploadStatus,
 } from '../hook';
 import { useEditorStore } from '../stores';
-import { cssEditor } from '../styles';
+import { DocsEditorStyle } from '../styles';
 import { DocsBlockNoteEditor } from '../types';
-import { randomColor } from '../utils';
+import { randomColor, sanitizeColor } from '../utils';
 
 import BlockNoteAI from './AI';
 import { BlockNoteSuggestionMenu } from './BlockNoteSuggestionMenu';
 import { BlockNoteToolbar } from './BlockNoteToolBar/BlockNoteToolbar';
-import { cssComments, useComments } from './comments/';
+import { DocsCommentsStyle, useComments } from './comments/';
 import {
   AccessibleImageBlock,
   CalloutBlock,
@@ -53,10 +52,7 @@ const AIMenu = BlockNoteAI?.AIMenu;
 const AIMenuController = BlockNoteAI?.AIMenuController;
 const useAI = BlockNoteAI?.useAI;
 const localesBNAI = BlockNoteAI?.localesAI || {};
-import {
-  InterlinkingLinkInlineContent,
-  InterlinkingSearchInlineContent,
-} from './custom-inline-content';
+import { InterlinkingLinkInlineContent } from './custom-inline-content';
 import XLMultiColumn from './xl-multi-column';
 
 const localesBNMultiColumn = XLMultiColumn?.locales;
@@ -74,7 +70,6 @@ const baseBlockNoteSchema = withPageBreak(
     },
     inlineContentSpecs: {
       ...defaultInlineContentSpecs,
-      interlinkingSearchInline: InterlinkingSearchInlineContent,
       interlinkingLinkInline: InterlinkingLinkInlineContent,
     },
   }),
@@ -92,13 +87,12 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
   const { user } = useAuth();
   const { setEditor } = useEditorStore();
   const { themeTokens } = useCunninghamTheme();
-  const { isSynced: isConnectedToCollabServer } = useProviderStore();
   const refEditorContainer = useRef<HTMLDivElement>(null);
   const canSeeComment = doc.abilities.comment;
   // Determine if comments should be visible in the UI
   const showComments = canSeeComment;
 
-  useSaveDoc(doc.id, provider.document, isConnectedToCollabServer);
+  useSaveDoc(doc.id, provider.document);
   const { i18n, t } = useTranslation();
   const langLocalesBN =
     !i18n.resolvedLanguage || !(i18n.resolvedLanguage in localesBN)
@@ -158,12 +152,13 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
          */
         renderCursor: (user: { color: string; name: string }) => {
           const cursorElement = document.createElement('span');
+          const safeColor = sanitizeColor(user.color);
 
           cursorElement.classList.add('collaboration-cursor-custom__base');
           const caretElement = document.createElement('span');
           caretElement.classList.add('collaboration-cursor-custom__caret');
           caretElement.setAttribute('spellcheck', `false`);
-          caretElement.setAttribute('style', `background-color: ${user.color}`);
+          caretElement.setAttribute('style', `background-color: ${safeColor}`);
 
           if (showCursorLabels === 'always') {
             cursorElement.setAttribute('data-active', '');
@@ -175,7 +170,7 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
           labelElement.setAttribute('spellcheck', `false`);
           labelElement.setAttribute(
             'style',
-            `background-color: ${user.color};border: 1px solid ${user.color};`,
+            `background-color: ${safeColor};border: 1px solid ${safeColor};`,
           );
           labelElement.insertBefore(document.createTextNode(user.name), null);
 
@@ -265,13 +260,12 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
   }, [setEditor, editor]);
 
   return (
-    <Box
-      ref={refEditorContainer}
-      $css={css`
-        ${cssEditor};
-        ${cssComments(showComments, currentUserAvatarUrl)}
-      `}
-    >
+    <Box ref={refEditorContainer} $height="100%">
+      <DocsEditorStyle />
+      <DocsCommentsStyle
+        canSeeComment={canSeeComment}
+        currentUserAvatarUrl={currentUserAvatarUrl}
+      />
       {errorAttachment && (
         <Box $margin={{ bottom: 'big', top: 'none', horizontal: 'large' }}>
           <TextErrors
@@ -355,12 +349,9 @@ export const BlockNoteReader = ({
   useHeadings(editor);
 
   return (
-    <Box
-      $css={css`
-        ${cssEditor};
-        ${cssComments(false)}
-      `}
-    >
+    <Box>
+      <DocsEditorStyle />
+      <DocsCommentsStyle canSeeComment={false} />
       <BlockNoteView
         className="--docs--main-editor"
         editor={editor}

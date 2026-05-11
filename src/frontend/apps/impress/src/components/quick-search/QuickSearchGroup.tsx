@@ -19,7 +19,13 @@ export const QuickSearchGroup = <T,>({
 }: Props<T>) => {
   return (
     <Box>
-      <Text as="h2" $weight="700" $size="sm" $margin="none">
+      <Text
+        className="--docs--quick-search-group-title"
+        as="h2"
+        $weight="700"
+        $size="sm"
+        $margin="none"
+      >
         {group.groupName}
       </Text>
       <Command.Group
@@ -61,7 +67,11 @@ export const QuickSearchGroup = <T,>({
           );
         })}
         {group.emptyString && group.elements.length === 0 && (
-          <Text $margin={{ left: '2xs', bottom: '3xs' }} $size="sm">
+          <Text
+            className="--docs--quick-search-group-empty"
+            $margin={{ left: '2xs', bottom: '3xs' }}
+            $size="sm"
+          >
             {group.emptyString}
           </Text>
         )}

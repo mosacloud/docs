@@ -6,15 +6,10 @@ import { Doc } from '../types';
 
 export type DocParams = {
   id: string;
-  withoutContent?: boolean;
 };
 
-export const getDoc = async ({
-  id,
-  withoutContent,
-}: DocParams): Promise<Doc> => {
-  const params = withoutContent ? '?without_content=true' : '';
-  const response = await fetchAPI(`documents/${id}/${params}`);
+export const getDoc = async ({ id }: DocParams): Promise<Doc> => {
+  const response = await fetchAPI(`documents/${id}/`);
 
   if (!response.ok) {
     throw new APIError('Failed to get the doc', await errorCauses(response));
@@ -24,7 +19,6 @@ export const getDoc = async ({
 };
 
 export const KEY_DOC = 'doc';
-export const KEY_DOC_VISIBILITY = 'doc-visibility';
 
 export function useDoc(
   param: DocParams,

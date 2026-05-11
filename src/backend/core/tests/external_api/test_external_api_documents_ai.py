@@ -14,6 +14,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from core import factories, models
+from core.services.ai_services.legacy import get_legacy_ai_service
 from core.tests.documents.test_api_documents_ai_proxy import (  # pylint: disable=unused-import
     ai_settings,
 )
@@ -21,6 +22,12 @@ from core.tests.documents.test_api_documents_ai_proxy import (  # pylint: disabl
 pytestmark = pytest.mark.django_db
 
 # pylint: disable=unused-argument
+
+
+@pytest.fixture(autouse=True)
+def clear_openai_client_config():
+    """Clear the configure_legacy_openai_client cache."""
+    get_legacy_ai_service.cache_clear()
 
 
 def test_external_api_documents_ai_transform_not_allowed(
@@ -219,7 +226,9 @@ def test_external_api_documents_ai_translate_can_be_allowed(
                     "Translate the content in the html to the "
                     "specified language Colombian Spanish. "
                     "Check the translation for accuracy and make any necessary corrections. "
-                    "Do not provide any other information."
+                    "Do not provide any other information. "
+                    "Return the content directly without wrapping it in code blocks or markdown "
+                    "delimiters."
                 ),
             },
             {"role": "user", "content": "Hello"},
@@ -241,7 +250,7 @@ def test_external_api_documents_ai_translate_can_be_allowed(
     }
 )
 @pytest.mark.usefixtures("ai_settings")
-@patch("core.services.ai_services.AIService.stream")
+@patch("core.services.ai_services.blocknote.AIService.stream")
 def test_external_api_documents_ai_proxy_can_be_allowed(
     mock_stream, user_token, resource_server_backend, user_specific_sub
 ):

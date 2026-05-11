@@ -2,7 +2,7 @@
  * Configure Crisp chat for real-time support across all pages.
  */
 
-import { Crisp } from 'crisp-sdk-web';
+import { ChatboxPosition, Crisp } from 'crisp-sdk-web';
 import { JSX, PropsWithChildren, ReactNode, useEffect, useState } from 'react';
 import { createGlobalStyle } from 'styled-components';
 
@@ -10,14 +10,17 @@ import { User } from '@/features/auth';
 import { AbstractAnalytic, AnalyticEvent } from '@/libs';
 
 const CrispStyle = createGlobalStyle`
-  #crisp-chatbox a{
-    zoom: 0.8;
+  #crisp-chatbox div[role="button"] {
+    zoom: 0.7;
+    right: auto !important;
+    left: 24px !important;
   }
 
-  @media screen and (width <= 1024px) {
-    .c__modals--opened #crisp-chatbox {
-      display: none!important;
-    }
+  #crisp-chatbox div[data-chat-status="initial"] {
+    bottom: 65px!important;
+    left: 24px !important;
+    margin-left: var(--crisp-customization-button-horizontal) !important;
+    right: auto !important;
   }
 `;
 
@@ -35,6 +38,22 @@ export const configureCrispSession = (websiteId: string) => {
   }
   Crisp.configure(websiteId);
   Crisp.setSafeMode(true);
+  Crisp.setPosition(ChatboxPosition.Left);
+  Crisp.chat.hide();
+  Crisp.chat.onChatClosed(() => {
+    Crisp.chat.hide();
+  });
+};
+
+export const openCrispChat = () => {
+  if (!Crisp.isCrispInjected()) {
+    return;
+  }
+  Crisp.setPosition(ChatboxPosition.Left);
+  Crisp.chat.show();
+  setTimeout(() => {
+    Crisp.chat.open();
+  }, 300);
 };
 
 export const terminateCrispSession = () => {

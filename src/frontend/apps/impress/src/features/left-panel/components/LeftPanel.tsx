@@ -40,7 +40,10 @@ export const LeftPanelDesktop = () => {
    * TODO: As soon as we get more than one fixed element in the help menu,
    * we should remove this condition and display the help menu even if the onboarding is disabled
    */
-  const showHelpMenu = config?.theme_customization?.onboarding?.enabled;
+  const showHelpMenu =
+    config?.theme_customization?.onboarding?.enabled ||
+    !!config?.CRISP_WEBSITE_ID ||
+    !!config?.theme_customization?.help?.documentation_url;
 
   return (
     <Box

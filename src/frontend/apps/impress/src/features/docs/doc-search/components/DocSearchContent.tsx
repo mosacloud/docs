@@ -17,6 +17,7 @@ type DocSearchContentProps = {
   search: string;
   filterResults?: (doc: Doc) => boolean;
   isSearchNotMandatory?: boolean;
+  onResults?: (results: Doc[]) => void;
   onSelect: (doc: Doc) => void;
   onLoadingChange?: (loading: boolean) => void;
   target?: DocSearchTarget;
@@ -28,6 +29,7 @@ export const DocSearchContent = ({
   groupName,
   search,
   filterResults,
+  onResults,
   onSelect,
   onLoadingChange,
   renderSearchElement,
@@ -76,8 +78,10 @@ export const DocSearchContent = ({
 
     const elements = search || isSearchNotMandatory ? docs : [];
 
+    onResults?.(elements);
+
     setDocsData({
-      groupName: docs.length > 0 ? groupName : '',
+      groupName: groupName,
       groupKey: 'docs',
       elements,
       emptyString: t('No document found'),
@@ -109,6 +113,7 @@ export const DocSearchContent = ({
     loading,
     hasNextPage,
     fetchNextPage,
+    onResults,
   ]);
 
   useEffect(() => {

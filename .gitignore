@@ -93,3 +93,6 @@ CLAUDE.md
 .cursorrules
 .claude/
 CLAUDE.md
+
+# local database backups (sensitive data — never commit)
+backups/

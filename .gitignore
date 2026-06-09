@@ -85,3 +85,6 @@ db.sqlite3
 .cursorrules
 .claude/
 CLAUDE.md
+
+# local database backups (sensitive data — never commit)
+backups/

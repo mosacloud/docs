@@ -312,8 +312,8 @@ const themeWhiteLabelLight = getUIKitThemesFromGlobals(whiteLabelGlobals, {
       },
       font: {
         families: {
-          base: 'Inter, Roboto Flex Variable, sans-serif',
-          accent: 'Inter, Roboto Flex Variable, sans-serif',
+          base: 'Inter Variable, Roboto Flex Variable, sans-serif',
+          accent: 'Inter Variable, Roboto Flex Variable, sans-serif',
         },
       },
     },
@@ -384,14 +384,14 @@ const themesDSFRLight = getUIKitThemesFromGlobals(dsfrGlobals, {
   },
 });
 
-const themesDSFR = {
+const _themesDSFR = {
   dsfr: themesDSFRLight['dsfr-light'],
 };
 
 const docsTokens = {
   themes: {
     ...themeDefault,
-    // ...themesDSFR, I know it's not pretty to leave this commented, but it's the easiest to reconcile future rebases and keep track of this way
+    // ..._themesDSFR, I know it's not pretty to leave this commented, but it's the easiest to reconcile future rebases and keep track of this way
   },
 };
 

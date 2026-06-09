@@ -99,6 +99,12 @@ dev = [
     "types-requests==2.33.0.20260408",
 ]
 
+[tool.uv]
+# urllib3 < 2.7.0 has 2 HIGH CVEs (CVE-2026-44431 header leak on cross-origin
+# redirect, CVE-2026-44432 DoS via response decompression). Pulled transitively
+# via botocore/requests/sentry-sdk. Override until upstream bumps the pin.
+override-dependencies = ["urllib3>=2.7.0"]
+
 [tool.uv.build-backend]
 module-name = [
     "core",

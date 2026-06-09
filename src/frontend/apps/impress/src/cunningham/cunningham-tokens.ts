@@ -413,8 +413,8 @@ export const tokens = {
             black: 800,
           },
           families: {
-            base: 'Inter, Roboto Flex Variable, sans-serif',
-            accent: 'Inter, Roboto Flex Variable, sans-serif',
+            base: 'Inter Variable, Roboto Flex Variable, sans-serif',
+            accent: 'Inter Variable, Roboto Flex Variable, sans-serif',
           },
         },
         spacings: {

@@ -19,7 +19,7 @@ export const Header = () => {
   const { t } = useTranslation();
   const { data: config } = useConfig();
   const { spacingsTokens } = useCunninghamTheme();
-  const { isDesktop } = useResponsiveStore();
+  const { isLargeScreen } = useResponsiveStore();
 
   const icon = config?.theme_customization?.header?.icon;
 
@@ -35,7 +35,7 @@ export const Header = () => {
           top: 0;
           left: 0;
           right: 0;
-          z-index: 1000;
+          z-index: 10;
           flex-direction: row;
           align-items: center;
           justify-content: space-between;
@@ -46,7 +46,7 @@ export const Header = () => {
             var(--c--contextuals--border--surface--primary);
         `}
       >
-        {!isDesktop && <LeftPanelToggleMobile />}
+        {!isLargeScreen && <LeftPanelToggleMobile />}
         <StyledLink
           href="/"
           data-testid="header-logo-link"
@@ -82,7 +82,7 @@ export const Header = () => {
             />
           </Box>
         </StyledLink>
-        {!isDesktop ? (
+        {!isLargeScreen ? (
           <Box $direction="row" $gap={spacingsTokens['sm']}>
             <Waffle />
           </Box>

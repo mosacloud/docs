@@ -19,7 +19,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.validators import URLValidator
-from django.db import connection, transaction
+from django.db import DatabaseError, connection, transaction
 from django.db import models as db
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Greatest, Left, Length
@@ -67,7 +67,9 @@ from core.services.search_indexers import (
     get_visited_document_ids_of,
 )
 from core.tasks.mail import send_ask_for_access_mail
+from core.utils.analytics import PosthogEventName, posthog_capture
 from core.utils.paths import filter_descendants
+from core.utils.s3_response_stream import content_stream
 from core.utils.treebeard import create_tree_node_with_retry
 from core.utils.users import users_sharing_documents_with
 from core.utils.yjs import extract_attachments
@@ -172,7 +174,6 @@ class SerializerPerActionMixin:
 class Pagination(drf.pagination.PageNumberPagination):
     """Pagination to display no more than 100 objects per page sorted by creation date."""
 
-    ordering = "-created_on"
     max_page_size = 200
     page_size_query_param = "page_size"
 
@@ -558,7 +559,7 @@ class DocumentViewSet(
     list_serializer_class = serializers.ListDocumentSerializer
     trashbin_serializer_class = serializers.ListDocumentSerializer
     tree_serializer_class = serializers.ListDocumentSerializer
-    search_serializer_class = serializers.ListDocumentSerializer
+    search_serializer_class = serializers.SearchDocumentSerializer
 
     def get_queryset(self):
         """Get queryset performing all annotation and filtering on the document tree structure."""
@@ -598,6 +599,8 @@ class DocumentViewSet(
         user = self.request.user
         queryset = queryset.annotate_is_favorite(user)
         queryset = queryset.annotate_user_roles(user)
+        queryset = queryset.annotate_user_has_link_trace(user)
+
         return queryset
 
     def get_response_for_queryset(self, queryset, context=None):
@@ -610,6 +613,49 @@ class DocumentViewSet(
 
         serializer = self.get_serializer(queryset, many=True, context=context)
         return drf.response.Response(serializer.data)
+
+    def _compute_parents(self, documents):
+        """
+        Compute parents for the documents by analyzing their paths and fetching missing parents.
+
+        Nota bene: current implementation may appear naive, but it has been
+        optimized to avoid n+1 database queries issue. At this time, we only
+        perform a single database request when parents are missing.
+        """
+        documents = list(documents)
+        steplen = models.Document.steplen
+
+        # Build parents dictionary and collect missing parent paths
+        parents = {document.path: document for document in documents}
+        missing_parent_paths = set()
+
+        for document in documents:
+            path = document.path
+            for i in range(steplen, len(path), steplen):
+                parent_path = path[:i]
+                if parent_path not in parents:
+                    missing_parent_paths.add(parent_path)
+
+        # Fetch missing ancestors from database
+        if missing_parent_paths:
+            for parent in (
+                models.Document.objects.annotate_user_roles(self.request.user)
+                .annotate_is_favorite(self.request.user)
+                .annotate_user_has_link_trace(self.request.user)
+                .filter(path__in=missing_parent_paths)
+                .iterator()
+            ):
+                parents[parent.path] = parent
+
+        # Set parents for each item
+        for document in documents:
+            path = document.path
+            document_parents = []
+            for i in range(steplen, len(path), steplen):
+                document_parents.append(parents[path[:i]])
+            document.parents = document_parents
+
+        return documents
 
     def list(self, request, *args, **kwargs):
         """
@@ -633,7 +679,7 @@ class DocumentViewSet(
         for field in ["is_creator_me", "title", "q"]:
             queryset = filterset.filters[field].filter(queryset, filter_data[field])
 
-        queryset = queryset.annotate_user_roles(user)
+        queryset = queryset.annotate_user_roles(user).annotate_user_has_link_trace(user)
 
         # Among the results, we may have documents that are ancestors/descendants
         # of each other. In this case we want to keep only the highest ancestors.
@@ -645,8 +691,9 @@ class DocumentViewSet(
 
         # Annotate favorite status and filter if applicable as late as possible
         queryset = queryset.annotate_is_favorite(user)
-        for field in ["is_favorite", "is_masked"]:
-            queryset = filterset.filters[field].filter(queryset, filter_data[field])
+        queryset = filterset.filters["is_favorite"].filter(
+            queryset, filter_data["is_favorite"]
+        )
 
         # Apply ordering only now that everything is filtered and annotated
         queryset = filters.OrderingFilter().filter_queryset(
@@ -663,7 +710,6 @@ class DocumentViewSet(
         """
         user = self.request.user
         instance = self.get_object()
-        serializer = self.get_serializer(instance)
 
         # The `create` query generates 5 db queries which are much less efficient than an
         # `exists` query. The user will visit the document many times after the first visit
@@ -674,12 +720,20 @@ class DocumentViewSet(
         ):
             models.LinkTrace.objects.create(document=instance, user=request.user)
 
+        # To avoid N+1 query, we force the `user_has_link_trace` normally set by the
+        # queryset.annotate_user_has_link_trace method. If the user is connected, it must be True.
+        instance.user_has_link_trace = user.is_authenticated
+
+        serializer = self.get_serializer(instance)
         return drf.response.Response(serializer.data)
 
-    def perform_create(self, serializer):
-        """Set the current user as creator and owner of the newly created object."""
-        # Remove file from validated_data as it's not a model field
-        # Process it if present
+    def _apply_uploaded_file_conversion(self, serializer):
+        """
+        Check if a file has been uploaded with a doc or a children is created.
+        If a file is present and the conversion upload enabled, the file is converted
+        using the converter service and the validated_data in the serializer are filled
+        with the converted file and the file name.
+        """
         uploaded_file = serializer.validated_data.pop("file", None)
 
         if uploaded_file and not settings.CONVERSION_UPLOAD_ENABLED:
@@ -701,11 +755,22 @@ class DocumentViewSet(
                 serializer.validated_data["content"] = converted_content
                 serializer.validated_data["title"] = uploaded_file.name
                 logger.info("conversion ended successfully")
+
+                posthog_capture(
+                    PosthogEventName.DOC_IMPORTED,
+                    self.request.user,
+                    {"content_type": uploaded_file.content_type},
+                )
             except ConversionError as err:
                 logger.error("could not convert file content with error: %s", err)
                 raise drf.exceptions.ValidationError(
                     {"file": ["Could not convert file content"]}
                 ) from err
+
+    def perform_create(self, serializer):
+        """Set the current user as creator and owner of the newly created object."""
+
+        self._apply_uploaded_file_conversion(serializer)
 
         obj = create_tree_node_with_retry(
             lambda: models.Document.add_root(
@@ -720,9 +785,17 @@ class DocumentViewSet(
             role=models.RoleChoices.OWNER,
         )
 
+        posthog_capture(
+            PosthogEventName.DOC_CREATED, self.request.user, {}, document=obj
+        )
+
     def perform_destroy(self, instance):
         """Override to implement a soft delete instead of dumping the record in database."""
         instance.soft_delete()
+
+        posthog_capture(
+            PosthogEventName.DOC_DELETED, self.request.user, {}, document=instance
+        )
 
     def _can_user_edit_document(self, document_id, set_cache=False):
         """Check if the user can edit the document."""
@@ -829,7 +902,7 @@ class DocumentViewSet(
         queryset = queryset.filter(id__in=favorite_documents_ids)
         queryset = queryset.filter(ancestors_deleted_at__isnull=True)
         queryset = queryset.order_by("-updated_at")
-        queryset = queryset.annotate_user_roles(user)
+        queryset = queryset.annotate_user_roles(user).annotate_user_has_link_trace(user)
         queryset = queryset.annotate(
             is_favorite=db.Value(True, output_field=db.BooleanField())
         )
@@ -838,6 +911,8 @@ class DocumentViewSet(
     @drf.decorators.action(
         detail=False,
         methods=["get"],
+        ordering=["-deleted_at"],
+        ordering_fields=["deleted_at"],
     )
     def trashbin(self, request, *args, **kwargs):
         """
@@ -871,7 +946,13 @@ class DocumentViewSet(
             deleted_at__isnull=False,
             deleted_at__gte=models.get_trashbin_cutoff(),
         )
-        queryset = queryset.annotate_user_roles(self.request.user)
+        queryset = queryset.annotate_user_roles(
+            self.request.user
+        ).annotate_user_has_link_trace(self.request.user)
+
+        queryset = filters.OrderingFilter().filter_queryset(
+            self.request, queryset, self
+        )
 
         return self.get_response_for_queryset(queryset)
 
@@ -941,8 +1022,8 @@ class DocumentViewSet(
                     "as a child to this target document."
                 )
         elif target_document.is_root():
-            owner_accesses = document.get_root().accesses.filter(
-                role=models.RoleChoices.OWNER
+            owner_accesses = list(
+                document.get_root().accesses.filter(role=models.RoleChoices.OWNER)
             )
         elif not target_document.get_parent().get_abilities(user).get("move"):
             message = (
@@ -964,6 +1045,30 @@ class DocumentViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # A move changes the document's permission scope in any of these cases:
+        #   - it is currently a root (it carries its own scope),
+        #   - it is moving into a different tree (different current root than target's),
+        #   - it is being promoted to root as a sibling of its own current root.
+        # In all these cases, direct accesses and pending invitations must be wiped so
+        # the document inherits the new scope. Deletions and the move share the same
+        # atomic transaction, so a failure rolls everything back.
+        becomes_sibling_root = (
+            position
+            not in [
+                enums.MoveNodePositionChoices.FIRST_CHILD,
+                enums.MoveNodePositionChoices.LAST_CHILD,
+            ]
+            and target_document.is_root()
+        )
+        scope_changes = (
+            document.is_root()
+            or becomes_sibling_root
+            or document.get_root() != target_document.get_root()
+        )
+        if scope_changes:
+            document.accesses.all().delete()
+            document.invitations.all().delete()
+
         # Make sure we have at least one owner
         if (
             owner_accesses
@@ -976,6 +1081,16 @@ class DocumentViewSet(
                     team=owner_access.team,
                     defaults={"role": models.RoleChoices.OWNER},
                 )
+
+        posthog_capture(
+            PosthogEventName.DOC_MOVED,
+            user,
+            {
+                "position": position,
+                "targeted_document_id": str(target_document_id),
+            },
+            document=document,
+        )
 
         return drf.response.Response(
             {"message": "Document moved successfully."}, status=status.HTTP_200_OK
@@ -1016,6 +1131,8 @@ class DocumentViewSet(
             )
             serializer.is_valid(raise_exception=True)
 
+            self._apply_uploaded_file_conversion(serializer)
+
             child_document = create_tree_node_with_retry(
                 lambda: document.add_child(
                     creator=request.user,
@@ -1025,6 +1142,13 @@ class DocumentViewSet(
 
             # Set the created instance to the serializer
             serializer.instance = child_document
+
+            posthog_capture(
+                PosthogEventName.DOC_CREATED,
+                self.request.user,
+                {"document_parent": str(document.id)},
+                document=child_document,
+            )
 
             headers = self.get_success_headers(serializer.data)
             return drf.response.Response(
@@ -1068,6 +1192,10 @@ class DocumentViewSet(
         Unlike the list endpoint which only returns top-level documents, this endpoint
         returns all documents including children, grandchildren, etc.
         """
+
+        if not settings.DOCUMENT_ALL_ENDPOINT_ENABLED:
+            raise Http404()
+
         user = self.request.user
 
         accessible_documents = self.get_queryset()
@@ -1097,12 +1225,13 @@ class DocumentViewSet(
         for field in ["is_creator_me", "title", "q"]:
             queryset = filterset.filters[field].filter(queryset, filter_data[field])
 
-        queryset = queryset.annotate_user_roles(user)
+        queryset = queryset.annotate_user_roles(user).annotate_user_has_link_trace(user)
 
         # Annotate favorite status and filter if applicable as late as possible
         queryset = queryset.annotate_is_favorite(user)
-        for field in ["is_favorite", "is_masked"]:
-            queryset = filterset.filters[field].filter(queryset, filter_data[field])
+        queryset = filterset.filters["is_favorite"].filter(
+            queryset, filter_data["is_favorite"]
+        )
 
         # Apply ordering only now that everything is filtered and annotated
         queryset = filters.OrderingFilter().filter_queryset(
@@ -1195,6 +1324,7 @@ class DocumentViewSet(
         queryset = queryset.order_by("path")
         queryset = queryset.annotate_user_roles(user)
         queryset = queryset.annotate_is_favorite(user)
+        queryset = queryset.annotate_user_has_link_trace(user)
 
         # Pass ancestors' links paths mapping to the serializer as a context variable
         # in order to allow saving time while computing abilities on the instance
@@ -1237,6 +1367,15 @@ class DocumentViewSet(
             document_to_duplicate=document_to_duplicate,
             serializer=serializer,
             user=user,
+        )
+
+        posthog_capture(
+            PosthogEventName.DOC_DUPLICATED,
+            user,
+            {
+                "duplicated_from": str(document_to_duplicate.id),
+            },
+            document=duplicated_document,
         )
 
         return drf_response.Response(
@@ -1396,25 +1535,33 @@ class DocumentViewSet(
         It depends on a search configurable Search Indexer. If no Search Indexer is configured
         or if it is not reachable, the function falls back to a basic title search.
         """
-        params = serializers.SearchDocumentSerializer(data=request.query_params)
+        params = serializers.SearchQueryParamDocumentSerializer(
+            data=request.query_params
+        )
         params.is_valid(raise_exception=True)
         search_type = self._get_search_type()
         if search_type == SearchType.TITLE:
-            return self._title_search(request, params.validated_data, *args, **kwargs)
+            return self._search_using_database(
+                request, params.validated_data, *args, **kwargs
+            )
 
         indexer = get_document_indexer()
         if indexer is None:
             # fallback on title search if the indexer is not configured
-            return self._title_search(request, params.validated_data, *args, **kwargs)
+            return self._search_using_database(
+                request, params.validated_data, *args, **kwargs
+            )
 
         try:
-            return self._search_with_indexer(
+            return self._search_using_indexer(
                 indexer, request, params=params, search_type=search_type
             )
         except requests.exceptions.RequestException as e:
             logger.error("Error while searching documents with indexer: %s", e)
             # fallback on title search if the indexer is not reached
-            return self._title_search(request, params.validated_data, *args, **kwargs)
+            return self._search_using_database(
+                request, params.validated_data, *args, **kwargs
+            )
 
     def _get_search_type(self) -> SearchType:
         """
@@ -1430,7 +1577,7 @@ class DocumentViewSet(
         return SearchType.TITLE
 
     @staticmethod
-    def _search_with_indexer(indexer, request, params, search_type):
+    def _search_using_indexer(indexer, request, params, search_type):
         """
         Returns a list of documents matching the query (q) according to the configured indexer.
         """
@@ -1457,15 +1604,64 @@ class DocumentViewSet(
             }
         )
 
-    def _title_search(self, request, validated_data, *args, **kwargs):
+    def _get_response_for_search_queryset(self, queryset):
+        page = self.paginate_queryset(queryset)
+        documents_queryset = page if page else queryset
+        documents = self._compute_parents(documents_queryset)
+        serializer = self.get_serializer(documents, many=True)
+
+        if page is None:
+            return drf.response.Response(serializer.data)
+
+        return self.get_paginated_response(serializer.data)
+
+    def _search_using_database(self, request, validated_data, *args, **kwargs):
         """
         Fallback search method when no indexer is configured.
         Only searches in the title field of documents.
         """
-        if not validated_data.get("path"):
-            return self.list(request, *args, **kwargs)
 
-        return self._list_descendants(request, validated_data)
+        if validated_data.get("path"):
+            return self._list_descendants(request, validated_data)
+
+        top_level_documents = self.get_queryset()
+        queryset = self.queryset
+        user = request.user
+
+        filterset = DocumentFilter(request.GET, queryset=queryset, request=request)
+        if not filterset.is_valid():
+            raise drf.exceptions.ValidationError(filterset.errors)
+
+        # Among the results, we may have documents that are ancestors/descendants
+        # of each other. In this case we want to keep only the highest ancestors.
+        root_paths = utils.filter_root_paths(
+            top_level_documents.order_by("path").values_list("path", flat=True),
+            skip_sorting=True,
+        )
+
+        if not root_paths:
+            return self.get_response_for_queryset(top_level_documents.none())
+
+        path_list = db.Q()
+        for top_level_document in root_paths:
+            path_list |= db.Q(path__startswith=top_level_document)
+
+        queryset = (
+            queryset.filter(path_list)
+            .filter(ancestors_deleted_at__isnull=True)
+            .annotate_user_roles(user)
+            .annotate_is_favorite(user)
+            .annotate_user_has_link_trace(user)
+        )
+
+        queryset = filterset.filter_queryset(queryset)
+
+        # Apply ordering only now that everything is filtered and annotated
+        queryset = filters.OrderingFilter().filter_queryset(
+            self.request, queryset, self
+        )
+
+        return self._get_response_for_search_queryset(queryset)
 
     def _list_descendants(self, request, validated_data):
         """
@@ -1502,7 +1698,7 @@ class DocumentViewSet(
             raise drf.exceptions.ValidationError(filterset.errors)
 
         queryset = filterset.qs
-        return self.get_response_for_queryset(queryset)
+        return self._get_response_for_search_queryset(queryset)
 
     @drf.decorators.action(detail=True, methods=["get"], url_path="versions")
     def versions_list(self, request, *args, **kwargs):
@@ -1622,6 +1818,8 @@ class DocumentViewSet(
                     {"detail": "Document already marked as favorite"},
                     status=drf.status.HTTP_200_OK,
                 )
+
+            posthog_capture(PosthogEventName.DOC_FAVORITED, user, {}, document=document)
             return drf.response.Response(
                 {"detail": "Document marked as favorite"},
                 status=drf.status.HTTP_201_CREATED,
@@ -1637,44 +1835,6 @@ class DocumentViewSet(
             {"detail": "Document was already not marked as favorite"},
             status=drf.status.HTTP_200_OK,
         )
-
-    @drf.decorators.action(detail=True, methods=["post", "delete"], url_path="mask")
-    def mask(self, request, *args, **kwargs):
-        """Mask or unmask the document for the logged-in user based on the HTTP method."""
-        # Check permissions first
-        document = self.get_object()
-        user = request.user
-
-        try:
-            link_trace = models.LinkTrace.objects.get(document=document, user=user)
-        except models.LinkTrace.DoesNotExist:
-            return drf.response.Response(
-                {"detail": "User never accessed this document before."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        if request.method == "POST":
-            if link_trace.is_masked:
-                return drf.response.Response(
-                    {"detail": "Document was already masked"},
-                    status=drf.status.HTTP_200_OK,
-                )
-            link_trace.is_masked = True
-            link_trace.save(update_fields=["is_masked"])
-            return drf.response.Response(
-                {"detail": "Document was masked"},
-                status=drf.status.HTTP_201_CREATED,
-            )
-
-        # Handle DELETE method to unmask document
-        if not link_trace.is_masked:
-            return drf.response.Response(
-                {"detail": "Document was already not masked"},
-                status=drf.status.HTTP_200_OK,
-            )
-        link_trace.is_masked = False
-        link_trace.save(update_fields=["is_masked"])
-        return drf.response.Response(status=drf.status.HTTP_204_NO_CONTENT)
 
     @drf.decorators.action(detail=True, methods=["post"], url_path="attachment-upload")
     def attachment_upload(self, request, *args, **kwargs):
@@ -2002,12 +2162,8 @@ class DocumentViewSet(
             settings.CONTENT_METADATA_CACHE_TIMEOUT,
         )
 
-        def _stream(body):
-            yield from body.iter_chunks()
-            body.close()
-
         response = StreamingHttpResponse(
-            streaming_content=_stream(s3_response["Body"]),
+            streaming_content=content_stream(s3_response["Body"]),
             content_type="text/plain",
             status=status.HTTP_200_OK,
         )
@@ -2077,7 +2233,7 @@ class DocumentViewSet(
         This endpoint forwards requests to the AI provider and returns the complete response.
         """
         # Check permissions first
-        self.get_object()
+        document = self.get_object()
 
         if not settings.AI_FEATURE_ENABLED or not settings.AI_FEATURE_BLOCKNOTE_ENABLED:
             raise ValidationError("AI feature is not enabled.")
@@ -2092,6 +2248,13 @@ class DocumentViewSet(
                 {"detail": "Invalid submitted payload"},
                 status=drf.status.HTTP_400_BAD_REQUEST,
             )
+
+        posthog_capture(
+            PosthogEventName.DOC_AI_ACTION,
+            request.user,
+            {"method": "ai_proxy"},
+            document=document,
+        )
 
         return StreamingHttpResponse(
             stream,
@@ -2118,7 +2281,7 @@ class DocumentViewSet(
         Return JSON response with the processed text.
         """
         # Check permissions first
-        self.get_object()
+        document = self.get_object()
 
         if not settings.AI_FEATURE_ENABLED or not settings.AI_FEATURE_LEGACY_ENABLED:
             raise ValidationError("AI feature is not enabled.")
@@ -2130,6 +2293,13 @@ class DocumentViewSet(
         action = serializer.validated_data["action"]
 
         response = get_legacy_ai_service().transform(text, action)
+
+        posthog_capture(
+            PosthogEventName.DOC_AI_ACTION,
+            request.user,
+            {"method": "ai_transform", "action": action},
+            document=document,
+        )
 
         return drf.response.Response(response, status=drf.status.HTTP_200_OK)
 
@@ -2149,7 +2319,7 @@ class DocumentViewSet(
         Return JSON response with the translated text.
         """
         # Check permissions first
-        self.get_object()
+        document = self.get_object()
 
         if not settings.AI_FEATURE_ENABLED or not settings.AI_FEATURE_LEGACY_ENABLED:
             raise ValidationError("AI feature is not enabled.")
@@ -2161,6 +2331,13 @@ class DocumentViewSet(
         language = serializer.validated_data["language"]
 
         response = get_legacy_ai_service().translate(text, language)
+
+        posthog_capture(
+            PosthogEventName.DOC_AI_ACTION,
+            request.user,
+            {"method": "ai_translate", "language": language},
+            document=document,
+        )
 
         return drf.response.Response(response, status=drf.status.HTTP_200_OK)
 
@@ -2403,6 +2580,38 @@ class DocumentViewSet(
             }
         )
 
+    @drf.decorators.action(
+        detail=True,
+        methods=["post"],
+    )
+    def leave(self, request, *args, **kwargs):
+        """
+        Remove document_accesses if exists and the link_trace related to the current document
+        for the connected user.
+        """
+        # Check for permissions.
+        document = self.get_object()
+
+        try:
+            with transaction.atomic():
+                models.DocumentAccess.objects.filter(
+                    document__path__startswith=document.path, user=request.user
+                ).delete()
+                models.LinkTrace.objects.filter(
+                    document__path__startswith=document.path, user=request.user
+                ).delete()
+        except DatabaseError:
+            logger.error(
+                "Impossible to leave document %s for user %s",
+                str(document.id),
+                str(request.user.id),
+            )
+            raise
+
+        posthog_capture(PosthogEventName.DOC_LEFT, request.user, {}, document=document)
+
+        return drf.response.Response(status=drf.status.HTTP_204_NO_CONTENT)
+
 
 class DocumentAccessViewSet(
     ResourceAccessViewsetMixin,
@@ -2567,6 +2776,19 @@ class DocumentAccessViewSet(
 
         access = serializer.save(document_id=self.kwargs["resource_id"])
 
+        posthog_capture(
+            PosthogEventName.DOC_ACCESS_CREATED,
+            self.request.user,
+            {
+                "access_id": str(access.id),
+                "document_id": str(access.document_id),
+                "role": access.role,
+                "created_by": str(self.request.user.id),
+                "access_user_id": str(access.user_id) if access.user else None,
+                "team": access.team or None,
+            },
+        )
+
         if access.user:
             access.document.send_invitation_email(
                 access.user.email,
@@ -2592,12 +2814,22 @@ class DocumentAccessViewSet(
 
     def perform_destroy(self, instance):
         """Delete an access to the document and notify the collaboration server."""
+        # Snapshot the identifiers before deletion as Django resets the primary key
+        # on the instance once it is deleted.
+        access_id = str(instance.id)
+        document_id = str(instance.document_id)
+        user_id = str(instance.user.id)
+
         instance.delete()
 
-        # Notify collaboration server about the access removed
-        CollaborationService().reset_connections(
-            str(instance.document.id), str(instance.user.id)
+        posthog_capture(
+            PosthogEventName.DOC_ACCESS_DELETED,
+            self.request.user,
+            {"access_id": access_id, "document_id": document_id},
         )
+
+        # Notify collaboration server about the access removed
+        CollaborationService().reset_connections(document_id, user_id)
 
 
 class InvitationViewset(
@@ -2713,7 +2945,7 @@ class DocumentAskForAccessViewSet(
         permissions.ResourceWithAccessPermission,
     ]
     throttle_scope = "document_ask_for_access"
-    queryset = models.DocumentAskForAccess.objects.all()
+    queryset = models.DocumentAskForAccess.objects.all().order_by("updated_at")
     serializer_class = serializers.DocumentAskForAccessSerializer
     _document = None
 
@@ -2830,6 +3062,7 @@ class ConfigView(drf.views.APIView):
             "FRONTEND_THEME",
             "MEDIA_BASE_URL",
             "POSTHOG_KEY",
+            "POSTHOG_HOST",
             "LANGUAGES",
             "LANGUAGE_CODE",
             "SENTRY_DSN",
@@ -2912,9 +3145,7 @@ class ThreadViewSet(
     permission_classes = [permissions.CommentPermission]
     pagination_class = None
     serializer_class = serializers.ThreadSerializer
-    queryset = models.Thread.objects.select_related("creator", "document").filter(
-        resolved=False
-    )
+    queryset = models.Thread.objects.select_related("creator", "document")
     resource_field_name = "document"
 
     def perform_create(self, serializer):
@@ -2923,10 +3154,19 @@ class ThreadViewSet(
         del serializer.validated_data["body"]
         thread = serializer.save()
 
+        user = self.request.user if self.request.user.is_authenticated else None
+
         models.Comment.objects.create(
             thread=thread,
-            user=self.request.user if self.request.user.is_authenticated else None,
+            user=user,
             body=body,
+        )
+
+        posthog_capture(
+            PosthogEventName.THREAD_CREATED,
+            user,
+            {"thread_id": str(thread.id)},
+            document=self.get_document_or_404(),
         )
 
     @drf.decorators.action(detail=True, methods=["post"], url_path="resolve")
@@ -2937,6 +3177,17 @@ class ThreadViewSet(
             thread.resolved = True
             thread.resolved_at = timezone.now()
             thread.resolved_by = request.user
+            thread.save(update_fields=["resolved", "resolved_at", "resolved_by"])
+        return drf.response.Response(status=status.HTTP_204_NO_CONTENT)
+
+    @drf.decorators.action(detail=True, methods=["post"], url_path="unresolve")
+    def unresolve(self, request, *args, **kwargs):
+        """Unresolve a thread."""
+        thread = self.get_object()
+        if thread.resolved:
+            thread.resolved = False
+            thread.resolved_at = None
+            thread.resolved_by = None
             thread.save(update_fields=["resolved", "resolved_at", "resolved_by"])
         return drf.response.Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -2969,6 +3220,18 @@ class CommentViewSet(
         context["document_id"] = self.kwargs["resource_id"]
         context["thread_id"] = self.kwargs["thread_id"]
         return context
+
+    def perform_create(self, serializer):
+        """Attach the request user as the comment author."""
+        user = self.request.user if self.request.user.is_authenticated else None
+        comment = serializer.save(user=user)
+
+        posthog_capture(
+            PosthogEventName.COMMENT_CREATED,
+            user,
+            {"comment_id": str(comment.id), "thread_id": str(comment.thread_id)},
+            document=self.get_document_or_404(),
+        )
 
     @drf.decorators.action(
         detail=True,

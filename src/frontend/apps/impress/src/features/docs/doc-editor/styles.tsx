@@ -1,9 +1,26 @@
 import { createGlobalStyle } from 'styled-components';
 
 export const DocsEditorStyle = createGlobalStyle`
-  .bn-root {
+  .bn-container {
     height: 100%;
+  }
+  /**
+  * Token Blocknote
+  */
+  .bn-root[data-color-scheme] {
+    --bn-colors-editor-text: var(
+      --c--contextuals--content--semantic--neutral--primary
+    );
+    --bn-colors-side-menu: var(
+      --c--contextuals--content--semantic--neutral--tertiary
+    );
+  }
+  .bn-root .mantine-Chip-label {
+    --chip-color: var(--c--contextuals--content--semantic--brand--tertiary);
+    --mantine-primary-color-filled-hover: var(--c--contextuals--content--semantic--brand--tertiary);
+  }
 
+  .bn-root {
     .bn-editor {
       height: 100%;
     }
@@ -12,16 +29,6 @@ export const DocsEditorStyle = createGlobalStyle`
     .mantine-Button-label {
       font-family: var(--c--components--button--font-family);
     }
-
-    /**
-    * Token Mantine
-    */
-    --bn-colors-editor-text: var(
-      --c--contextuals--content--semantic--neutral--primary
-    );
-    --bn-colors-side-menu: var(
-      --c--contextuals--content--semantic--neutral--tertiary
-    );
 
     /**
     * Ensure long placeholder text is truncated with ellipsis
@@ -193,6 +200,7 @@ export const DocsEditorStyle = createGlobalStyle`
     */
     [data-content-type='heading'] {
       --level: 1.875rem;
+      padding-top: 3px;
       &[data-level='2'] {
         --level: 1.5rem;
       }
@@ -236,7 +244,7 @@ export const DocsEditorStyle = createGlobalStyle`
     & .bn-default-styles h6 {
       font-size: 0.875rem;
     }
-    & .bn-block-outer:not(:first-child) {
+    & .bn-block-outer:not(:first-child):not(:has([data-content-type="toggleListItem"])) {
       &:has(h1) {
         margin-top: 32px;
       }

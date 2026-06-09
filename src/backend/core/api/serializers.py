@@ -23,6 +23,7 @@ from core.services.converter_services import (
     ConversionError,
     Converter,
 )
+from core.utils.analytics import PosthogEventName, posthog_capture
 from core.utils.treebeard import create_tree_node_with_retry
 
 
@@ -167,6 +168,17 @@ class ListDocumentSerializer(serializers.ModelSerializer):
         return instance.ancestors_deleted_at
 
 
+class SearchDocumentSerializer(ListDocumentSerializer):
+    """Serialize items for search."""
+
+    parents = ListDocumentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.Document
+        fields = ListDocumentSerializer.Meta.fields + ["parents"]
+        read_only_fields = ListDocumentSerializer.Meta.read_only_fields + ["parents"]
+
+
 class DocumentLightSerializer(serializers.ModelSerializer):
     """Minial document serializer for nesting in document accesses."""
 
@@ -245,11 +257,16 @@ class DocumentSerializer(ListDocumentSerializer):
         return fields
 
     def validate_id(self, value):
-        """Ensure the provided ID does not already exist when creating a new document."""
+        """Ensure the provided ID is a valid UUID and not already taken."""
         request = self.context.get("request")
 
         # Only check this on POST (creation)
         if request and request.method == "POST":
+            if value.version not in (1, 3, 4, 5):
+                raise serializers.ValidationError(
+                    "The provided ID is not a valid UUID."
+                )
+
             if models.Document.objects.filter(id=value).exists():
                 raise serializers.ValidationError(
                     "A document with this ID already exists. You cannot override it."
@@ -472,6 +489,17 @@ class ServerCreateDocumentSerializer(serializers.Serializer):
                 title=validated_data["title"],
                 creator=user,
             )
+        )
+
+        posthog_capture(PosthogEventName.DOC_CREATED, user, {}, document=document)
+        posthog_capture(
+            PosthogEventName.DOC_IMPORTED,
+            user,
+            {
+                "content_type": mime_types.MARKDOWN,
+                "create_for_owner": True,
+            },
+            document=document,
         )
 
         if user:
@@ -906,12 +934,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Validate comment data."""
-
-        request = self.context.get("request")
-        user = getattr(request, "user", None)
-
         attrs["thread_id"] = self.context["thread_id"]
-        attrs["user_id"] = user.id if user else None
         return attrs
 
     def get_abilities(self, obj):
@@ -982,7 +1005,7 @@ class ThreadSerializer(serializers.ModelSerializer):
         return {}
 
 
-class SearchDocumentSerializer(serializers.Serializer):
+class SearchQueryParamDocumentSerializer(serializers.Serializer):
     """Serializer for fulltext search requests through Find application"""
 
     q = serializers.CharField(required=True, allow_blank=True, trim_whitespace=True)

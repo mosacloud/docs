@@ -40,7 +40,8 @@ export const CONFIG = {
     ['es-es', 'Español'],
   ],
   LANGUAGE_CODE: 'en-us',
-  POSTHOG_KEY: {},
+  POSTHOG_HOST: 'https://eu.i.posthog.com',
+  POSTHOG_KEY: null,
   RELEASE_VERSION: packageJsonVersion,
   SENTRY_DSN: null,
   TRASHBIN_CUTOFF_DAYS: 30,
@@ -269,6 +270,31 @@ export const waitForResponseCreateDoc = (page: Page) => {
   );
 };
 
+/**
+ * Navigates back to the homepage, waits for the PATCH /content/ request
+ * triggered by the route change to complete, then navigates back to the doc.
+ *
+ * Use this instead of goToGridDoc when the test must assert on content that
+ * was just written in the editor, to avoid a race condition where the GET
+ * request fired on doc mount returns stale data because the server has not
+ * yet processed the PATCH.
+ */
+export const saveContent = async (page: Page, title: string) => {
+  const savePromise = page.waitForResponse(
+    (response) =>
+      response.url().includes('/content/') &&
+      response.request().method() === 'PATCH',
+  );
+
+  await page.getByRole('button', { name: 'Back to homepage' }).click();
+  await expect(page.getByTestId('docs-grid')).toBeVisible();
+  await expect(page.getByTestId('grid-loader')).toBeHidden();
+
+  await savePromise;
+
+  await goToGridDoc(page, { title });
+};
+
 export const mockedDocument = async (page: Page, data: object) => {
   // document/[ID]/ or document/[ID]/tree/ routes
   let uuid: string | undefined;
@@ -400,8 +426,18 @@ export async function waitForLanguageSwitch(
   await page.getByRole('menuitemradio', { name: lang.label }).click();
 }
 
+export const clickInEditorShareButton = async (page: Page) => {
+  await page
+    .getByTestId('floating-bar')
+    .getByRole('button', { name: 'Share' })
+    .click();
+};
+
 export const clickInEditorMenu = async (page: Page, textButton: string) => {
-  await page.getByRole('button', { name: 'Open the document options' }).click();
+  await page
+    .getByTestId('floating-bar')
+    .getByRole('button', { name: 'Open the document options' })
+    .click();
   await page.getByRole('menuitem', { name: textButton }).click();
 };
 

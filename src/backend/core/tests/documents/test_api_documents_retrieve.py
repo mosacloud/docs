@@ -52,9 +52,9 @@ def test_api_documents_retrieve_anonymous_public_standalone():
                 "public": ["reader", "commenter", "editor"],
                 "restricted": None,
             },
-            "mask": False,
             "content_patch": document.link_role == "editor",
             "content_retrieve": True,
+            "leave": False,
             "media_auth": True,
             "media_check": True,
             "move": False,
@@ -131,9 +131,9 @@ def test_api_documents_retrieve_anonymous_public_parent():
             "link_select_options": models.LinkReachChoices.get_select_options(
                 **links_definition
             ),
-            "mask": False,
             "content_patch": grand_parent.link_role == "editor",
             "content_retrieve": True,
+            "leave": False,
             "media_auth": True,
             "media_check": True,
             "move": False,
@@ -243,9 +243,9 @@ def test_api_documents_retrieve_authenticated_unrelated_public_or_authenticated(
                 "public": ["reader", "commenter", "editor"],
                 "restricted": None,
             },
-            "mask": True,
             "content_patch": document.link_role == "editor",
             "content_retrieve": True,
+            "leave": True,
             "media_auth": True,
             "media_check": True,
             "move": False,
@@ -329,10 +329,10 @@ def test_api_documents_retrieve_authenticated_public_or_authenticated_parent(rea
             "link_select_options": models.LinkReachChoices.get_select_options(
                 **links_definition
             ),
-            "mask": True,
             "move": False,
             "content_patch": grand_parent.link_role == "editor",
             "content_retrieve": True,
+            "leave": True,
             "media_auth": True,
             "media_check": True,
             "partial_update": grand_parent.link_role == "editor",
@@ -529,9 +529,9 @@ def test_api_documents_retrieve_authenticated_related_parent():
             "link_select_options": models.LinkReachChoices.get_select_options(
                 **link_definition
             ),
-            "mask": True,
             "content_patch": access.role not in ["reader", "commenter"],
             "content_retrieve": True,
+            "leave": access.role not in ["administrator", "owner"],
             "media_auth": True,
             "media_check": True,
             "move": access.role in ["administrator", "owner"],

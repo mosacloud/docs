@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor
 from unittest.mock import patch
 
 from django.core.exceptions import ValidationError
+from django.db import connection
 from django.test.utils import override_settings
 
 import pytest
@@ -195,6 +196,25 @@ def test_models_users_handle_onboarding_documents_on_restricted_document_is_not_
     assert not models.LinkTrace.objects.filter(user=user, document=document).exists()
 
 
+def test_models_users_handle_onboarding_documents_computed_link_reach_not_restricted():
+    """Test that the computed_link_reach is used to check the real link_reach is used."""
+
+    parent = factories.DocumentFactory(link_reach=models.LinkReachChoices.PUBLIC)
+    document = factories.DocumentFactory(
+        parent=parent, link_reach=models.LinkReachChoices.RESTRICTED
+    )
+
+    assert document.computed_link_reach == models.LinkReachChoices.PUBLIC
+
+    with override_settings(USER_ONBOARDING_DOCUMENTS=[str(document.id)]):
+        user = factories.UserFactory()
+
+    assert models.LinkTrace.objects.filter(user=user, document=document).exists()
+    user_favorites = models.DocumentFavorite.objects.filter(user=user)
+    assert user_favorites.count() == 1
+    assert user_favorites.filter(document=document).exists()
+
+
 @override_settings(USER_ONBOARDING_SANDBOX_DOCUMENT=None)
 def test_models_users_duplicate_onboarding_sandbox_document_no_setting():
     """
@@ -322,7 +342,14 @@ def test_models_users_duplicate_onboarding_sandbox_race_condition():
     """
 
     def create_user():
-        return factories.UserFactory()
+        try:
+            return factories.UserFactory()
+        finally:
+            # Each worker thread gets its own thread-local database connection.
+            # Close it explicitly so it does not linger and block dropping the
+            # test database during teardown (OperationalError: "database is being
+            # accessed by other users").
+            connection.close()
 
     template_document = factories.DocumentFactory(title="Getting started with Docs")
     with (

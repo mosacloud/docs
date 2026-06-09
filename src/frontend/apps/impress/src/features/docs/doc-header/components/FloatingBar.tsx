@@ -1,10 +1,15 @@
 import { useMemo } from 'react';
 import { css } from 'styled-components';
 
-import { Box } from '@/components';
+import { Box, Card } from '@/components';
 import { useCunninghamTheme } from '@/cunningham/useCunninghamTheme';
-import { LeftPanelCollapseButton } from '@/features/left-panel';
+import { useDocStore } from '@/docs/doc-management/stores/useDocStore';
+import { DocShareButton } from '@/features/docs/doc-share/components/DocShareButton';
+import { LeftPanelCollapseButton } from '@/features/left-panel/components/LeftPanelCollapseButton';
+import { RightPanelCollapseButton } from '@/features/right-panel/components/RightPanelCollapseButton';
 import { useResponsiveStore } from '@/stores';
+
+import { DocToolBox } from './DocToolBox';
 
 /**
  * Sticky bar trick (desktop):
@@ -15,26 +20,22 @@ import { useResponsiveStore } from '@/stores';
  */
 export const FloatingBar = () => {
   const { spacingsTokens } = useCunninghamTheme();
-  const { isDesktop } = useResponsiveStore();
+  const { isLargeScreen } = useResponsiveStore();
+  const { currentDoc } = useDocStore();
+  const isDeletedDoc = !!currentDoc?.deleted_at;
 
   const FLOATING_STYLES = useMemo(() => {
-    const base = spacingsTokens['base'];
     const sm = spacingsTokens['sm'];
     return css`
       position: sticky;
-      top: calc(-${base});
+      top: 0;
       left: 0;
       right: 0;
-      width: calc(100% + ${base} + ${base});
+      width: 100%;
       min-height: 64px;
       padding: ${sm};
-      margin-left: calc(-${base});
-      margin-right: calc(-${base});
-      margin-top: calc(-${base});
       z-index: 21; // Under editor select box but above other elements (e.g., doc title, suggestion menu)
-      display: flex;
       align-items: flex-start;
-      justify-content: flex-start;
       isolation: isolate;
 
       &::before {
@@ -64,17 +65,32 @@ export const FloatingBar = () => {
     `;
   }, [spacingsTokens]);
 
-  if (!isDesktop) {
-    return null;
-  }
-
   return (
     <Box
       className="--docs--floating-bar"
       data-testid="floating-bar"
       $css={FLOATING_STYLES}
+      $direction="row"
+      $justify="space-between"
     >
-      <LeftPanelCollapseButton />
+      {isLargeScreen ? <LeftPanelCollapseButton /> : <Box />}
+      <Box $direction="row" $align="center" $gap="2xs">
+        {!isDeletedDoc && currentDoc && <DocShareButton doc={currentDoc} />}
+        <Card
+          className="--docs--right-panel-collapse-button"
+          $direction="row"
+          $css={css`
+            padding: var(--c--globals--spacings--xxxs);
+            align-items: center;
+            gap: var(--c--globals--spacings--xxxs);
+            border-radius: var(--c--globals--spacings--xs);
+            box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+          `}
+        >
+          <RightPanelCollapseButton />
+          {!isDeletedDoc && currentDoc && <DocToolBox doc={currentDoc} />}
+        </Card>
+      </Box>
     </Box>
   );
 };

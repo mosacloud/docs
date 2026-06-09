@@ -1,56 +1,40 @@
 import { Button, useModal } from '@gouvfr-lasuite/cunningham-react';
-import { useTreeContext } from '@gouvfr-lasuite/ui-kit';
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  useTreeContext,
+} from '@gouvfr-lasuite/ui-kit';
+import { Present } from '@gouvfr-lasuite/ui-kit/icons';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { css } from 'styled-components';
 
 import AddLinkSVG from '@/assets/icons/ui-kit/add_link.svg';
 import ContentCopySVG from '@/assets/icons/ui-kit/content_copy.svg';
 import DeleteSVG from '@/assets/icons/ui-kit/delete.svg';
 import DownloadSVG from '@/assets/icons/ui-kit/download.svg';
-import RemoveEmojiSVG from '@/assets/icons/ui-kit/face-remove.svg';
-import AddEmojiSVG from '@/assets/icons/ui-kit/face.svg';
-import GroupSVG from '@/assets/icons/ui-kit/group.svg';
+import SharedSVG from '@/assets/icons/ui-kit/group.svg';
 import HistorySVG from '@/assets/icons/ui-kit/history.svg';
 import KeepSVG from '@/assets/icons/ui-kit/keep.svg';
 import KeepOffSVG from '@/assets/icons/ui-kit/keep_off.svg';
 import MarkdownCopySVG from '@/assets/icons/ui-kit/markdown_copy.svg';
-import {
-  Box,
-  DropdownMenu,
-  DropdownMenuOption,
-  Icon,
-  IconOptions,
-} from '@/components';
-import { useCunninghamTheme } from '@/cunningham';
+import MoreSVG from '@/assets/icons/ui-kit/more_horiz.svg';
 import {
   Doc,
   KEY_DOC,
   KEY_LIST_DOC,
   KEY_LIST_FAVORITE_DOC,
-  getEmojiAndTitle,
   useCopyDocLink,
   useCreateFavoriteDoc,
   useDeleteFavoriteDoc,
-  useDocTitleUpdate,
   useDocUtils,
   useDuplicateDoc,
 } from '@/docs/doc-management';
+import { useAuth } from '@/features/auth';
 import { useFocusStore, useResponsiveStore } from '@/stores';
 
 import { useCopyCurrentEditorToClipboard } from '../hooks/useCopyCurrentEditorToClipboard';
-
-import { BoutonShare } from './BoutonShare';
-
-const DocShareModal = dynamic(
-  () =>
-    import('@/docs/doc-share/components/DocShareModal').then((mod) => ({
-      default: mod.DocShareModal,
-    })),
-  { ssr: false },
-);
 
 const ModalRemoveDoc = dynamic(
   () =>
@@ -68,6 +52,14 @@ const ModalSelectVersion = dynamic(
   { ssr: false },
 );
 
+const DocShareModal = dynamic(
+  () =>
+    import('@/docs/doc-share/components/DocShareModal').then((mod) => ({
+      default: mod.DocShareModal,
+    })),
+  { ssr: false },
+);
+
 const ModalExport =
   process.env.NEXT_PUBLIC_PUBLISH_AS_MIT === 'false'
     ? dynamic(
@@ -79,6 +71,14 @@ const ModalExport =
       )
     : null;
 
+const PresenterOverlay = dynamic(
+  () =>
+    import('@/docs/doc-presenter').then((mod) => ({
+      default: mod.PresenterOverlay,
+    })),
+  { ssr: false },
+);
+
 interface DocToolBoxProps {
   doc: Doc;
 }
@@ -87,17 +87,18 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
   const { t } = useTranslation();
   const treeContext = useTreeContext<Doc>();
   const router = useRouter();
-  const { isChild, isTopRoot } = useDocUtils(doc);
-
-  const { spacingsTokens, colorsTokens } = useCunninghamTheme();
-
+  const { isTopRoot } = useDocUtils(doc);
+  const { authenticated } = useAuth();
+  const copyCurrentEditorToClipboard = useCopyCurrentEditorToClipboard();
+  const [openDropdown, setOpenDropdown] = useState(false);
   const [isModalRemoveOpen, setIsModalRemoveOpen] = useState(false);
   const [isModalExportOpen, setIsModalExportOpen] = useState(false);
+  const shareModal = useModal();
+  const [isPresenterOpen, setIsPresenterOpen] = useState(false);
   const selectHistoryModal = useModal();
-  const modalShare = useModal();
 
-  const { addLastFocus, restoreFocus } = useFocusStore();
-  const { isSmallMobile, isMobile } = useResponsiveStore();
+  const { restoreFocus } = useFocusStore();
+  const { isMobile } = useResponsiveStore();
   const copyDocLink = useCopyDocLink(doc.id);
   const { mutate: duplicateDoc } = useDuplicateDoc({
     onSuccess: (data) => {
@@ -111,25 +112,7 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
     listInvalidQueries: [KEY_LIST_DOC, KEY_DOC, KEY_LIST_FAVORITE_DOC],
   });
 
-  // Emoji Management
-  const { emoji } = getEmojiAndTitle(doc.title ?? '');
-  const { updateDocEmoji } = useDocTitleUpdate();
-
-  const options: DropdownMenuOption[] = [
-    {
-      label: t('Share'),
-      icon: <GroupSVG width={24} height={24} aria-hidden="true" />,
-      callback: modalShare.open,
-      show: isSmallMobile,
-    },
-    {
-      label: t('Export'),
-      icon: <DownloadSVG width={24} height={24} aria-hidden="true" />,
-      callback: () => {
-        setIsModalExportOpen(true);
-      },
-      show: !!ModalExport && isSmallMobile,
-    },
+  const options: DropdownMenuItem[] = [
     {
       label: doc.is_favorite ? t('Unpin') : t('Pin'),
       icon: doc.is_favorite ? (
@@ -144,37 +127,18 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
           makeFavoriteDoc.mutate({ id: doc.id });
         }
       },
+      isHidden: !doc.abilities.favorite,
       testId: `docs-actions-${doc.is_favorite ? 'unpin' : 'pin'}-${doc.id}`,
     },
+    { type: 'separator' },
     {
-      label: t('Version history'),
-      icon: <HistorySVG width={24} height={24} aria-hidden="true" />,
-      disabled: !doc.abilities.versions_list,
+      label: t('Present'),
+      icon: <Present width={24} height={24} aria-hidden="true" />,
       callback: () => {
-        selectHistoryModal.open();
+        setIsPresenterOpen(true);
       },
-      show: !isMobile,
-      showSeparator: isTopRoot ? true : false,
-    },
-    {
-      label: t('Remove emoji'),
-      icon: <RemoveEmojiSVG width={24} height={24} aria-hidden="true" />,
-      callback: () => {
-        updateDocEmoji(doc.id, doc.title ?? '', '');
-      },
-      showSeparator: true,
-      show: !!emoji && doc.abilities.partial_update && !isTopRoot,
-    },
-    {
-      label: t('Add emoji'),
-      icon: <AddEmojiSVG width={24} height={24} aria-hidden="true" />,
-      callback: () => {
-        const today = new Date();
-        const isAprilFools = today.getMonth() === 3 && today.getDate() === 1;
-        updateDocEmoji(doc.id, doc.title ?? '', isAprilFools ? '🐟' : '📄');
-      },
-      showSeparator: true,
-      show: !emoji && doc.abilities.partial_update && !isTopRoot,
+      isHidden: Boolean(doc.deleted_at) || isMobile,
+      testId: `docs-actions-present-${doc.id}`,
     },
     {
       label: t('Copy link'),
@@ -182,17 +146,43 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
       callback: copyDocLink,
     },
     {
+      label: t('Share'),
+      icon: <SharedSVG width={24} height={24} aria-hidden="true" />,
+      callback: () => {
+        shareModal.open();
+      },
+      isHidden: !isTopRoot || !authenticated,
+    },
+    {
+      label: t('Download'),
+      icon: <DownloadSVG width={24} height={24} aria-hidden="true" />,
+      callback: () => {
+        setIsModalExportOpen(true);
+      },
+      isHidden: !ModalExport,
+    },
+    {
       label: t('Copy as {{format}}', { format: 'Markdown' }),
       icon: <MarkdownCopySVG width={24} height={24} aria-hidden="true" />,
       callback: () => {
         void copyCurrentEditorToClipboard('markdown');
       },
+      showSeparator: isMobile || !doc.abilities.versions_list,
+    },
+    {
+      label: t('Version history'),
+      icon: <HistorySVG width={24} height={24} aria-hidden="true" />,
+      isDisabled: !doc.abilities.versions_list,
+      callback: () => {
+        selectHistoryModal.open();
+      },
+      isHidden: isMobile || !doc.abilities.versions_list,
       showSeparator: true,
     },
     {
       label: t('Duplicate'),
       icon: <ContentCopySVG width={24} height={24} aria-hidden="true" />,
-      disabled: !doc.abilities.duplicate,
+      isDisabled: !doc.abilities.duplicate,
       callback: () => {
         duplicateDoc({
           docId: doc.id,
@@ -200,83 +190,41 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
           canSave: doc.abilities.partial_update,
         });
       },
+      isHidden: !doc.abilities.duplicate,
       showSeparator: true,
     },
     {
-      label: isChild ? t('Delete sub-document') : t('Delete document'),
+      label: t('Delete'),
       icon: <DeleteSVG width={24} height={24} aria-hidden="true" />,
-      disabled: !doc.abilities.destroy,
       callback: () => {
         setIsModalRemoveOpen(true);
       },
+      isHidden: !doc.abilities.destroy,
     },
   ];
 
-  const copyCurrentEditorToClipboard = useCopyCurrentEditorToClipboard();
-
   return (
-    <Box
-      $margin={{ left: 'auto' }}
-      $direction="row"
-      $align="center"
-      $gap="0.5rem 1.5rem"
-      $wrap={isSmallMobile ? 'wrap' : 'nowrap'}
-      className="--docs--doc-toolbox"
-    >
-      <Box
-        $direction="row"
-        $align="center"
-        $margin={{ left: 'auto' }}
-        $gap={spacingsTokens['2xs']}
+    <>
+      <DropdownMenu
+        options={options}
+        isOpen={openDropdown}
+        shouldCloseOnInteractOutside={() => true}
+        onOpenChange={setOpenDropdown}
       >
-        <BoutonShare
-          doc={doc}
-          open={modalShare.open}
-          isHidden={isSmallMobile}
-          displayNbAccess={doc.abilities.accesses_view}
-        />
-
-        {!isSmallMobile && ModalExport && (
-          <Button
-            data-testid="doc-open-modal-download-button"
-            variant="tertiary"
-            icon={
-              <Icon iconName="download" $color="inherit" aria-hidden={true} />
-            }
-            onClick={(e) => {
-              addLastFocus(e.currentTarget);
-              setIsModalExportOpen(true);
-            }}
-            size={isSmallMobile ? 'small' : 'medium'}
-            aria-label={t('Export the document')}
-          />
-        )}
-        <DropdownMenu
-          options={options}
-          label={t('Open the document options')}
-          buttonCss={css`
-            padding: ${spacingsTokens['xs']};
-            ${isSmallMobile
-              ? css`
-                  border: 1px solid ${colorsTokens['gray-300']};
-                `
-              : ''}
-          `}
-        >
-          <IconOptions aria-hidden="true" isHorizontal $color="inherit" />
-        </DropdownMenu>
-      </Box>
-
-      {modalShare.isOpen && (
-        <DocShareModal
-          onClose={() => {
-            modalShare.close();
-            restoreFocus();
+        <Button
+          aria-label={t('Open the document options')}
+          size="small"
+          icon={<MoreSVG width={24} height={24} aria-hidden="true" />}
+          color="neutral"
+          variant="tertiary"
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            setOpenDropdown((o) => !o);
           }}
-          doc={doc}
-          isRootDoc={treeContext?.root?.id === doc.id}
         />
-      )}
+      </DropdownMenu>
+
       {isModalExportOpen && ModalExport && (
         <ModalExport
           onClose={() => {
@@ -320,6 +268,26 @@ export const DocToolBox = ({ doc }: DocToolBoxProps) => {
           doc={doc}
         />
       )}
-    </Box>
+      {shareModal.isOpen && (
+        <DocShareModal
+          onClose={() => {
+            shareModal.close();
+            restoreFocus();
+          }}
+          doc={doc}
+          isRootDoc={treeContext?.root?.id === doc.id}
+        />
+      )}
+
+      {isPresenterOpen && (
+        <PresenterOverlay
+          doc={doc}
+          onClose={() => {
+            setIsPresenterOpen(false);
+            restoreFocus();
+          }}
+        />
+      )}
+    </>
   );
 };

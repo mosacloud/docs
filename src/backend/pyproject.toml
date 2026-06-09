@@ -7,7 +7,7 @@ build-backend = "uv_build"
 
 [project]
 name = "impress"
-version = "5.0.0"
+version = "5.2.1"
 authors = [{ "name" = "DINUM", "email" = "dev@mail.numerique.gouv.fr" }]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -28,6 +28,7 @@ dependencies = [
     "boto3==1.42.93",
     "Brotli==1.2.0",
     "celery[redis]==5.5.3",
+    "dj-database-url==3.1.2",
     "django-configurations==2.5.1",
     "django-cors-headers==4.9.0",
     "django-countries==8.2.0",
@@ -56,6 +57,7 @@ dependencies = [
     "mozilla-django-oidc==5.0.2",
     "nested-multipart-parser==1.6.0",
     "openai==2.32.0",
+    "posthog==7.16.1",
     "psycopg[binary,pool]==3.3.3",
     "pycrdt==0.12.50",
     "pydantic==2.13.3",
@@ -86,6 +88,7 @@ dev = [
     "pyfakefs==6.2.0",
     "pylint-django==2.7.0",
     "pylint<4.0.0",
+    "pytest-asyncio==1.4.0",
     "pytest-cov==7.1.0",
     "pytest-django==4.12.0",
     "pytest==9.0.3",
@@ -97,6 +100,11 @@ dev = [
 ]
 
 [tool.uv.build-backend]
+module-name = [
+    "core",
+    "demo",
+    "impress"
+]
 module-root = ""
 source-exclude = [
     "**/tests/**",

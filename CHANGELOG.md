@@ -6,6 +6,59 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [v5.2.1] - 2026-06-05
+
+### Changed
+
+- 💄(frontend) display emoji button on hover #2396
+
+### Fixed
+
+- 🐛(backend) close thread DB connections to fix test teardown 
+  OperationalError #2385
+- 🐛(frontend) fix crash when orphaned threads #2395
+- 🐛(backend) order trashbin response by most recently deleted #2392
+- 🐛(backend) stream document content with an async iterator under ASGI #2381
+- 🐛(frontend) fix long titles in table of content #2399
+
+## [v5.2.0] - 2026-06-03
+
+### Added
+
+- ✨(backend) support creating subdoc from file #1987
+- ✨(frontend) comment side panel #2279
+- ✨(buildpack) add PaaS deployment support, tested with Scalingo #2293
+- 🔧(backend) allow configuring settings OIDC_OP_USER_ENDPOINT_FORMAT #2306
+- ⚡️(helm) create a dedicated svc and deployment for yprovider converter #2358
+- ✨(backend) allow to leave a document #2365
+- ✨(frontend) add the presenter mode #2321
+- 📈(backend) create a utils to capture event with posthog #2363
+- 🔧(backend) new setting DOCUMENT_ALL_ENDPOINT_ENABLED #2378
+
+### Changed
+
+- ♻️(frontend) centralize allowed conversion formats in ContentTypes #2215
+- ♻️(backend) allow global search in sub documents #2310
+- ✨(backend) add a breadcrumb in the search response #2310
+- ♻️(frontend) move doc action buttons to fix toolbar #2360
+- ♿️(frontend) add aria-hidden to decorative avatar SVGs in share modal #2324
+- 🏗️(frontend) move comments to its own folder feature #2374
+- ♿️(frontend) align mobile header menu aria-label i18n pattern #2377
+
+### Fixed
+
+- 🐛(docs) run migration 0027 without superuser role #2284
+- 🐛(backend) prevent admins/owners from overwriting other users comments #2323
+- 🐛(y-provider) return empty output when converting empty Yjs document #2328
+- 🐛(backend) use computed_link_reach in handle_onboarding_document #2305
+- 🐛(frontend) fix toolbar blocknote hidden #2373
+- 🐛(frontend) fix application crashes when using GTranslate and zoom #2372
+- 🐛(frontend) fix emoji pdf not matching #2375
+- 🐛(backend) fix UnorderedObjectListWarning for DocumentAskForAccess 
+  viewset #2382
+
+## [v5.1.0] - 2026-05-11
+
 ### Added
 
 - ⚡️(frontend) add skeleton on content loading #2254
@@ -23,7 +76,7 @@ and this project adheres to
 - 💬(frontend) add missing link in onboarding description #2233
 - 🐛(frontend) sanitize pasted and dropped content in document title #2210
 - 🐛(frontend) Emoji menu doesn't display above comment box #2229
-- 🐛(frontend) Block menu doesn't stay open on 1st line #2229 
+- 🐛(frontend) Block menu doesn't stay open on 1st line #2229
 - 🐛(frontend) The "+" on the first line of a new doc doesn't work #2229
 - 🐛(backend) manage race condition between GET and PATCH content #2271
 - 🐛(backend) replace document creation table locks with retry strategy #2274
@@ -32,9 +85,7 @@ and this project adheres to
 
 - 🔒️(frontend) sanitize color during collaboration #2270
 
-
-
-## [v5.0.0] - 2026-04-08
+## [v5.0.0] - 2026-05-05
 
 ### Added
 
@@ -129,7 +180,6 @@ and this project adheres to
 
 - 🐛(y-provider) destroy Y.Doc instances after each convert request #2129
 - 🐛(backend) remove deleted sub documents in favorite_list endpoint #2083
-
 
 ## [v4.8.3] - 2026-03-23
 
@@ -1298,7 +1348,10 @@ and this project adheres to
 - ✨(frontend) Coming Soon page (#67)
 - 🚀 Impress, project to manage your documents easily and collaboratively.
 
-[unreleased]: https://github.com/suitenumerique/docs/compare/v5.0.0...main
+[unreleased]: https://github.com/suitenumerique/docs/compare/v5.2.1...main
+[v5.2.1]: https://github.com/suitenumerique/docs/releases/v5.2.1
+[v5.2.0]: https://github.com/suitenumerique/docs/releases/v5.2.0
+[v5.1.0]: https://github.com/suitenumerique/docs/releases/v5.1.0
 [v5.0.0]: https://github.com/suitenumerique/docs/releases/v5.0.0
 [v4.8.6]: https://github.com/suitenumerique/docs/releases/v4.8.6
 [v4.8.5]: https://github.com/suitenumerique/docs/releases/v4.8.5

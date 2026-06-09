@@ -7,6 +7,7 @@ import { PDFParse } from 'pdf-parse';
 
 import {
   TestLanguage,
+  clickInEditorMenu,
   createDoc,
   verifyDocName,
   waitForLanguageSwitch,
@@ -24,11 +25,7 @@ test.describe('Doc Export', () => {
     browserName,
   }) => {
     await createDoc(page, 'doc-editor', browserName, 1);
-    await page
-      .getByRole('button', {
-        name: 'Export the document',
-      })
-      .click();
+    await clickInEditorMenu(page, 'Download');
 
     await expect(page.getByTestId('modal-export-title')).toBeVisible();
     await expect(
@@ -54,11 +51,7 @@ test.describe('Doc Export', () => {
   test('it exports the doc to docx', async ({ page, browserName }) => {
     const randomDoc = await overrideDocContent({ page, browserName });
 
-    await page
-      .getByRole('button', {
-        name: 'Export the document',
-      })
-      .click();
+    await clickInEditorMenu(page, 'Download');
 
     await page.getByRole('combobox', { name: 'Format' }).click();
     await page.getByRole('option', { name: 'Docx' }).click();
@@ -84,11 +77,7 @@ test.describe('Doc Export', () => {
   test('it exports the doc to odt', async ({ page, browserName }) => {
     const randomDoc = await overrideDocContent({ page, browserName });
 
-    await page
-      .getByRole('button', {
-        name: 'Export the document',
-      })
-      .click();
+    await clickInEditorMenu(page, 'Download');
 
     await page.getByRole('combobox', { name: 'Format' }).click();
     await page.getByRole('option', { name: 'Odt' }).click();
@@ -116,12 +105,11 @@ test.describe('Doc Export', () => {
     await verifyDocName(page, randomDoc);
 
     // Add some content and at least one image so that the ZIP contains media files.
-    await page.locator('.ProseMirror.bn-editor').click();
-    await page.locator('.ProseMirror.bn-editor').fill('Hello HTML ZIP');
-
-    await page.keyboard.press('Enter');
-    await page.locator('.bn-block-outer').last().fill('/');
-    await page.getByText('Resizable image with caption').click();
+    await writeInEditor({ page, text: 'Hello HTML ZIP' });
+    await openSuggestionMenu({
+      page,
+      suggestion: 'Resizable image with caption',
+    });
 
     const fileChooserPromise = page.waitForEvent('filechooser');
     await page.getByText('Upload image').click();
@@ -140,11 +128,7 @@ test.describe('Doc Export', () => {
     // Give some time for the image to be fully processed
     await page.waitForTimeout(1000);
 
-    await page
-      .getByRole('button', {
-        name: 'Export the document',
-      })
-      .click();
+    await clickInEditorMenu(page, 'Download');
 
     await page.getByRole('combobox', { name: 'Format' }).click();
     await page.getByRole('option', { name: 'HTML' }).click();
@@ -222,19 +206,17 @@ test.describe('Doc Export', () => {
 
     await expect(image).toBeVisible();
 
-    await page.locator('.bn-block-outer').last().fill('/');
-    await page.getByText('Resizable image with caption').click();
+    await openSuggestionMenu({
+      page,
+      suggestion: 'Resizable image with caption',
+    });
     await page.getByRole('tab', { name: 'Embed' }).click();
     await page
       .getByRole('textbox', { name: 'Enter URL' })
       .fill('https://docs.numerique.gouv.fr/assets/logo-gouv.png');
     await page.getByText('Embed image').click();
 
-    await page
-      .getByRole('button', {
-        name: 'Export the document',
-      })
-      .click();
+    await clickInEditorMenu(page, 'Download');
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -287,14 +269,9 @@ test.describe('Doc Export', () => {
     });
 
     await page
-      .getByRole('button', {
-        name: 'Exporter le document',
-      })
+      .getByRole('button', { name: 'Ouvrir les options du document' })
       .click();
-
-    await expect(
-      page.getByTestId('doc-open-modal-download-button'),
-    ).toBeVisible();
+    await page.getByRole('menuitem', { name: 'Télécharger' }).click();
 
     const downloadPromise = page.waitForEvent('download', (download) => {
       return download.suggestedFilename().includes(`${randomDocFrench}.pdf`);
@@ -326,11 +303,7 @@ test.describe('Doc Export', () => {
 
     await overrideDocContent({ page, browserName });
 
-    await page
-      .getByRole('button', {
-        name: 'Export the document',
-      })
-      .click();
+    await clickInEditorMenu(page, 'Download');
 
     await page.getByRole('combobox', { name: 'Format' }).click();
     await page.getByRole('option', { name: 'Print' }).click();
@@ -379,11 +352,7 @@ test.describe('Doc Export', () => {
 
     const randomDoc = await overrideDocContent({ page, browserName });
 
-    await page
-      .getByRole('button', {
-        name: 'Export the document',
-      })
-      .click();
+    await clickInEditorMenu(page, 'Download');
 
     const downloadPromise = page.waitForEvent('download', (download) => {
       return download.suggestedFilename().includes(`${randomDoc}.pdf`);

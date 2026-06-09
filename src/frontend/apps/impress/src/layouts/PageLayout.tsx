@@ -12,13 +12,15 @@ import { MAIN_LAYOUT_ID } from './conf';
 
 interface PageLayoutProps {
   withFooter?: boolean;
+  withLeftPanel?: boolean;
 }
 
 export function PageLayout({
   children,
   withFooter = true,
+  withLeftPanel = true,
 }: PropsWithChildren<PageLayoutProps>) {
-  const { isDesktop } = useResponsiveStore();
+  const { isLargeScreen } = useResponsiveStore();
   const { t } = useTranslation();
   return (
     <Box
@@ -45,7 +47,7 @@ export function PageLayout({
         `}
         aria-label={t('Main content')}
       >
-        {!isDesktop && <LeftPanel />}
+        {withLeftPanel && !isLargeScreen && <LeftPanel />}
         {children}
       </Box>
       {withFooter && <Footer />}

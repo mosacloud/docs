@@ -74,8 +74,10 @@ test.describe('Doc Editor', () => {
     await page.keyboard.press('Enter');
 
     const fileChooserPromise = page.waitForEvent('filechooser');
-    await page.locator('.bn-block-outer').last().fill('/');
-    await page.getByText('Resizable image with caption').click();
+    await openSuggestionMenu({
+      page,
+      suggestion: 'Resizable image with caption',
+    });
     await page.getByText('Upload image').click();
 
     const fileChooser = await fileChooserPromise;
@@ -86,8 +88,6 @@ test.describe('Doc Editor', () => {
     const image = page
       .locator('.--docs--editor-container img.bn-visual-media')
       .first();
-
-    await expect(image).toHaveAttribute('role', 'presentation');
 
     await image.click();
 
@@ -137,7 +137,6 @@ test.describe('Doc Editor', () => {
   }) => {
     // Check the first doc
     const [firstDoc] = await createDoc(page, 'doc-switch-1', browserName, 1);
-    await verifyDocName(page, firstDoc);
 
     const editor = page.locator('.ProseMirror');
     await editor.click();
@@ -145,8 +144,7 @@ test.describe('Doc Editor', () => {
     await expect(editor.getByText('Hello World Doc 1')).toBeVisible();
 
     // Check the second doc
-    const [secondDoc] = await createDoc(page, 'doc-switch-2', browserName, 1);
-    await verifyDocName(page, secondDoc);
+    await createDoc(page, 'doc-switch-2', browserName, 1);
 
     await expect(editor.getByText('Hello World Doc 1')).toBeHidden();
     await editor.click();
@@ -178,20 +176,13 @@ test.describe('Doc Editor', () => {
   }) => {
     // Check the first doc
     const [doc] = await createDoc(page, 'doc-saves-change', browserName);
-    await verifyDocName(page, doc);
 
-    const editor = page.locator('.ProseMirror');
-    await editor.click();
-    await editor.fill('Hello World Doc persisted 1');
-    await expect(editor.getByText('Hello World Doc persisted 1')).toBeVisible();
-
-    const [secondDoc] = await createDoc(
+    const editor = await writeInEditor({
       page,
-      'doc-saves-change-other',
-      browserName,
-    );
+      text: 'Hello World Doc persisted 1',
+    });
 
-    await verifyDocName(page, secondDoc);
+    await createDoc(page, 'doc-saves-change-other', browserName);
 
     await goToGridDoc(page, {
       title: doc,
@@ -208,12 +199,10 @@ test.describe('Doc Editor', () => {
     const [doc] = await createDoc(page, 'doc-quit-1', browserName, 1);
     await verifyDocName(page, doc);
 
-    const editor = page.locator('.ProseMirror');
-    await editor.click();
-    await editor.fill('Hello World Doc persisted 2');
-    await expect(editor.getByText('Hello World Doc persisted 2')).toBeVisible();
-
-    await page.waitForTimeout(1000);
+    const editor = await writeInEditor({
+      page,
+      text: 'Hello World Doc persisted 2',
+    });
 
     const urlDoc = page.url();
     await page.goto(urlDoc);
@@ -228,11 +217,12 @@ test.describe('Doc Editor', () => {
 
     const fileChooserPromise = page.waitForEvent('filechooser');
 
-    await page.locator('.bn-block-outer').last().fill('Hello World');
+    await writeInEditor({ page, text: 'Hello World' });
 
-    await page.keyboard.press('Enter');
-    await page.locator('.bn-block-outer').last().fill('/');
-    await page.getByText('Resizable image with caption').click();
+    await openSuggestionMenu({
+      page,
+      suggestion: 'Resizable image with caption',
+    });
     await page.getByText('Upload image').click();
 
     const fileChooser = await fileChooserPromise;
@@ -255,11 +245,6 @@ test.describe('Doc Editor', () => {
     expect(await image.getAttribute('src')).toMatch(
       /media\/.*\/attachments\/.*.png/,
     );
-
-    await expect(image).toHaveAttribute('role', 'presentation');
-    await expect(image).toHaveAttribute('alt', '');
-    await expect(image).toHaveAttribute('tabindex', '-1');
-    await expect(image).toHaveAttribute('aria-hidden', 'true');
   });
 
   if (process.env.IS_INSTANCE !== 'true') {
@@ -277,12 +262,11 @@ test.describe('Doc Editor', () => {
 
       await verifyDocName(page, randomDoc);
 
-      await page.locator('.ProseMirror.bn-editor').click();
-      await page.locator('.ProseMirror.bn-editor').fill('Hello World');
-
-      await page.keyboard.press('Enter');
-      await page.locator('.bn-block-outer').last().fill('/');
-      await page.getByText('Embedded file').click();
+      await writeInEditor({ page, text: 'Hello World' });
+      await openSuggestionMenu({
+        page,
+        suggestion: 'Embedded file',
+      });
       await page.getByText('Upload file').click();
 
       const fileChooser = await fileChooserPromise;
@@ -344,8 +328,6 @@ test.describe('Doc Editor', () => {
 
     const fileChooserPromise = page.waitForEvent('filechooser');
 
-    await verifyDocName(page, randomDoc);
-
     const { editor } = await openSuggestionMenu({ page });
     await page.getByText('Embedded file').click();
     await page.getByText('Upload file').click();
@@ -356,7 +338,9 @@ test.describe('Doc Editor', () => {
     await expect(editor.getByText('Analyzing file...')).toBeVisible();
 
     // To be sure the retry happens even after a page reload
-    await page.reload();
+    await goToGridDoc(page, {
+      title: randomDoc,
+    });
 
     await expect(editor.getByText('Analyzing file...')).toBeVisible();
 
@@ -517,7 +501,7 @@ test.describe('Doc Editor', () => {
   }) => {
     const [randomDoc] = await createDoc(page, 'doc-scroll', browserName, 1);
 
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 30; i++) {
       await page.keyboard.press('Enter');
       await writeInEditor({ page, text: 'Hello Parent ' + i });
     }
@@ -526,7 +510,7 @@ test.describe('Doc Editor', () => {
     await expect(
       editor.getByText('Hello Parent 1', { exact: true }),
     ).not.toBeInViewport();
-    await expect(editor.getByText('Hello Parent 14')).toBeInViewport();
+    await expect(editor.getByText('Hello Parent 29')).toBeInViewport();
 
     const { name: docChild } = await createRootSubPage(
       page,
@@ -534,7 +518,7 @@ test.describe('Doc Editor', () => {
       'doc-scroll-child',
     );
 
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 30; i++) {
       await page.keyboard.press('Enter');
       await writeInEditor({ page, text: 'Hello Child ' + i });
     }
@@ -542,21 +526,21 @@ test.describe('Doc Editor', () => {
     await expect(
       editor.getByText('Hello Child 1', { exact: true }),
     ).not.toBeInViewport();
-    await expect(editor.getByText('Hello Child 14')).toBeInViewport();
+    await expect(editor.getByText('Hello Child 29')).toBeInViewport();
 
     await navigateToPageFromTree({ page, title: randomDoc });
 
     await expect(
       editor.getByText('Hello Parent 1', { exact: true }),
     ).toBeInViewport();
-    await expect(editor.getByText('Hello Parent 14')).not.toBeInViewport();
+    await expect(editor.getByText('Hello Parent 29')).not.toBeInViewport();
 
     await navigateToPageFromTree({ page, title: docChild });
 
     await expect(
       editor.getByText('Hello Child 1', { exact: true }),
     ).toBeInViewport();
-    await expect(editor.getByText('Hello Child 14')).not.toBeInViewport();
+    await expect(editor.getByText('Hello Child 29')).not.toBeInViewport();
   });
 
   test('it embeds PDF', async ({ page, browserName }) => {
@@ -567,8 +551,7 @@ test.describe('Doc Editor', () => {
 
     await page.getByRole('button', { name: 'Close the share modal' }).click();
 
-    await openSuggestionMenu({ page });
-    await page.getByText('Embed a PDF file').click();
+    await openSuggestionMenu({ page, suggestion: 'Embed a PDF file' });
 
     const pdfBlock = page.locator('div[data-content-type="pdf"]').last();
 
@@ -590,8 +573,7 @@ test.describe('Doc Editor', () => {
 
     await expect(page.getByText('Invalid or missing PDF file')).toBeVisible();
 
-    await openSuggestionMenu({ page });
-    await page.getByText('Embed a PDF file').click();
+    await openSuggestionMenu({ page, suggestion: 'Embed a PDF file' });
 
     // Now with a valid PDF
     await page.getByText(/Add (PDF|file)/).click();

@@ -24,6 +24,7 @@ const PRINT_ONLY_CONTENT_CSS = `
   .--docs--table-content,
   .--docs--doc-footer,
   .--docs--footer,
+  .--docs--right-panel,
   footer,
   [role="contentinfo"],
   div[data-is-empty-and-focused="true"],
@@ -35,8 +36,10 @@ const PRINT_ONLY_CONTENT_CSS = `
   }
 
   /* Hide selection highlights */
-  .ProseMirror-yjs-selection {
+  .ProseMirror-yjs-selection,
+  .bn-thread-mark {
     background-color: transparent !important;
+    border-bottom: none !important;
   }
 
   /* Reset all layout containers for print flow */
@@ -299,7 +302,12 @@ export function printDocumentWithStyles() {
   setTimeout(() => {
     const cleanupLinks = wrapMediaWithLink();
     const cleanupInterlinks = wrapInterlinksWithAnchor();
+    let cleaned = false;
     const cleanup = () => {
+      if (cleaned) {
+        return;
+      }
+      cleaned = true;
       cleanupInterlinks();
       cleanupLinks();
       cleanupPrintStyles();

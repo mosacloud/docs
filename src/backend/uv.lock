@@ -393,6 +393,18 @@ wheels = [
 ]
 
 [[package]]
+name = "dj-database-url"
+version = "3.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/03/f6/00b625e9d371b980aa261011d0dc906a16444cb688f94215e0dc86996eb5/dj_database_url-3.1.2.tar.gz", hash = "sha256:63c20e4bbaa51690dfd4c8d189521f6bf6bc9da9fcdb23d95d2ee8ee87f9ec62", size = 11490, upload-time = "2026-02-19T15:30:23.638Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cf/a9/57c66006373381f1d3e5bd94216f1d371228a89f443d3030e010f73dd198/dj_database_url-3.1.2-py3-none-any.whl", hash = "sha256:544e015fee3efa5127a1eb1cca465f4ace578265b3671fe61d0ed7dbafb5ec8a", size = 8953, upload-time = "2026-02-19T15:30:39.37Z" },
+]
+
+[[package]]
 name = "django"
 version = "5.2.14"
 source = { registry = "https://pypi.org/simple" }
@@ -871,13 +883,14 @@ wheels = [
 
 [[package]]
 name = "impress"
-version = "5.0.0"
+version = "5.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "boto3" },
     { name = "brotli" },
     { name = "celery", extra = ["redis"] },
+    { name = "dj-database-url" },
     { name = "django" },
     { name = "django-configurations" },
     { name = "django-cors-headers" },
@@ -906,6 +919,7 @@ dependencies = [
     { name = "mozilla-django-oidc" },
     { name = "nested-multipart-parser" },
     { name = "openai" },
+    { name = "posthog" },
     { name = "psycopg", extra = ["binary", "pool"] },
     { name = "pycrdt" },
     { name = "pydantic" },
@@ -931,6 +945,7 @@ dev = [
     { name = "pylint" },
     { name = "pylint-django" },
     { name = "pytest" },
+    { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-django" },
     { name = "pytest-icdiff" },
@@ -946,6 +961,7 @@ requires-dist = [
     { name = "boto3", specifier = "==1.42.93" },
     { name = "brotli", specifier = "==1.2.0" },
     { name = "celery", extras = ["redis"], specifier = "==5.5.3" },
+    { name = "dj-database-url", specifier = "==3.1.2" },
     { name = "django", specifier = "<6.0.0" },
     { name = "django-configurations", specifier = "==2.5.1" },
     { name = "django-cors-headers", specifier = "==4.9.0" },
@@ -980,6 +996,7 @@ requires-dist = [
     { name = "mozilla-django-oidc", specifier = "==5.0.2" },
     { name = "nested-multipart-parser", specifier = "==1.6.0" },
     { name = "openai", specifier = "==2.32.0" },
+    { name = "posthog", specifier = "==7.16.1" },
     { name = "psycopg", extras = ["binary", "pool"], specifier = "==3.3.3" },
     { name = "pycrdt", specifier = "==0.12.50" },
     { name = "pydantic", specifier = "==2.13.3" },
@@ -989,6 +1006,7 @@ requires-dist = [
     { name = "pylint", marker = "extra == 'dev'", specifier = "<4.0.0" },
     { name = "pylint-django", marker = "extra == 'dev'", specifier = "==2.7.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = "==9.0.3" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = "==1.4.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = "==7.1.0" },
     { name = "pytest-django", marker = "extra == 'dev'", specifier = "==4.12.0" },
     { name = "pytest-icdiff", marker = "extra == 'dev'", specifier = "==0.9" },
@@ -1589,6 +1607,21 @@ wheels = [
 ]
 
 [[package]]
+name = "posthog"
+version = "7.16.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "backoff" },
+    { name = "distro" },
+    { name = "requests" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b4/4f/a954175c862a3565d02c3f627874d85f18313472a0c4b08f45d84aaf3315/posthog-7.16.1.tar.gz", hash = "sha256:3619d3c619ad01f36c6d465e084950882417c63021eb3cfacacb23f900ec52d4", size = 226343, upload-time = "2026-05-27T18:46:20.129Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/3e/28/0f840699a1d0db3c1e5483c6208f0804a51f21ccfa34e6aa356161606adc/posthog-7.16.1-py3-none-any.whl", hash = "sha256:fd5aa4510033f3b039fda2fbfce45f493d140d4782f681e69639793dda317d67", size = 264231, upload-time = "2026-05-27T18:46:17.933Z" },
+]
+
+[[package]]
 name = "pprintpp"
 version = "0.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1896,6 +1929,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/7d/0d/549bd94f1a0a402dc8cf64563a117c0f3765662e2e668477624baeec44d5/pytest-9.0.3.tar.gz", hash = "sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c", size = 1572165, upload-time = "2026-04-07T17:16:18.027Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d4/24/a372aaf5c9b7208e7112038812994107bc65a84cd00e0354a88c2c77a617/pytest-9.0.3-py3-none-any.whl", hash = "sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9", size = 375249, upload-time = "2026-04-07T17:16:16.13Z" },
+]
+
+[[package]]
+name = "pytest-asyncio"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/43/7c/d36d04db312ecf4298932ef77e6e4a9e8ad017906e24e34f0b0c361a2473/pytest_asyncio-1.4.0.tar.gz", hash = "sha256:c6c0d2259945122819f171a32ecea2c349ead889ee28176caaf492143424be42", size = 58514, upload-time = "2026-05-26T09:56:04.083Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/03/e2/08a497ef684b88559c9cc5f4ad53a37e7b99e727094a86d6ea32536d5d3c/pytest_asyncio-1.4.0-py3-none-any.whl", hash = "sha256:933ca923a23075a87fb7070c0ec272a6848489824d887c85c812670932835aa1", size = 16930, upload-time = "2026-05-26T09:56:02.576Z" },
 ]
 
 [[package]]

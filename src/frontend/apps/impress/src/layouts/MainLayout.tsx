@@ -2,14 +2,16 @@ import { PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
-import { Box } from '@/components';
+import { Box, BoxProps } from '@/components';
 import { Header } from '@/features/header';
 import { HEADER_HEIGHT } from '@/features/header/conf';
 import { LeftPanel, ResizableLeftPanel } from '@/features/left-panel';
+import { RightPanel } from '@/features/right-panel/components/RightPanel';
 import { DocEditorSkeleton, Skeleton } from '@/features/skeletons';
 import { useResponsiveStore } from '@/stores';
 
 import { MAIN_LAYOUT_ID } from './conf';
+import { usePanelCoordination } from './usePanelCoordination';
 
 type MainLayoutProps = {
   backgroundColor?: 'white' | 'grey';
@@ -43,25 +45,25 @@ export function MainLayout({
 
 export interface MainLayoutContentProps {
   backgroundColor: 'white' | 'grey';
-  enableResizablePanel?: boolean;
+  enableResizablePanel: boolean;
 }
 
 export function MainLayoutContent({
   children,
   backgroundColor,
-  enableResizablePanel = false,
+  enableResizablePanel,
 }: PropsWithChildren<MainLayoutContentProps>) {
-  const { isDesktop } = useResponsiveStore();
+  const { isLargeScreen } = useResponsiveStore();
 
   if (enableResizablePanel) {
     return (
-      <ResizableLeftPanel leftPanel={<LeftPanel />}>
-        <MainContent backgroundColor={backgroundColor}>{children}</MainContent>
-      </ResizableLeftPanel>
+      <MainResizableLayout backgroundColor={backgroundColor}>
+        {children}
+      </MainResizableLayout>
     );
   }
 
-  if (!isDesktop) {
+  if (!isLargeScreen) {
     return (
       <>
         <LeftPanel />
@@ -86,10 +88,41 @@ export function MainLayoutContent({
   );
 }
 
+interface MainResizableLayoutProps {
+  backgroundColor: 'white' | 'grey';
+}
+
+const MainResizableLayout = ({
+  children,
+  backgroundColor,
+}: PropsWithChildren<MainResizableLayoutProps>) => {
+  usePanelCoordination();
+
+  return (
+    <ResizableLeftPanel leftPanel={<LeftPanel />}>
+      <Box $direction="row" $width="100%" $position="relative">
+        <MainContent
+          backgroundColor={backgroundColor}
+          $flex="auto"
+          $padding="0"
+        >
+          {children}
+        </MainContent>
+        <RightPanel />
+      </Box>
+    </ResizableLeftPanel>
+  );
+};
+
+type MainContentProps = BoxProps & {
+  backgroundColor: 'white' | 'grey';
+};
+
 const MainContent = ({
   children,
   backgroundColor,
-}: PropsWithChildren<MainLayoutContentProps>) => {
+  ...props
+}: PropsWithChildren<MainContentProps>) => {
   const { isDesktop } = useResponsiveStore();
 
   const { t } = useTranslation();
@@ -106,9 +139,7 @@ const MainContent = ({
       $width="100%"
       $height={`calc(100dvh - ${HEADER_HEIGHT}px)`}
       $position="relative"
-      $padding={{
-        all: isDesktop ? 'base' : '0',
-      }}
+      $padding={isDesktop ? 'base' : '0'}
       $background={
         currentBackgroundColor === 'white'
           ? 'var(--c--contextuals--background--surface--primary)'
@@ -118,6 +149,7 @@ const MainContent = ({
         overflow-y: auto;
         overflow-x: clip;
       `}
+      {...props}
     >
       <Skeleton>
         <DocEditorSkeleton />

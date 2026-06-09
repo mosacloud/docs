@@ -20,7 +20,7 @@ import { css } from 'styled-components';
 
 import { Box, ButtonCloseModal, Text } from '@/components';
 import { useMediaUrl } from '@/core';
-import { useEditorStore } from '@/docs/doc-editor';
+import { useEditorStore } from '@/docs/doc-editor/stores/useEditorStore';
 import { Doc, useTrans } from '@/docs/doc-management';
 import { fallbackLng } from '@/i18n/config';
 
@@ -109,7 +109,13 @@ export const ModalExport = ({ onClose, doc }: ModalExportProps) => {
         emojiSource: {
           format: 'png',
           builder(code) {
-            const emoji = jsonemoji.find((e) =>
+            const emojisFound = jsonemoji.filter(
+              (e) =>
+                e.unified.split('-')[0].toLowerCase() ===
+                code.split('-')[0].toLowerCase(),
+            );
+
+            const emoji = emojisFound.find((e) =>
               e.unified.toLocaleLowerCase().includes(code.toLowerCase()),
             );
 

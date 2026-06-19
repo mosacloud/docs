@@ -1,22 +1,11 @@
-import styled, { css, keyframes } from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 
 // Theme colors
 export const APP_COLOR = '#06B6D4';
-export const APP_GRADIENT_END = '#0891b2';
+export const APP_GRADIENT_END = '#0891B2';
+export const APP_GRADIENT = `linear-gradient(135deg, ${APP_COLOR} 0%, ${APP_GRADIENT_END} 100%)`;
 
 // Animations
-export const float = keyframes`
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  33% {
-    transform: translate(20px, -20px) scale(1.05);
-  }
-  66% {
-    transform: translate(-15px, 15px) scale(0.95);
-  }
-`;
-
 export const fadeIn = keyframes`
   from {
     opacity: 0;
@@ -43,6 +32,7 @@ export const LoginContainer = styled.div`
   }
 `;
 
+// Brand panel (left side, desktop only)
 export const BrandPanel = styled.div`
   position: relative;
   display: flex;
@@ -57,140 +47,78 @@ export const BrandPanel = styled.div`
   }
 `;
 
-export const BrandBg = styled.div`
-  position: absolute;
-  inset: 0;
-`;
-
 export const GradientBase = styled.div`
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    var(--app-color) 0%,
-    var(--app-gradient-end) 100%
-  );
+  background: ${APP_GRADIENT};
 `;
 
 export const GridOverlay = styled.div`
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(rgba(255, 255, 255, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.13) 1px, transparent 1px);
+  background-size: 64px 64px;
+  background-position: left center;
   mask-image: radial-gradient(
-    ellipse at center,
+    ellipse 68% 65% at 0% 50%,
     rgba(0, 0, 0, 1) 0%,
-    rgba(0, 0, 0, 0) 70%
+    rgba(0, 0, 0, 0) 100%
   );
   -webkit-mask-image: radial-gradient(
-    ellipse at center,
+    ellipse 68% 65% at 0% 50%,
     rgba(0, 0, 0, 1) 0%,
-    rgba(0, 0, 0, 0) 70%
+    rgba(0, 0, 0, 0) 100%
   );
 `;
 
-interface OrbProps {
-  $delay?: string;
+interface AccentDotProps {
+  $left: string;
+  $top: string;
   $size: string;
-  $top?: string;
-  $bottom?: string;
-  $left?: string;
-  $right?: string;
+  $bg: string;
 }
 
-export const Orb = styled.div<OrbProps>`
+export const AccentDot = styled.div<AccentDotProps>`
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  filter: blur(40px);
-  animation: ${float} 20s ease-in-out infinite;
-  width: ${(props: OrbProps) => props.$size};
-  height: ${(props: OrbProps) => props.$size};
-  ${(props: OrbProps) =>
-    props.$top &&
-    css`
-      top: ${props.$top};
-    `}
-  ${(props: OrbProps) =>
-    props.$bottom &&
-    css`
-      bottom: ${props.$bottom};
-    `}
-  ${(props: OrbProps) =>
-    props.$left &&
-    css`
-      left: ${props.$left};
-    `}
-  ${(props: OrbProps) =>
-    props.$right &&
-    css`
-      right: ${props.$right};
-    `}
-  ${(props: OrbProps) =>
-    props.$delay &&
-    css`
-      animation-delay: ${props.$delay};
-    `}
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
+  transform: translate(-50%, -50%);
+  left: ${(props: AccentDotProps) => props.$left};
+  top: ${(props: AccentDotProps) => props.$top};
+  width: ${(props: AccentDotProps) => props.$size};
+  height: ${(props: AccentDotProps) => props.$size};
+  background: ${(props: AccentDotProps) => props.$bg};
 `;
 
 export const BrandContent = styled.div`
   position: relative;
-  text-align: center;
-  color: white;
   z-index: 1;
   animation: ${fadeIn} 0.6s ease-out;
+
+  img {
+    display: block;
+    width: 32rem;
+    max-width: 80%;
+    height: auto;
+    margin: 0 auto;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
-`;
-
-export const AppIcon = styled.div`
-  width: 88px;
-  height: 88px;
-  margin: 0 auto 0.75rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 88px;
-    height: 88px;
-    border-radius: 50%;
-    object-fit: contain;
-    filter: brightness(0) invert(1);
-  }
-`;
-
-export const BrandTitle = styled.h1`
-  font-family: var(--font-heading);
-  font-size: 2.75rem;
-  font-weight: 700;
-  margin: 0 0 0.75rem;
-  letter-spacing: -0.02em;
-`;
-
-export const BrandTagline = styled.p`
-  font-size: 1.125rem;
-  opacity: 0.9;
-  margin: 0;
-  max-width: 300px;
-  line-height: 1.6;
 `;
 
 export const BrandFooter = styled.div`
   position: absolute;
   bottom: 2.5rem;
+  left: 0;
+  right: 0;
   z-index: 1;
   display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
 
   span {
@@ -201,38 +129,62 @@ export const BrandFooter = styled.div`
 
 export const EuFlag = styled.div`
   width: 32px;
-  height: 24px;
+  height: 22px;
   background: rgba(255, 255, 255, 0.15);
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.7);
 
-  img {
-    width: 12px;
-    height: 12px;
-    filter: brightness(0) invert(1);
+  svg {
+    width: 18px;
+    height: 18px;
+    color: #ffffff;
     opacity: 0.8;
   }
 `;
 
 // Form panel (right side)
 export const FormPanel = styled.div`
-  background: white;
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  position: relative;
+  overflow: hidden;
+  background: #f7f8fa;
 
   @media (max-width: 900px) {
     min-height: 100vh;
     justify-content: flex-start;
-    overflow: hidden;
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--app-color) 3%, white) 0%,
-      white 50%
+      rgba(6, 182, 212, 0.03) 0%,
+      #f7f8fa 50%
+    );
+  }
+`;
+
+export const MobileAccents = styled.div`
+  display: none;
+
+  @media (max-width: 900px) {
+    display: block;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(6, 182, 212, 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6, 182, 212, 0.08) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0) 70%
+    );
+    -webkit-mask-image: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0.6) 0%,
+      rgba(0, 0, 0, 0) 70%
     );
   }
 `;
@@ -242,11 +194,6 @@ export const LanguageSelectorWrapper = styled.div`
   top: 1.5rem;
   right: 1.5rem;
   z-index: 10;
-
-  @media (max-width: 900px) {
-    top: 1rem;
-    right: 1rem;
-  }
 `;
 
 export const LangSelectorContainer = styled.div`
@@ -257,20 +204,20 @@ export const LangButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: #4b5563;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  background: #f1f3f5;
+  border: 1px solid #e9ecef;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s ease;
   font-family: var(--font-body);
 
   &:hover {
-    background: #e5e7eb;
-    color: #374151;
+    background: #e9ecef;
   }
 
   svg {
@@ -304,9 +251,7 @@ export const LangOption = styled.button<LangOptionProps>`
   color: ${(props: LangOptionProps) =>
     props.$selected ? APP_COLOR : '#4b5563'};
   background: ${(props: LangOptionProps) =>
-    props.$selected
-      ? `color-mix(in srgb, ${APP_COLOR} 8%, transparent)`
-      : 'transparent'};
+    props.$selected ? 'rgba(6, 182, 212, 0.08)' : 'transparent'};
   border: none;
   cursor: pointer;
   text-align: left;
@@ -318,120 +263,29 @@ export const LangOption = styled.button<LangOptionProps>`
   }
 `;
 
-export const MobileAccents = styled.div`
-  display: none;
-
-  @media (max-width: 900px) {
-    display: block;
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-      linear-gradient(
-        color-mix(in srgb, var(--app-color) 8%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--app-color) 8%, transparent) 1px,
-        transparent 1px
-      );
-    background-size: 40px 40px;
-    mask-image: radial-gradient(
-      ellipse at center,
-      rgba(0, 0, 0, 0.6) 0%,
-      rgba(0, 0, 0, 0) 70%
-    );
-    -webkit-mask-image: radial-gradient(
-      ellipse at center,
-      rgba(0, 0, 0, 0.6) 0%,
-      rgba(0, 0, 0, 0) 70%
-    );
-  }
-`;
-
 export const MobileHeader = styled.div`
   display: none;
 
   @media (max-width: 900px) {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
-    position: absolute;
-    top: 1.25rem;
-    left: 1rem;
-    z-index: 10;
-  }
-`;
-
-export const MobileLogo = styled.div`
-  width: 28px;
-  height: 28px;
-  background: linear-gradient(
-    135deg,
-    var(--app-color) 0%,
-    var(--app-gradient-end) 100%
-  );
-  mask-image: url('/assets/mosa.svg');
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  -webkit-mask-image: url('/assets/mosa.svg');
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-`;
-
-export const MobileBrand = styled.span`
-  font-family: var(--font-heading);
-  font-size: 1.25rem;
-  font-weight: 700;
-  background: linear-gradient(
-    135deg,
-    var(--app-color) 0%,
-    var(--app-gradient-end) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-`;
-
-export const MobileFooter = styled.div`
-  display: none;
-
-  @media (max-width: 900px) {
-    display: flex;
-    align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 2rem 1.5rem;
-    margin-top: auto;
-
-    span {
-      font-size: 0.8125rem;
-      color: #9ca3af;
-    }
+    padding: 1.5rem;
   }
-`;
 
-export const MobileEuFlag = styled.div`
-  width: 32px;
-  height: 24px;
-  background: #e5e7eb;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #9ca3af;
+  img {
+    height: 1.75rem;
+    width: auto;
+  }
 `;
 
 export const FormContainer = styled.div`
+  margin: 0 auto;
+  width: 100%;
+  max-width: 440px;
   display: flex;
   flex-direction: column;
   padding: 2rem 3rem;
-  max-width: 440px;
-  margin: 0 auto;
-  width: 100%;
 
   @media (max-width: 900px) {
     flex: 1;
@@ -441,45 +295,45 @@ export const FormContainer = styled.div`
 `;
 
 export const FormHeader = styled.div`
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   text-align: center;
+
+  p {
+    font-family: var(--font-heading);
+    margin: 0 0 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: #5a6577;
+  }
 
   h2 {
     font-family: var(--font-heading);
     font-size: 1.75rem;
     font-weight: 700;
-    color: #111827;
-    margin: 0 0 0.5rem;
-  }
-
-  p {
-    font-size: 0.9375rem;
-    color: #6b7280;
+    color: #333333;
     margin: 0;
   }
 `;
 
-export const ProductIcon = styled.div`
-  width: 72px;
-  height: 72px;
-  margin: 0 auto 1.5rem;
-  background: linear-gradient(
-    135deg,
-    var(--app-color) 0%,
-    var(--app-gradient-end) 100%
-  );
-  mask-image: url('/assets/icon-docs.svg');
-  mask-size: contain;
-  mask-repeat: no-repeat;
-  mask-position: center;
-  -webkit-mask-image: url('/assets/icon-docs.svg');
-  -webkit-mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-position: center;
+export const ProductHighlight = styled.span`
+  background: ${APP_GRADIENT};
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
 `;
 
-export const ProductHighlight = styled.span`
-  color: var(--app-color);
+export const Divider = styled.div`
+  margin: 0 auto 2rem;
+  height: 1px;
+  width: 14rem;
+  background: #e6eaf1;
+
+  @media (max-width: 900px) {
+    background: transparent;
+  }
 `;
 
 export const Actions = styled.div`
@@ -498,21 +352,17 @@ export const PrimaryButton = styled.button`
   font-size: 1rem;
   font-weight: 600;
   color: white;
-  background: linear-gradient(
-    135deg,
-    var(--app-color) 0%,
-    var(--app-gradient-end) 100%
-  );
+  background: ${APP_GRADIENT};
   border: none;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--app-color) 30%, transparent);
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
   font-family: var(--font-body);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px color-mix(in srgb, var(--app-color) 40%, transparent);
+    box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4);
   }
 
   svg {
@@ -521,18 +371,53 @@ export const PrimaryButton = styled.button`
 `;
 
 export const SignupPrompt = styled.p`
+  margin-top: 2rem;
   text-align: center;
   font-size: 0.875rem;
-  color: #6b7280;
-  margin: 1rem 0 0;
+  color: #41506b;
 
   a {
-    color: var(--app-color);
-    text-decoration: none;
+    color: ${APP_COLOR};
     font-weight: 500;
+    text-decoration: none;
 
     &:hover {
       text-decoration: underline;
     }
+  }
+`;
+
+export const MobileFooter = styled.div`
+  display: none;
+
+  @media (max-width: 900px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    margin-top: auto;
+
+    span {
+      font-size: 0.8125rem;
+      color: #adb5bd;
+    }
+  }
+`;
+
+export const MobileEuFlag = styled.div`
+  width: 32px;
+  height: 22px;
+  background: #e9ecef;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #adb5bd;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.5;
   }
 `;

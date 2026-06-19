@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { gotoLogin } from '@/features/auth';
@@ -12,14 +12,12 @@ import {
   GlobeIcon,
 } from './MosaLoginPage.icons';
 import {
+  AccentDot,
   Actions,
-  AppIcon,
-  BrandBg,
   BrandContent,
   BrandFooter,
   BrandPanel,
-  BrandTagline,
-  BrandTitle,
+  Divider,
   EuFlag,
   FormContainer,
   FormHeader,
@@ -33,12 +31,9 @@ import {
   LanguageSelectorWrapper,
   LoginContainer,
   MobileAccents,
-  MobileBrand,
   MobileEuFlag,
   MobileFooter,
   MobileHeader,
-  MobileLogo,
-  Orb,
   PrimaryButton,
   ProductHighlight,
   SignupPrompt,
@@ -101,21 +96,11 @@ const LanguageSelector = () => {
   );
 };
 
-interface MosaLoginPageProps {
-  heading?: ReactNode;
-  description?: string;
-  withRedirect?: boolean;
-}
-
-export const MosaLoginPage = ({
-  heading,
-  description,
-  withRedirect = true,
-}: MosaLoginPageProps) => {
+export const MosaLoginPage = () => {
   const { t } = useTranslation();
 
   const handleLogin = () => {
-    gotoLogin(withRedirect);
+    gotoLogin();
   };
 
   return (
@@ -136,20 +121,42 @@ export const MosaLoginPage = ({
 
       <LoginContainer>
         <BrandPanel>
-          <BrandBg>
-            <GradientBase />
-            <GridOverlay />
-            <Orb $size="300px" $top="-10%" $right="-10%" />
-            <Orb $size="200px" $bottom="20%" $left="-5%" $delay="-7s" />
-            <Orb $size="150px" $bottom="-5%" $right="20%" $delay="-14s" />
-          </BrandBg>
+          <GradientBase />
+          <GridOverlay />
+
+          <AccentDot
+            $left="64px"
+            $top="calc(50% - 160px)"
+            $size="4px"
+            $bg="rgba(255, 255, 255, 0.5)"
+          />
+          <AccentDot
+            $left="256px"
+            $top="calc(50% - 224px)"
+            $size="12px"
+            $bg="rgba(255, 255, 255, 0.7)"
+          />
+          <AccentDot
+            $left="64px"
+            $top="calc(50% + 96px)"
+            $size="5px"
+            $bg="rgba(255, 255, 255, 0.55)"
+          />
+          <AccentDot
+            $left="192px"
+            $top="calc(50% + 224px)"
+            $size="6px"
+            $bg="rgba(255, 255, 255, 0.55)"
+          />
+          <AccentDot
+            $left="384px"
+            $top="calc(50% + 160px)"
+            $size="4px"
+            $bg="rgba(255, 255, 255, 0.4)"
+          />
 
           <BrandContent>
-            <AppIcon>
-              <img src="/assets/mosa.svg" alt="mosa.cloud" />
-            </AppIcon>
-            <BrandTitle>mosa.cloud</BrandTitle>
-            <BrandTagline>{t('Collaborate without compromise')}</BrandTagline>
+            <img src="/logos/mosa-cloud-logo-white.svg" alt="mosa.cloud" />
           </BrandContent>
 
           <BrandFooter>
@@ -168,23 +175,18 @@ export const MosaLoginPage = ({
           <MobileAccents />
 
           <MobileHeader>
-            <MobileLogo aria-label="mosa.cloud logo" />
-            <MobileBrand>mosa.cloud</MobileBrand>
+            <img src="/logos/mosa-cloud-logo.svg" alt="mosa.cloud" />
           </MobileHeader>
 
           <FormContainer>
             <FormHeader>
+              <p>{t('Collaborative documents')}</p>
               <h2>
-                {heading ?? (
-                  <>
-                    {t('Welcome to')} <ProductHighlight>Docs</ProductHighlight>
-                  </>
-                )}
+                {t('Welcome to')} <ProductHighlight>Docs</ProductHighlight>
               </h2>
-              {(description ?? t('Collaboration, redefined')) && (
-                <p>{description ?? t('Collaboration, redefined')}</p>
-              )}
             </FormHeader>
+
+            <Divider />
 
             <Actions>
               <PrimaryButton onClick={handleLogin}>

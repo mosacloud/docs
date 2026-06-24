@@ -56,6 +56,7 @@ def test_api_config(is_authenticated):
         "AI_FEATURE_BLOCKNOTE_ENABLED": False,
         "AI_FEATURE_LEGACY_ENABLED": False,
         "API_USERS_SEARCH_QUERY_MIN_LENGTH": 6,
+        "APP_URLS": {},
         "COLLABORATION_WS_URL": "http://testcollab/",
         "COLLABORATION_WS_NOT_CONNECTED_READY_ONLY": True,
         "COLLABORATION_WS_INACTIVITY_TIMEOUT": 300,

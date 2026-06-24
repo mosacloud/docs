@@ -1,8 +1,7 @@
+import { Button } from '@gouvfr-lasuite/cunningham-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled, { keyframes } from 'styled-components';
-
-import { Button } from '@gouvfr-lasuite/cunningham-react';
 
 import { useConfig } from '@/core/config';
 
@@ -17,26 +16,89 @@ const SHADOW =
   '0 2px 4px rgba(0,0,0,.02), 0 4px 8px rgba(0,0,0,.03), 0 8px 16px rgba(0,0,0,.04), 0 16px 32px rgba(0,0,0,.05), 0 32px 64px rgba(0,0,0,.08)';
 
 /* ── App metadata ───────────────────────────────────────── */
-type AppId = 'epicentre' | 'drive' | 'meet' | 'mail' | 'calendar' | 'chat' | 'commander';
+type AppId =
+  | 'epicentre'
+  | 'drive'
+  | 'meet'
+  | 'mail'
+  | 'calendar'
+  | 'chat'
+  | 'commander';
 
 const APP_META: Record<
   AppId,
-  { icon: string; label: string; subtitle: string; color: string; gradientEnd: string }
+  {
+    icon: string;
+    label: string;
+    subtitle: string;
+    color: string;
+    gradientEnd: string;
+  }
 > = {
-  epicentre: { icon: '/images/icons/epicentre-icon.svg', label: 'Epicentre', subtitle: 'Home',        color: '#0284C7', gradientEnd: '#0443F2' },
-  drive:     { icon: '/images/icons/folder-icon.svg',    label: 'Drive',     subtitle: 'Files',       color: '#F2AF05', gradientEnd: '#D97706' },
-  meet:      { icon: '/images/icons/camera-icon.svg',    label: 'Meet',      subtitle: 'Video calls', color: '#00B574', gradientEnd: '#059669' },
-  mail:      { icon: '/images/icons/mail-icon.svg',      label: 'Mail',      subtitle: 'Email',       color: '#F8497B', gradientEnd: '#A0033A' },
-  calendar:  { icon: '/images/icons/calendar-icon.svg',  label: 'Calendar',  subtitle: 'Schedule',    color: '#A78BFA', gradientEnd: '#6D3FDE' },
-  chat:      { icon: '/images/icons/chat-icon.svg',      label: 'Chat',      subtitle: 'Messaging',   color: '#FA7108', gradientEnd: '#C2410C' },
-  commander: { icon: '/images/icons/commander-icon.svg', label: 'Commander', subtitle: 'Admin',       color: '#0284C7', gradientEnd: '#0064C8' },
+  epicentre: {
+    icon: '/images/icons/epicentre-icon.svg',
+    label: 'Epicentre',
+    subtitle: 'Home',
+    color: '#0284C7',
+    gradientEnd: '#0443F2',
+  },
+  drive: {
+    icon: '/images/icons/folder-icon.svg',
+    label: 'Drive',
+    subtitle: 'Files',
+    color: '#F2AF05',
+    gradientEnd: '#D97706',
+  },
+  meet: {
+    icon: '/images/icons/camera-icon.svg',
+    label: 'Meet',
+    subtitle: 'Video calls',
+    color: '#00B574',
+    gradientEnd: '#059669',
+  },
+  mail: {
+    icon: '/images/icons/mail-icon.svg',
+    label: 'Mail',
+    subtitle: 'Email',
+    color: '#F8497B',
+    gradientEnd: '#A0033A',
+  },
+  calendar: {
+    icon: '/images/icons/calendar-icon.svg',
+    label: 'Calendar',
+    subtitle: 'Schedule',
+    color: '#A78BFA',
+    gradientEnd: '#6D3FDE',
+  },
+  chat: {
+    icon: '/images/icons/chat-icon.svg',
+    label: 'Chat',
+    subtitle: 'Messaging',
+    color: '#FA7108',
+    gradientEnd: '#C2410C',
+  },
+  commander: {
+    icon: '/images/icons/commander-icon.svg',
+    label: 'Commander',
+    subtitle: 'Admin',
+    color: '#0284C7',
+    gradientEnd: '#0064C8',
+  },
 };
 
 const DOCS_ICON = '/images/icons/file-icon.svg';
 const DOCS_COLOR = '#06B6D4';
 const DOCS_GRADIENT_END = '#0891B2';
 
-const APP_ORDER: AppId[] = ['epicentre', 'drive', 'meet', 'mail', 'calendar', 'chat', 'commander'];
+const APP_ORDER: AppId[] = [
+  'epicentre',
+  'drive',
+  'meet',
+  'mail',
+  'calendar',
+  'chat',
+  'commander',
+];
 
 /* ── Styled components ──────────────────────────────────── */
 const StyledWrapper = styled.div`
@@ -45,7 +107,6 @@ const StyledWrapper = styled.div`
   align-items: center;
   margin-left: 4px;
 `;
-
 
 const TriggerGrid = styled.span`
   display: grid;
@@ -71,7 +132,8 @@ const panelIn = keyframes`
 
 const Dropdown = styled.div<{ $up: boolean }>`
   position: absolute;
-  ${({ $up }: { $up: boolean }) => ($up ? 'bottom: calc(100% + 8px);' : 'top: calc(100% + 8px);')}
+  ${({ $up }: { $up: boolean }) =>
+    $up ? 'bottom: calc(100% + 8px);' : 'top: calc(100% + 8px);'}
   right: 0;
   width: 312px;
   background: ${SURFACE};
@@ -172,7 +234,11 @@ const AppSubtitle = styled.span`
   white-space: nowrap;
 `;
 
-const IconWrap = styled.span<{ $size: number; $color: string; $gradientEnd: string }>`
+const IconWrap = styled.span<{
+  $size: number;
+  $color: string;
+  $gradientEnd: string;
+}>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -207,8 +273,11 @@ const AppIcon = ({
   size?: number;
 }) => (
   <IconWrap $size={size} $color={color} $gradientEnd={gradientEnd}>
-    {/* eslint-disable-next-line @next/next/no-img-element */}
-    <img src={icon} alt={label} style={{ width: size * 0.45, height: size * 0.45 }} />
+    <img
+      src={icon}
+      alt={label}
+      style={{ width: size * 0.45, height: size * 0.45 }}
+    />
   </IconWrap>
 );
 
@@ -227,7 +296,13 @@ const Panel = ({
   return (
     <Dropdown $up={opensUpward}>
       <CurrentRow>
-        <AppIcon icon={DOCS_ICON} label="Docs" color={DOCS_COLOR} gradientEnd={DOCS_GRADIENT_END} size={44} />
+        <AppIcon
+          icon={DOCS_ICON}
+          label="Docs"
+          color={DOCS_COLOR}
+          gradientEnd={DOCS_GRADIENT_END}
+          size={44}
+        />
         <CurrentText>
           <YouAreIn>{t("YOU'RE IN")}</YouAreIn>
           <AppName>{t('Docs')}</AppName>
@@ -240,10 +315,17 @@ const Panel = ({
           <SectionLabel>{t('JUMP TO')}</SectionLabel>
           <AppGrid>
             {jumpTo.map((id) => {
-              const { label, subtitle, icon, color, gradientEnd } = APP_META[id];
+              const { label, subtitle, icon, color, gradientEnd } =
+                APP_META[id];
               return (
                 <AppTile key={id} href={appUrls[id]} onClick={onClose}>
-                  <AppIcon icon={icon} label={label} color={color} gradientEnd={gradientEnd} size={36} />
+                  <AppIcon
+                    icon={icon}
+                    label={label}
+                    color={color}
+                    gradientEnd={gradientEnd}
+                    size={36}
+                  />
                   <AppInfo>
                     <AppLabel>{t(label)}</AppLabel>
                     <AppSubtitle>{t(subtitle)}</AppSubtitle>
@@ -270,7 +352,9 @@ export const AppSwitcherButton = () => {
   const hasOtherApps = APP_ORDER.some((id) => id in appUrls);
 
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setIsOpen(false);
@@ -280,7 +364,9 @@ export const AppSwitcherButton = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [isOpen]);
 
-  if (!hasOtherApps) return null;
+  if (!hasOtherApps) {
+    return null;
+  }
 
   const handleOpen = () => {
     if (ref.current) {
@@ -306,7 +392,13 @@ export const AppSwitcherButton = () => {
           </TriggerGrid>
         }
       />
-      {isOpen && <Panel appUrls={appUrls} onClose={() => setIsOpen(false)} opensUpward={opensUpward} />}
+      {isOpen && (
+        <Panel
+          appUrls={appUrls}
+          onClose={() => setIsOpen(false)}
+          opensUpward={opensUpward}
+        />
+      )}
     </StyledWrapper>
   );
 };

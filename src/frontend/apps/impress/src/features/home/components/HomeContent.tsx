@@ -104,7 +104,7 @@ export function HomeContent() {
                     >
                       <Text as="p" $display="inline">
                         <Trans t={t} i18nKey="home-content-open-source-part1">
-                          Docs is built on top of{' '}
+                          Notes is built on top of{' '}
                           <a
                             href="https://www.django-rest-framework.org/"
                             target="_blank"
@@ -131,7 +131,7 @@ export function HomeContent() {
                       </Text>
                       <Text as="p" $display="inline">
                         <Trans t={t} i18nKey="home-content-open-source-part2">
-                          You can easily self-host Docs (check our installation{' '}
+                          You can easily self-host Notes (check our installation{' '}
                           <a
                             href="https://github.com/suitenumerique/docs/tree/main/docs"
                             target="_blank"
@@ -140,7 +140,7 @@ export function HomeContent() {
                           </a>
                           ).
                           <br />
-                          Docs uses an innovation and business friendly{' '}
+                          Notes uses an innovation and business friendly{' '}
                           <a
                             href="https://github.com/suitenumerique/docs/blob/main/LICENSE"
                             target="_blank"
@@ -161,7 +161,7 @@ export function HomeContent() {
                       </Text>
                       <Text as="p" $display="inline">
                         <Trans t={t} i18nKey="home-content-open-source-part3">
-                          Docs is the result of a joint effort lead by the
+                          Notes is the result of a joint effort lead by the
                           French 🇫🇷🥖
                           <a
                             href="https://www.numerique.gouv.fr/dinum/"
@@ -235,7 +235,7 @@ export function HomeContent() {
                     >
                       <Text as="p" $display="inline" $variation="secondary">
                         <Trans t={t} i18nKey="home-content-open-source-part1">
-                          Docs is built on top of{' '}
+                          Notes is built on top of{' '}
                           <a
                             href="https://www.django-rest-framework.org/"
                             target="_blank"
@@ -262,7 +262,7 @@ export function HomeContent() {
                       </Text>
                       <Text as="p" $display="inline">
                         <Trans t={t} i18nKey="home-content-open-source-part2">
-                          You can easily self-host Docs (check our installation{' '}
+                          You can easily self-host Notes (check our installation{' '}
                           <a
                             href="https://github.com/suitenumerique/docs/tree/main/docs"
                             target="_blank"
@@ -271,7 +271,7 @@ export function HomeContent() {
                           </a>
                           ).
                           <br />
-                          Docs uses an innovation and business friendly{' '}
+                          Notes uses an innovation and business friendly{' '}
                           <a
                             href="https://github.com/suitenumerique/docs/blob/main/LICENSE"
                             target="_blank"
@@ -292,7 +292,7 @@ export function HomeContent() {
                       </Text>
                       <Text as="p" $display="inline">
                         <Trans t={t} i18nKey="home-content-open-source-part3">
-                          Docs is the result of a joint effort lead by the
+                          Notes is the result of a joint effort lead by the
                           French 🇫🇷🥖
                           <a
                             href="https://www.numerique.gouv.fr/dinum/"

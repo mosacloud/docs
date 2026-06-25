@@ -121,7 +121,7 @@ export const MosaLoginPage = ({
   return (
     <>
       <Head>
-        <title>{t('Sign in to Docs - mosa.cloud')}</title>
+        <title>{t('Sign in to Notes - mosa.cloud')}</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
           rel="preconnect"
@@ -177,7 +177,7 @@ export const MosaLoginPage = ({
               <h2>
                 {heading ?? (
                   <>
-                    {t('Welcome to')} <ProductHighlight>Docs</ProductHighlight>
+                    {t('Welcome to')} <ProductHighlight>Notes</ProductHighlight>
                   </>
                 )}
               </h2>

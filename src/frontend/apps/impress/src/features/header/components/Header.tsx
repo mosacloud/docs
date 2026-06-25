@@ -70,6 +70,7 @@ const HeaderRight = () => {
             : null
         }
         logout={gotoLogout}
+        termOfServiceUrl="https://docs.numerique.gouv.fr/docs/8e298e03-c95f-44c7-be4a-ffb618af1854/"
         actions={
           <div className="user-menu__footer-action">
             <LanguagePicker />

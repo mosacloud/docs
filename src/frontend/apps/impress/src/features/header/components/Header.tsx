@@ -12,6 +12,7 @@ import { useResponsiveStore } from '@/stores';
 
 import { HEADER_HEIGHT } from '../conf';
 
+import { AppSwitcherButton } from './AppSwitcherPanel';
 import { Title } from './Title';
 import { Waffle } from './Waffle';
 
@@ -85,6 +86,7 @@ export const Header = () => {
         {!isLargeScreen ? (
           <Box $direction="row" $gap={spacingsTokens['sm']}>
             <Waffle />
+            <AppSwitcherButton />
           </Box>
         ) : (
           <Box
@@ -96,6 +98,7 @@ export const Header = () => {
             <ButtonLogin />
             <LanguagePicker />
             <Waffle />
+            <AppSwitcherButton />
           </Box>
         )}
       </Box>

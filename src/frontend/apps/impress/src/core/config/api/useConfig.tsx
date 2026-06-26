@@ -63,6 +63,7 @@ export interface ConfigResponse {
   REACTIONS_MAX_PER_COMMENT: number;
   TRASHBIN_CUTOFF_DAYS?: number;
   theme_customization?: ThemeCustomization;
+  APP_URLS?: Record<string, string>;
 }
 
 const LOCAL_STORAGE_KEY = 'docs_config';

@@ -62,7 +62,7 @@ dependencies = [
     "pycrdt==0.12.50",
     "pydantic==2.13.3",
     "pydantic-ai-slim[openai,logfire,web]==1.58.0",
-    "PyJWT==2.12.1",
+    "PyJWT==2.13.0",
     "python-magic==0.4.27",
     "redis<6.0.0",
     "requests==2.33.1",
@@ -103,7 +103,14 @@ dev = [
 # urllib3 < 2.7.0 has 2 HIGH CVEs (CVE-2026-44431 header leak on cross-origin
 # redirect, CVE-2026-44432 DoS via response decompression). Pulled transitively
 # via botocore/requests/sentry-sdk. Override until upstream bumps the pin.
-override-dependencies = ["urllib3>=2.7.0"]
+# cryptography < 48.0.1 ships a vulnerable OpenSSL in its wheel (GHSA-537c-gmf6-5ccf).
+# starlette < 1.3.1 has SSRF/credential-theft CVEs (CVE-2026-48818, CVE-2026-54283).
+# Both transitive; override until upstream bumps. Drop on next upstream sync.
+override-dependencies = [
+    "urllib3>=2.7.0",
+    "cryptography>=48.0.1",
+    "starlette>=1.3.1",
+]
 
 [tool.uv.build-backend]
 module-name = [

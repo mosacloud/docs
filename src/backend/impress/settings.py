@@ -1255,111 +1255,27 @@ class Base(Configuration):
         environ_prefix=None,
     )
 
-    # -- Profiling (django-silk) ---------------------------------------------
-    # Opt-in request/SQL/cProfile profiler, OFF by default. Turn it on in a
-    # given environment with SILK_ENABLED=1 (typically a throwaway staging pod
-    # loaded via `generate_volumetry`, or local dev) to record, per request,
-    # the SQL it ran with timing + originating stack, and an optional cProfile
-    # you can download as a binary `.prof`. When enabled, `silk` is appended to
-    # INSTALLED_APPS, `SilkyMiddleware` is wired near the top of MIDDLEWARE, and
-    # the UI is served at /silk/ (see impress/urls.py and post_setup below).
-    #
-    # NEVER enable against production with real users: silk persists request
-    # metadata to the database. Request/response BODIES are deliberately never
-    # stored (the two MAX_*_BODY_SIZE = 0 below) so document content, titles and
-    # emails cannot leak into the silk tables — only method, path, headers-free
-    # metadata, SQL and timings are kept.
-    SILK_ENABLED = values.BooleanValue(
-        False, environ_name="SILK_ENABLED", environ_prefix=None
+    # App switcher URLs — set to enable the app in the switcher panel.
+    APP_URL_EPICENTRE = values.Value(
+        default=None, environ_name="APP_URL_EPICENTRE", environ_prefix=None
     )
-    # Per-request cProfile. Binary output lets you download a `.prof` and open
-    # it in snakeviz / pstats / tuna offline for a full call graph. The binary
-    # is written through the SILKY_STORAGE backend (S3, see STORAGES above), not
-    # the local filesystem, so it works on read-only/ephemeral pods.
-    SILKY_PYTHON_PROFILER = values.BooleanValue(
-        True, environ_name="SILK_PYTHON_PROFILER", environ_prefix=None
+    APP_URL_DRIVE = values.Value(
+        default=None, environ_name="APP_URL_DRIVE", environ_prefix=None
     )
-    SILKY_PYTHON_PROFILER_BINARY = values.BooleanValue(
-        True, environ_name="SILK_PYTHON_PROFILER_BINARY", environ_prefix=None
+    APP_URL_MEET = values.Value(
+        default=None, environ_name="APP_URL_MEET", environ_prefix=None
     )
-    # Under load, record only a sample of requests to bound silk's own overhead
-    # and storage (100 = every request; drop it for a thundering-herd repro).
-    SILKY_INTERCEPT_PERCENT = values.IntegerValue(
-        100, environ_name="SILK_INTERCEPT_PERCENT", environ_prefix=None
+    APP_URL_CALENDAR = values.Value(
+        default=None, environ_name="APP_URL_CALENDAR", environ_prefix=None
     )
-    # Ring-buffer the stored requests so a long load run cannot fill the disk.
-    SILKY_MAX_RECORDED_REQUESTS = values.IntegerValue(
-        10000, environ_name="SILK_MAX_RECORDED_REQUESTS", environ_prefix=None
+    APP_URL_MAIL = values.Value(
+        default=None, environ_name="APP_URL_MAIL", environ_prefix=None
     )
-    SILKY_MAX_RECORDED_REQUESTS_CHECK_PERCENT = 10
-    # Record silk's own per-request overhead so you can subtract it.
-    SILKY_META = True
-    # Lock the /silk/ UI behind an authenticated staff session.
-    SILKY_AUTHENTICATION = True
-    SILKY_AUTHORISATION = True
-    # RGPD: never persist request/response bodies (0 bytes kept).
-    SILKY_MAX_REQUEST_BODY_SIZE = 0
-    SILKY_MAX_RESPONSE_BODY_SIZE = 0
-
-    # -- Load-test tooling ---------------------------------------------------
-    # The `loadtest` application mints sessions for existing users, which is
-    # what lets a load generator act as thousands of them without going through
-    # the OIDC login. It is not in INSTALLED_APPS: only the `LoadTest`
-    # configuration below installs it and turns this on. Deliberately not read
-    # from the environment — no variable can enable it on another configuration —
-    # and pinned to False again in `Production`, which every deployed
-    # configuration inherits from.
-    LOAD_TEST_TOOLS_ENABLED = False
-
-    # -- Metrics (django-prometheus) -----------------------------------------
-    # Opt-in Prometheus instrumentation, OFF by default. When enabled,
-    # `django_prometheus` is added to INSTALLED_APPS and its two middlewares
-    # wrap MIDDLEWARE (see setup_prometheus_metrics below) to count and time
-    # every request, labelled by view name, method and status — never by path,
-    # user or document, so no identifier leaves the application through a label.
-    #
-    # The metrics are served on /metrics, outside of /api/ so that the ingress
-    # of the application does not publish them: a deployment that wants them
-    # reachable from outside routes that path on purpose, and filters who may
-    # call it. Whoever reaches it still has to present PROMETHEUS_API_KEY as a
-    # bearer token (core.middleware.PrometheusAuthMiddleware), and the
-    # application refuses to start with the metrics enabled and no key.
-    PROMETHEUS_METRICS_ENABLED = values.BooleanValue(
-        False, environ_name="PROMETHEUS_METRICS_ENABLED", environ_prefix=None
+    APP_URL_CHAT = values.Value(
+        default=None, environ_name="APP_URL_CHAT", environ_prefix=None
     )
-    PROMETHEUS_API_KEY = SecretFileValue(
-        None, environ_name="PROMETHEUS_API_KEY", environ_prefix=None
-    )
-    # Let /metrics be scraped over plain http where SECURE_SSL_REDIRECT is on,
-    # i.e. take it out of the redirect to https the way the probes are. For a
-    # scraper that reaches the process itself, past the proxy terminating TLS
-    # — a Prometheus inside a kubernetes cluster calling the pods. Leave it off
-    # when the application is reached directly: the redirect is then what keeps
-    # the bearer token off the wire in clear.
-    PROMETHEUS_METRICS_SSL_REDIRECT_EXEMPT = values.BooleanValue(
-        False,
-        environ_name="PROMETHEUS_METRICS_SSL_REDIRECT_EXEMPT",
-        environ_prefix=None,
-    )
-    # Also count and time the SQL queries, by swapping the database engine for
-    # django-prometheus' instrumented subclass of it.
-    PROMETHEUS_DB_METRICS_ENABLED = values.BooleanValue(
-        True, environ_name="PROMETHEUS_DB_METRICS_ENABLED", environ_prefix=None
-    )
-    # Report the length of the Celery queue on /metrics. It is asked to the
-    # broker at every scrape, by whichever replica answers it.
-    PROMETHEUS_CELERY_QUEUE_METRICS_ENABLED = values.BooleanValue(
-        True,
-        environ_name="PROMETHEUS_CELERY_QUEUE_METRICS_ENABLED",
-        environ_prefix=None,
-    )
-    # uvicorn runs several worker processes, and a scrape is answered by one of
-    # them: they all write their numbers to this directory so that whichever
-    # answers can add them up. It has to be the same for every worker, hence a
-    # fixed default rather than a random one. Defaults to a directory of the
-    # system's temporary directory, named after the user running the application.
-    PROMETHEUS_MULTIPROC_DIR = values.Value(
-        None, environ_name="PROMETHEUS_MULTIPROC_DIR", environ_prefix=None
+    APP_URL_COMMANDER = values.Value(
+        default=None, environ_name="APP_URL_COMMANDER", environ_prefix=None
     )
 
     # pylint: disable=invalid-name

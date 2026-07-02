@@ -1,5 +1,5 @@
-import { announce } from '@react-aria/live-announcer';
 import { LanguagePicker as UIKitLanguagePicker } from '@gouvfr-lasuite/ui-kit';
+import { announce } from '@react-aria/live-announcer';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -27,8 +27,9 @@ export const LanguagePicker = () => {
   };
 
   const languages = useMemo((): LangOption[] => {
-    const backendOptions: [string, string][] =
-      conf?.LANGUAGES ?? [[language, language]];
+    const backendOptions: [string, string][] = conf?.LANGUAGES ?? [
+      [language, language],
+    ];
     return backendOptions.map(([backendLocale, backendLabel]) => ({
       label: backendLabel,
       shortLabel: toLangTag(backendLocale).toUpperCase().slice(0, 2),
@@ -51,7 +52,9 @@ export const LanguagePicker = () => {
     }
   };
 
-  if (!languages.length) return null;
+  if (!languages.length) {
+    return null;
+  }
 
   return (
     <UIKitLanguagePicker

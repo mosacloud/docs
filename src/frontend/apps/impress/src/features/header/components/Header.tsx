@@ -1,107 +1,102 @@
+import { Header as UIKitHeader, UserMenu } from '@gouvfr-lasuite/ui-kit';
 import Image from 'next/image';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
 import { Box, SkipToContent, StyledLink } from '@/components/';
 import { useConfig } from '@/core/config';
-import { useCunninghamTheme } from '@/cunningham';
-import { ButtonLogin } from '@/features/auth';
+import { gotoLogout, useAuth } from '@/features/auth';
 import { LanguagePicker } from '@/features/language';
-import { LeftPanelToggleMobile } from '@/features/left-panel';
-import { useResponsiveStore } from '@/stores';
-
-import { HEADER_HEIGHT } from '../conf';
+import { useLeftPanelStore } from '@/features/left-panel';
 
 import { AppSwitcherButton } from './AppSwitcherPanel';
 import { Title } from './Title';
 import { Waffle } from './Waffle';
 
-export const Header = () => {
+const HeaderLogo = () => {
   const { t } = useTranslation();
   const { data: config } = useConfig();
-  const { spacingsTokens } = useCunninghamTheme();
-  const { isLargeScreen } = useResponsiveStore();
 
   const icon = config?.theme_customization?.header?.icon;
 
   return (
+    <StyledLink
+      href="/"
+      data-testid="header-logo-link"
+      aria-label={t('Back to homepage')}
+      $css={css`
+        outline: none;
+        &:focus-visible {
+          box-shadow: 0 0 0 2px var(--c--globals--colors--brand-400) !important;
+          border-radius: var(--c--globals--spacings--st);
+        }
+      `}
+    >
+      <Box
+        $align="center"
+        $gap="0.25rem"
+        $direction="row"
+        $position="relative"
+        $height="fit-content"
+        $margin={{ top: 'auto' }}
+      >
+        {icon && (
+          <Image
+            data-testid="header-icon-docs"
+            width={0}
+            height={0}
+            priority
+            {...(({ withTitle: _, ...rest }) => rest)(icon)}
+          />
+        )}
+        <Title
+          headingLevel="h1"
+          className={icon?.withTitle ? undefined : 'sr-only'}
+        />
+      </Box>
+    </StyledLink>
+  );
+};
+
+const HeaderRight = () => {
+  const { user } = useAuth();
+
+  return (
+    <Box $direction="row" $align="center" $gap="0.5rem">
+      <Waffle />
+      <AppSwitcherButton />
+      <UserMenu
+        user={
+          user
+            ? { full_name: user.full_name ?? undefined, email: user.email }
+            : null
+        }
+        logout={gotoLogout}
+        termOfServiceUrl="https://docs.numerique.gouv.fr/docs/8e298e03-c95f-44c7-be4a-ffb618af1854/"
+        actions={
+          <div className="user-menu__footer-action">
+            <LanguagePicker />
+          </div>
+        }
+      />
+    </Box>
+  );
+};
+
+export const Header = () => {
+  const { isPanelOpenMobile, togglePanel } = useLeftPanelStore();
+
+  return (
     <>
       <SkipToContent />
-      <Box
-        as="header"
-        className="--docs--header"
-        role="banner"
-        $css={css`
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          z-index: 20;
-          flex-direction: row;
-          align-items: center;
-          justify-content: space-between;
-          height: ${HEADER_HEIGHT}px;
-          padding: 0 ${spacingsTokens['base']};
-          background-color: var(--c--contextuals--background--surface--primary);
-          border-bottom: 1px solid
-            var(--c--contextuals--border--surface--primary);
-        `}
-      >
-        {!isLargeScreen && <LeftPanelToggleMobile />}
-        <StyledLink
-          href="/"
-          data-testid="header-logo-link"
-          aria-label={t('Back to homepage')}
-          $css={css`
-            outline: none;
-            &:focus-visible {
-              box-shadow: 0 0 0 2px var(--c--globals--colors--brand-400) !important;
-              border-radius: var(--c--globals--spacings--st);
-            }
-          `}
-        >
-          <Box
-            $align="center"
-            $gap={spacingsTokens['3xs']}
-            $direction="row"
-            $position="relative"
-            $height="fit-content"
-            $margin={{ top: 'auto' }}
-          >
-            {icon && (
-              <Image
-                data-testid="header-icon-docs"
-                width={0}
-                height={0}
-                priority
-                {...(({ withTitle: _, ...rest }) => rest)(icon)}
-              />
-            )}
-            <Title
-              headingLevel="h1"
-              className={icon?.withTitle ? undefined : 'sr-only'}
-            />
-          </Box>
-        </StyledLink>
-        {!isLargeScreen ? (
-          <Box $direction="row" $gap={spacingsTokens['sm']}>
-            <Waffle />
-            <AppSwitcherButton />
-          </Box>
-        ) : (
-          <Box
-            className="--docs--header-block-right"
-            $align="center"
-            $gap={spacingsTokens['sm']}
-            $direction="row"
-          >
-            <ButtonLogin />
-            <LanguagePicker />
-            <Waffle />
-            <AppSwitcherButton />
-          </Box>
-        )}
-      </Box>
+      <div className="c__main-layout__header">
+        <UIKitHeader
+          leftIcon={<HeaderLogo />}
+          rightIcon={<HeaderRight />}
+          onTogglePanel={() => togglePanel({ type: 'mobile' })}
+          isPanelOpen={isPanelOpenMobile}
+        />
+      </div>
     </>
   );
 };

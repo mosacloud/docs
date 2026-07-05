@@ -109,20 +109,12 @@ const StyledWrapper = styled.div`
 `;
 
 const TriggerGrid = styled.span`
-  display: grid;
-  grid-template-columns: repeat(3, 3px);
-  grid-template-rows: repeat(3, 3px);
-  gap: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid ${BORDER};
   border-radius: 6px;
-  padding: 6px;
-`;
-
-const TriggerDot = styled.span<{ $color: string }>`
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: ${({ $color }: { $color: string }) => $color};
+  padding: 5px;
 `;
 
 const panelIn = keyframes`
@@ -178,7 +170,7 @@ const AppName = styled.span`
 const Divider = styled.div`
   height: 1px;
   background: ${BORDER};
-  margin: 2px 0 10px;
+  margin: 4px -14px 14px;
 `;
 
 const SectionLabel = styled.span`
@@ -294,7 +286,12 @@ const Panel = ({
   const jumpTo = APP_ORDER.filter((id) => id in appUrls);
 
   return (
-    <Dropdown $up={opensUpward}>
+    <Dropdown
+      $up={opensUpward}
+      style={{
+        background: `linear-gradient(180deg, color-mix(in srgb, ${DOCS_COLOR} 8%, transparent) 0%, transparent 100%) top center / 100% 80px no-repeat, ${SURFACE}`,
+      }}
+    >
       <CurrentRow>
         <AppIcon
           icon={DOCS_ICON}
@@ -386,9 +383,17 @@ export const AppSwitcherButton = () => {
         onClick={handleOpen}
         icon={
           <TriggerGrid aria-hidden>
-            {[...APP_ORDER, APP_ORDER[0], APP_ORDER[1]].map((id, i) => (
-              <TriggerDot key={i} $color={APP_META[id].color} />
-            ))}
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              {[...APP_ORDER, APP_ORDER[0], APP_ORDER[1]].map((id, i) => (
+                <circle
+                  key={i}
+                  cx={3 + (i % 3) * 6}
+                  cy={3 + Math.floor(i / 3) * 6}
+                  r={2}
+                  fill={APP_META[id].color}
+                />
+              ))}
+            </svg>
           </TriggerGrid>
         }
       />

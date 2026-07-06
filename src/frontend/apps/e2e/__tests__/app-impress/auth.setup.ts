@@ -24,11 +24,10 @@ const saveStorageState = async (
 
     await SignIn(page, browserName);
 
-    /**
-     * If the grid is displayed, it means the user is logged in and the storage state can be saved.
-     */
+    await page.locator('.user-menu__button').click();
+
     await expect(
-      page.getByRole('heading', { name: 'Recent', level: 2 }),
+      page.locator('.user-menu__item').filter({ hasText: 'Logout' }),
     ).toBeVisible({ timeout: 10000 });
 
     await page.context().storageState({

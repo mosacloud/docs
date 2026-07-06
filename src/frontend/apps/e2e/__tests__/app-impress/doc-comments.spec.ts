@@ -329,7 +329,11 @@ test.describe('Doc Comments', () => {
     await updateShareLink(page, 'Public', 'Editing');
 
     // Anonymous user can see and add comments
-    await logOut(otherPage);
+    await otherPage.locator('.user-menu__button').click();
+    await otherPage
+      .locator('.user-menu__item')
+      .filter({ hasText: 'Logout' })
+      .click();
 
     await expect(
       otherPage

@@ -24,7 +24,7 @@ export const customSignIn = async (
   fromHome = true,
 ) => {
   // Check if already signed in (Silent login or session still valid)
-  if (await page.getByLabel('User menu').isVisible()) {
+  if (await page.locator('.user-menu__button').isVisible()) {
     return;
   }
 
@@ -85,7 +85,7 @@ export const keycloakSignIn = async (
 
 export const expectLoginPage = async (page: Page) =>
   await expect(
-    page.getByRole('heading', { name: 'Collaborative writing' }),
+    page.getByRole('button', { name: process.env.SIGN_IN_EL_TRIGGER }),
   ).toBeVisible({
     timeout: 10000,
   });

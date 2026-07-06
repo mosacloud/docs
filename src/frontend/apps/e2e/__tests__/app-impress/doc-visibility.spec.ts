@@ -81,7 +81,13 @@ test.describe('Doc Visibility: Restricted', () => {
     await verifyDocName(page, docTitle);
 
     const urlDoc = page.url();
-    await logOut(page);
+
+    await page.locator('.user-menu__button').click();
+    await page
+      .locator('.user-menu__item')
+      .filter({ hasText: 'Logout' })
+      .click();
+
     await expectLoginPage(page);
 
     await page.goto(urlDoc);
@@ -106,7 +112,11 @@ test.describe('Doc Visibility: Restricted', () => {
 
     const urlDoc = page.url();
 
-    await logOut(page);
+    await page.locator('.user-menu__button').click();
+    await page
+      .locator('.user-menu__item')
+      .filter({ hasText: 'Logout' })
+      .click();
 
     const otherBrowser = BROWSERS.find((b) => b !== browserName);
     if (!otherBrowser) {

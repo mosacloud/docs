@@ -53,7 +53,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       -
         name: Run trivy scan
-        uses: numerique-gouv/action-trivy-cache@main
+        uses: numerique-gouv/action-trivy-cache@d6e94cfb488f03a0b3e8b8739aad94e74d24d8da # main
         with:
           docker-build-args: '--target backend-production -f Dockerfile'
           docker-image-name: 'docker.io/mosacloud/docs-backend:${{ github.sha }}'
@@ -107,7 +107,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       -
         name: Run trivy scan
-        uses: numerique-gouv/action-trivy-cache@main
+        uses: numerique-gouv/action-trivy-cache@d6e94cfb488f03a0b3e8b8739aad94e74d24d8da # main
         with:
           docker-build-args: '-f src/frontend/Dockerfile --target frontend-production'
           docker-image-name: 'docker.io/mosacloud/docs-frontend:${{ github.sha }}'
@@ -164,7 +164,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       -
         name: Run trivy scan
-        uses: numerique-gouv/action-trivy-cache@main
+        uses: numerique-gouv/action-trivy-cache@d6e94cfb488f03a0b3e8b8739aad94e74d24d8da # main
         with:
           docker-build-args: '-f src/frontend/Dockerfile --target frontend-production'
           docker-image-name: 'docker.io/mosacloud/docs-frontend-mit:${{ github.sha }}'
@@ -221,7 +221,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       -
         name: Run trivy scan
-        uses: numerique-gouv/action-trivy-cache@main
+        uses: numerique-gouv/action-trivy-cache@d6e94cfb488f03a0b3e8b8739aad94e74d24d8da # main
         with:
           docker-build-args: '-f src/frontend/servers/y-provider/Dockerfile --target y-provider'
           docker-image-name: 'docker.io/mosacloud/docs-y-provider:${{ github.sha }}'

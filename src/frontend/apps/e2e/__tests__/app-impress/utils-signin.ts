@@ -80,7 +80,7 @@ export const keycloakSignIn = async (
 
 export const expectLoginPage = async (page: Page) =>
   await expect(
-    page.getByRole('button', { name: 'Sign in with your account' }),
+    page.getByRole('button', { name: process.env.SIGN_IN_EL_TRIGGER }),
   ).toBeVisible({
     timeout: 10000,
   });

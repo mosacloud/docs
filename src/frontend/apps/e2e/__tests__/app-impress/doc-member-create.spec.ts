@@ -371,10 +371,10 @@ test.describe('Document create member: Multiple login', () => {
 
     const urlDoc = page.url();
 
+    await page.locator('.user-menu__button').click();
     await page
-      .getByRole('button', {
-        name: 'Logout',
-      })
+      .locator('.user-menu__item')
+      .filter({ hasText: 'Logout' })
       .click();
 
     const otherBrowser = BROWSERS.find((b) => b !== browserName);

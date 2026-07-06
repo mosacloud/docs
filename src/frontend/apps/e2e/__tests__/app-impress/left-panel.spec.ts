@@ -95,12 +95,10 @@ test.describe('Left panel responsive', () => {
     await expect(page.getByTestId('left-panel-desktop')).toBeHidden();
     await expect(page.getByTestId('left-panel-mobile')).not.toBeInViewport();
 
-    const header = page.locator('header').first();
+    const header = page.locator('.c__main-layout__header').first();
     const homeButton = page.getByTestId('home-button');
     const newDocButton = page.getByTestId('new-doc-button');
-    const languageButton = page.getByRole('button', {
-      name: 'Select language',
-    });
+    const languageButton = page.locator('.c__language-picker');
     const logoutButton = page.getByRole('button', { name: 'Logout' });
 
     await expect(homeButton).not.toBeInViewport();
@@ -111,7 +109,7 @@ test.describe('Left panel responsive', () => {
     const title = await goToGridDoc(page);
     await verifyDocName(page, title);
 
-    await header.getByLabel('Open the header menu').click();
+    await header.getByLabel('Open the menu').click();
 
     await expect(page.getByTestId('left-panel-mobile')).toBeInViewport();
     await expect(homeButton).toBeInViewport();
@@ -119,17 +117,21 @@ test.describe('Left panel responsive', () => {
     await expect(languageButton).toBeInViewport();
     await expect(logoutButton).toBeInViewport();
 
-    await header.getByLabel('Close the header menu').click();
+    await header.getByLabel('Close the menu').click();
 
     // Tablet size - like in desktop, left panel should be visible
-    await page.setViewportSize({ width: 900, height: 1200 });
+    await page.setViewportSize({ width: 1200, height: 1200 });
     await page.goto('/');
 
     await expect(page.getByRole('link', { name: 'All docs' })).toBeInViewport();
     await expect(newDocButton).toBeInViewport();
+    await page.locator('.user-menu__button').click();
     await expect(languageButton).toBeInViewport();
-    await expect(logoutButton).toBeInViewport();
-    await expect(header.getByLabel('Open the header menu')).toBeHidden();
+    await expect(
+      page.locator('.user-menu__item').filter({ hasText: 'Logout' }),
+    ).toBeInViewport();
+
+    await expect(header.getByLabel('Open the menu')).toBeHidden();
   });
 
   test('checks panel closes when clicking on a subdoc', async ({
@@ -161,8 +163,8 @@ test.describe('Left panel responsive', () => {
       true,
     );
 
-    const header = page.locator('header').first();
-    await header.getByLabel('Open the header menu').click();
+    const header = page.locator('.c__main-layout__header').first();
+    await header.getByLabel('Open the menu').click();
 
     await expect(page.getByTestId('left-panel-mobile')).toBeInViewport();
 

@@ -7,7 +7,7 @@ test.describe('Header', () => {
   test('checks all the elements are visible', async ({ page }) => {
     await page.goto('/');
 
-    const header = page.locator('header').first();
+    const header = page.locator('.c__main-layout__header').first();
 
     await expect(header.getByTestId('header-logo-link')).toBeVisible();
     await expect(header.locator('h1').getByText('Docs')).toHaveCSS(
@@ -15,13 +15,31 @@ test.describe('Header', () => {
       /Roboto/i,
     );
 
+    await header.locator('.user-menu__button').click();
+
     await expect(
-      header.getByRole('button', {
-        name: 'Logout',
-      }),
+      page.locator('.user-menu__item').filter({ hasText: 'Logout' }),
     ).toBeVisible();
 
-    await expect(header.getByText('English')).toBeVisible();
+    await expect(page.locator('.c__language-picker')).toContainText('EN');
+  });
+
+  test('checks the user menu opens and closes', async ({ page }) => {
+    await page.goto('/');
+
+    const header = page.locator('.c__main-layout__header').first();
+    const userMenuButton = header.locator('.user-menu__button');
+    const logoutItem = page
+      .locator('.user-menu__item')
+      .filter({ hasText: 'Logout' });
+
+    await expect(logoutItem).toBeHidden();
+
+    await userMenuButton.click();
+    await expect(logoutItem).toBeVisible();
+
+    await userMenuButton.click();
+    await expect(logoutItem).toBeHidden();
   });
 
   test('checks all the elements are visible with DSFR theme', async ({
@@ -46,7 +64,7 @@ test.describe('Header', () => {
     });
     await page.goto('/');
 
-    const header = page.locator('header').first();
+    const header = page.locator('.c__main-layout__header').first();
 
     await expect(header.getByTestId('custom-testid-docs')).toHaveAttribute(
       'src',
@@ -82,7 +100,7 @@ test.describe('Header', () => {
     });
     await page.goto('/');
 
-    const header = page.locator('header').first();
+    const header = page.locator('.c__main-layout__header').first();
 
     await expect(
       header.getByRole('button', { name: 'Digital LaSuite services' }),
@@ -117,7 +135,7 @@ test.describe('Header', () => {
     });
     await page.goto('/');
 
-    const header = page.locator('header').first();
+    const header = page.locator('.c__main-layout__header').first();
 
     await expect(
       header.getByRole('button', { name: 'Digital LaSuite services' }),
@@ -171,8 +189,8 @@ test.describe('Header', () => {
         header: {
           icon: {
             src: '/assets/logo-gouv.svg',
-            width: '220px',
-            height: 'auto',
+            width: 220,
+            height: 40,
             alt: '',
           },
         },
@@ -180,7 +198,7 @@ test.describe('Header', () => {
     });
 
     await page.goto('/');
-    const header = page.locator('header').first();
+    const header = page.locator('.c__main-layout__header').first();
 
     const logoImage = header.getByTestId('header-icon-docs');
     await expect(logoImage).toBeVisible();
@@ -199,10 +217,10 @@ test.describe('Header: Log out', () => {
     await page.goto('/');
     await SignIn(page, browserName);
 
+    await page.locator('.user-menu__button').click();
     await page
-      .getByRole('button', {
-        name: 'Logout',
-      })
+      .locator('.user-menu__item')
+      .filter({ hasText: 'Logout' })
       .click();
 
     await expectLoginPage(page);

@@ -40,8 +40,7 @@ test.describe('Language', () => {
   });
 
   test('checks language switching', async ({ page }) => {
-    const header = page.locator('header').first();
-    const languagePicker = header.locator('.--docs--language-picker-text');
+    const languagePicker = page.locator('.c__language-picker');
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'en-us');
 
@@ -57,17 +56,19 @@ test.describe('Language', () => {
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 
-    await expect(
-      header.getByRole('button').getByText('Français'),
-    ).toBeVisible();
+    await page.locator('.user-menu__button').click();
+    await expect(languagePicker).toContainText('FR');
 
-    await expect(page.getByLabel('Se déconnecter')).toBeVisible();
+    await expect(page.locator('.user-menu__item').first()).toBeVisible();
 
     // Switch to German using the utility function for consistency
+    // (waitForLanguageSwitch closes the UserMenu again once done)
     await waitForLanguageSwitch(page, TestLanguage.German);
-    await expect(header.getByRole('button').getByText('Deutsch')).toBeVisible();
 
-    await expect(page.getByLabel('Abmelden')).toBeVisible();
+    await page.locator('.user-menu__button').click();
+    await expect(languagePicker).toContainText('DE');
+
+    await expect(page.locator('.user-menu__item').first()).toBeVisible();
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'de');
 
@@ -75,34 +76,47 @@ test.describe('Language', () => {
 
     await expect(page.locator('[role="menu"]')).toBeVisible();
 
-    const menuItems = page.locator('[role="menuitemradio"]');
+    const menuItems = page.locator('[role="menuitem"]');
     await expect(menuItems.first()).toBeVisible();
 
     await menuItems.first().click();
 
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-    await expect(languagePicker).toContainText('English');
+    await expect(languagePicker).toContainText('EN');
+  });
+
+  test('waitForLanguageSwitch is a no-op when the language is already active', async ({
+    page,
+  }) => {
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en-us');
+
+    // Calling with the already active language should not open the language
+    // menu or click a menu item, it should just close the user menu.
+    await waitForLanguageSwitch(page, TestLanguage.English);
+
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en-us');
+    await expect(page.getByRole('dialog', { name: 'User menu' })).toBeHidden();
   });
 
   test('can switch language using only keyboard', async ({ page }) => {
-    await page.goto('/');
     await waitForLanguageSwitch(page, TestLanguage.English);
 
-    const languagePicker = page.getByRole('button', {
-      name: /select language/i,
-    });
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
 
-    await expect(languagePicker).toBeVisible();
-
+    // Opening the UserMenu focuses its own container first; one more Tab
+    // reaches the language picker button inside it.
     await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
+    const languagePicker = page.locator('.c__language-picker');
+    await expect(languagePicker).toBeFocused();
 
     await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
 
+    // Wait for an actual menuitem to be attached before navigating it.
     const menu = page.getByRole('menu');
     await expect(menu).toBeVisible();
+    await page.getByRole('menuitem').first().waitFor({ state: 'attached' });
 
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');

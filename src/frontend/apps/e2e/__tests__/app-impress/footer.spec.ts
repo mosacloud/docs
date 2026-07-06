@@ -5,13 +5,56 @@ import { overrideConfig } from './utils-common';
 test.describe('Footer', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('checks the footer is not displayed if no config', async ({ page }) => {
+  // Skip: anonymous "/" now renders MosaLoginPage, which has no footer at all
+  test.skip('checks the footer is not displayed if no config', async ({
+    page,
+  }) => {
     await overrideConfig(page, {
       theme_customization: {},
     });
 
     await page.goto('/');
     await expect(page.locator('footer')).toBeHidden();
+  });
+
+  test('checks anonymous home page renders the login page without a footer', async ({
+    page,
+  }) => {
+    await overrideConfig(page, {
+      theme_customization: {},
+    });
+
+    await page.goto('/');
+
+    await expect(
+      page.getByRole('button', { name: 'Sign in with your account' }),
+    ).toBeVisible();
+    await expect(page.locator('footer')).toHaveCount(0);
+  });
+
+  test('checks anonymous home page ignores footer overrides configuration', async ({
+    page,
+  }) => {
+    await overrideConfig(page, {
+      theme_customization: {
+        footer: {
+          default: {
+            bottomInformation: {
+              label: 'Should never be shown on the login page',
+            },
+          },
+        },
+      },
+    });
+
+    await page.goto('/');
+
+    await expect(
+      page.getByRole('button', { name: 'Sign in with your account' }),
+    ).toBeVisible();
+    await expect(
+      page.getByText('Should never be shown on the login page'),
+    ).toHaveCount(0);
   });
 
   // Skip: Footer elements differ in mosacloud fork
@@ -55,7 +98,8 @@ test.describe('Footer', () => {
     ).toBeVisible();
   });
 
-  test('checks the footer is correctly overrided', async ({ page }) => {
+  // Skip: anonymous "/" now renders MosaLoginPage, which has no footer at all
+  test.skip('checks the footer is correctly overrided', async ({ page }) => {
     await overrideConfig(page, {
       theme_customization: {
         footer: {

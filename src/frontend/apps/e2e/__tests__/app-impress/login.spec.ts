@@ -1,9 +1,18 @@
 import { expect, test } from '@playwright/test';
 
 import { overrideConfig } from './utils-common';
+import { expectLoginPage } from './utils-signin';
 
 test.describe('Login: Not logged', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
+
+  test('checks the login page displays the sign in trigger button', async ({
+    page,
+  }) => {
+    await page.goto('/');
+
+    await expectLoginPage(page);
+  });
 
   test('It tries silent login', async ({ page }) => {
     await overrideConfig(page, {

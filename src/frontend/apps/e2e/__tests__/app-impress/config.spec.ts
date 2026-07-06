@@ -154,7 +154,9 @@ test.describe('Config', () => {
 test.describe('Config: Not logged', () => {
   test.use({ storageState: { cookies: [], origins: [] } });
 
-  test('it checks that theme is configured from config endpoint', async ({
+  // Skip: anonymous "/" now renders MosaLoginPage, which has no
+  // HomeBanner heading to check the theme font against (mosacloud fork).
+  test.skip('it checks that theme is configured from config endpoint', async ({
     page,
   }) => {
     await page.goto('/');

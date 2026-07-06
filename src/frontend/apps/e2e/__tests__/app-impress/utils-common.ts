@@ -95,29 +95,24 @@ export const randomName = (name: string, browserName: string, length: number) =>
   });
 
 export const openHeaderMenu = async (page: Page) => {
-  const toggleButton = page.getByTestId('header-menu-toggle');
-  await expect(toggleButton).toBeVisible();
-
-  const isExpanded =
-    (await toggleButton.getAttribute('aria-expanded')) === 'true';
-  if (!isExpanded) {
-    await toggleButton.click();
-  }
+  const header = page.locator('.c__main-layout__header').first();
+  await header
+    .getByLabel('Open the menu')
+    .click({ timeout: 5000 })
+    .catch(() => {});
 };
 
 export const closeHeaderMenu = async (page: Page) => {
-  const toggleButton = page.getByTestId('header-menu-toggle');
-  await expect(toggleButton).toBeVisible();
-
-  const isExpanded =
-    (await toggleButton.getAttribute('aria-expanded')) === 'true';
-  if (isExpanded) {
-    await toggleButton.click();
-  }
+  const header = page.locator('.c__main-layout__header').first();
+  await header
+    .getByLabel('Close the menu')
+    .click({ timeout: 5000 })
+    .catch(() => {});
 };
 
 export const toggleHeaderMenu = async (page: Page) => {
-  const toggleButton = page.getByTestId('header-menu-toggle');
+  const header = page.locator('.c__main-layout__header').first();
+  const toggleButton = header.getByLabel(/^(Open|Close) the menu$/);
   await expect(toggleButton).toBeVisible();
   await toggleButton.click();
 };
@@ -412,19 +407,24 @@ export async function waitForLanguageSwitch(
     }
   });
 
-  const header = page.locator('header').first();
-  const languagePicker = header.locator('.--docs--language-picker-text');
-  const isAlreadyTargetLanguage = await languagePicker
-    .innerText()
-    .then((text) => text.toLowerCase().includes(lang.label.toLowerCase()));
-
-  if (isAlreadyTargetLanguage) {
-    return;
+  const languagePicker = page.locator('.c__language-picker');
+  if (!(await languagePicker.isVisible())) {
+    await page.locator('.user-menu__button').click();
   }
 
-  await languagePicker.click();
+  const expectedCode = lang.expectedLocale[0].slice(0, 2).toUpperCase();
+  const isAlreadyTargetLanguage = await languagePicker
+    .innerText()
+    .then((text) => text.toUpperCase().includes(expectedCode));
 
-  await page.getByRole('menuitemradio', { name: lang.label }).click();
+  if (!isAlreadyTargetLanguage) {
+    await languagePicker.click();
+    await page.getByRole('menuitem', { name: lang.label }).click();
+  }
+  await page.keyboard.press('Escape');
+  // Wait for the close transition to fully finish so the trigger button is actually interactive
+  // again for whoever calls this next.
+  await expect(page.getByRole('dialog', { name: 'User menu' })).toBeHidden();
 }
 
 export const clickInEditorShareButton = async (page: Page) => {

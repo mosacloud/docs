@@ -422,6 +422,9 @@ export async function waitForLanguageSwitch(
     await page.getByRole('menuitem', { name: lang.label }).click();
   }
   await page.keyboard.press('Escape');
+  // Wait for the close transition to fully finish so the trigger button is actually interactive
+  // again for whoever calls this next.
+  await expect(page.getByRole('dialog', { name: 'User menu' })).toBeHidden();
 }
 
 export const clickInEditorShareButton = async (page: Page) => {

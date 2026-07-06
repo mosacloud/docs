@@ -86,24 +86,24 @@ test.describe('Language', () => {
   });
 
   test('can switch language using only keyboard', async ({ page }) => {
-    await page.goto('/');
     await waitForLanguageSwitch(page, TestLanguage.English);
 
-    const languagePicker = page.getByRole('button', {
-      name: /select language/i,
-    });
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
 
-    await expect(languagePicker).toBeVisible();
-
+    // Opening the UserMenu focuses its own container first; one more Tab
+    // reaches the language picker button inside it.
     await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
-    await page.keyboard.press('Tab');
+    const languagePicker = page.locator('.c__language-picker');
+    await expect(languagePicker).toBeFocused();
 
     await page.keyboard.press('Enter');
+    await page.waitForTimeout(300);
 
+    // Wait for an actual menuitem to be attached before navigating it.
     const menu = page.getByRole('menu');
     await expect(menu).toBeVisible();
+    await page.getByRole('menuitem').first().waitFor({ state: 'attached' });
 
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');

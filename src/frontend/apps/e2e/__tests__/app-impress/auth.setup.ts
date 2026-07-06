@@ -24,10 +24,10 @@ const saveStorageState = async (
 
     await SignIn(page, browserName);
 
+    await page.locator('.user-menu__button').click();
+
     await expect(
-      page.locator('header').first().getByRole('button', {
-        name: 'Logout',
-      }),
+      page.locator('.user-menu__item').filter({ hasText: 'Logout' }),
     ).toBeVisible({ timeout: 10000 });
 
     await page.context().storageState({

@@ -229,6 +229,7 @@ logs: ## display app-dev logs (follow mode)
 
 run-backend: ## Start only the backend application and all needed services
 	@$(MAKE) create-docker-network
+	@$(COMPOSE) up --force-recreate -d app-dev
 	@$(COMPOSE) up --force-recreate -d docspec
 	@$(COMPOSE) up --force-recreate -d celery-dev
 	@$(COMPOSE) up --force-recreate -d y-provider-development

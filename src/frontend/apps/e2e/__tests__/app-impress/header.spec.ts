@@ -56,7 +56,10 @@ test.describe('Header', () => {
     await expect(header.locator('h1').getByText('Docs')).toHaveClass(/sr-only/);
   });
 
-  test('checks a custom waffle', async ({ page }) => {
+  // Skip: Header.tsx no longer renders the upstream Waffle widget (dropped
+  // in favor of Mosa's own AppSwitcherPanel, which doesn't read
+  // theme_customization.waffle at all).
+  test.skip('checks a custom waffle', async ({ page }) => {
     await overrideConfig(page, {
       theme_customization: {
         waffle: {
@@ -106,7 +109,10 @@ test.describe('Header', () => {
     ).toBeVisible();
   });
 
-  test('checks the waffle dsfr', async ({ page }) => {
+  // Skip: Header.tsx no longer renders the upstream Waffle widget (dropped
+  // in favor of Mosa's own AppSwitcherPanel, which doesn't read
+  // theme_customization.waffle at all).
+  test.skip('checks the waffle dsfr', async ({ page }) => {
     await overrideConfig(page, {
       theme_customization: {
         waffle: {

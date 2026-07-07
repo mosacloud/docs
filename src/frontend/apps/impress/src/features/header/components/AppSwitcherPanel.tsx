@@ -295,37 +295,38 @@ const Panel = ({
       <CurrentRow>
         <AppIcon
           icon={DOCS_ICON}
-          label="Docs"
+          label={t('app_switcher.apps.docs.label')}
           color={DOCS_COLOR}
           gradientEnd={DOCS_GRADIENT_END}
           size={44}
         />
         <CurrentText>
-          <YouAreIn>{t("YOU'RE IN")}</YouAreIn>
-          <AppName>{t('Docs')}</AppName>
+          <YouAreIn>{t('app_switcher.you_are_in')}</YouAreIn>
+          <AppName>{t('app_switcher.apps.docs.label')}</AppName>
         </CurrentText>
       </CurrentRow>
 
       {jumpTo.length > 0 && (
         <>
           <Divider />
-          <SectionLabel>{t('JUMP TO')}</SectionLabel>
+          <SectionLabel>{t('app_switcher.jump_to')}</SectionLabel>
           <AppGrid>
             {jumpTo.map((id) => {
-              const { label, subtitle, icon, color, gradientEnd } =
-                APP_META[id];
+              const { icon, color, gradientEnd } = APP_META[id];
               return (
                 <AppTile key={id} href={appUrls[id]} onClick={onClose}>
                   <AppIcon
                     icon={icon}
-                    label={label}
+                    label={t(`app_switcher.apps.${id}.label`)}
                     color={color}
                     gradientEnd={gradientEnd}
                     size={36}
                   />
                   <AppInfo>
-                    <AppLabel>{t(label)}</AppLabel>
-                    <AppSubtitle>{t(subtitle)}</AppSubtitle>
+                    <AppLabel>{t(`app_switcher.apps.${id}.label`)}</AppLabel>
+                    <AppSubtitle>
+                      {t(`app_switcher.apps.${id}.subtitle`)}
+                    </AppSubtitle>
                   </AppInfo>
                 </AppTile>
               );

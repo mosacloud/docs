@@ -11,7 +11,6 @@ import { useLeftPanelStore } from '@/features/left-panel';
 
 import { AppSwitcherButton } from './AppSwitcherPanel';
 import { Title } from './Title';
-import { Waffle } from './Waffle';
 
 const HeaderLogo = () => {
   const { t } = useTranslation();
@@ -63,7 +62,6 @@ const HeaderRight = () => {
 
   return (
     <Box $direction="row" $align="center" $gap="0.5rem">
-      <Waffle />
       <AppSwitcherButton />
       <UserMenu
         user={

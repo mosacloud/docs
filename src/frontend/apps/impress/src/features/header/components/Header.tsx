@@ -89,7 +89,7 @@ export const Header = () => {
   return (
     <>
       <SkipToContent />
-      <div className="c__main-layout__header">
+      <div className="c__main-layout__header" style={{ zIndex: 1001 }}>
         <UIKitHeader
           leftIcon={<HeaderLogo />}
           rightIcon={<HeaderRight />}

@@ -105,7 +105,6 @@ const StyledWrapper = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  margin-left: 4px;
 `;
 
 const TriggerGrid = styled.span`

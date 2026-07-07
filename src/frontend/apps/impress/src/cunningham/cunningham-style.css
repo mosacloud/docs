@@ -59,9 +59,15 @@
 
 /**
  * Modal
+ * Must stay above the header (see Header.tsx, z-index: 1001) so
+ * modal close buttons aren't intercepted by header clicks.
 */
 .c__modal__backdrop {
-  z-index: 1000;
+  z-index: 1100;
+}
+
+.c__modal {
+  z-index: 1100;
 }
 
 .c__modal__scroller {

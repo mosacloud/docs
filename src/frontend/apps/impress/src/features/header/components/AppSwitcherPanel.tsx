@@ -90,7 +90,17 @@ const DOCS_ICON = '/images/icons/file-icon.svg';
 const DOCS_COLOR = '#06B6D4';
 const DOCS_GRADIENT_END = '#0891B2';
 
-const APP_ORDER: AppId[] = [
+const DOT_ORDER: AppId[] = [
+  'epicentre',
+  'drive',
+  'meet',
+  'mail',
+  'calendar',
+  'chat',
+  'commander',
+];
+
+const NAV_ORDER: AppId[] = [
   'epicentre',
   'drive',
   'meet',
@@ -282,7 +292,7 @@ const Panel = ({
   opensUpward: boolean;
 }) => {
   const { t } = useTranslation();
-  const jumpTo = APP_ORDER.filter((id) => id in appUrls);
+  const jumpTo = NAV_ORDER.filter((id) => id in appUrls);
 
   return (
     <Dropdown
@@ -346,7 +356,7 @@ export const AppSwitcherButton = () => {
   const ref = useRef<HTMLDivElement>(null);
 
   const appUrls = config?.APP_URLS ?? {};
-  const hasOtherApps = APP_ORDER.some((id) => id in appUrls);
+  const hasOtherApps = NAV_ORDER.some((id) => id in appUrls);
 
   useEffect(() => {
     if (!isOpen) {
@@ -384,7 +394,7 @@ export const AppSwitcherButton = () => {
         icon={
           <TriggerGrid aria-hidden>
             <svg width="18" height="18" viewBox="0 0 18 18">
-              {[...APP_ORDER, APP_ORDER[0], APP_ORDER[1]].map((id, i) => (
+              {[...DOT_ORDER, DOT_ORDER[0], DOT_ORDER[1]].map((id, i) => (
                 <circle
                   key={i}
                   cx={3 + (i % 3) * 6}

@@ -194,6 +194,10 @@ export const LanguageSelectorWrapper = styled.div`
   top: 1.5rem;
   right: 1.5rem;
   z-index: 10;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
 `;
 
 export const LangSelectorContainer = styled.div`
@@ -269,14 +273,28 @@ export const MobileHeader = styled.div`
   @media (max-width: 900px) {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
     padding: 1.5rem;
   }
 
   img {
     height: 1.75rem;
     width: auto;
+    flex-shrink: 1;
+    min-width: 0;
+
+    @media (max-width: 360px) {
+      height: 1.375rem;
+    }
   }
+`;
+
+export const MobileHeaderLangSlot = styled.div`
+  flex-shrink: 0;
 `;
 
 export const FormContainer = styled.div`

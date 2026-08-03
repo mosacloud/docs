@@ -137,11 +137,11 @@ const Dropdown = styled.div<{ $up: boolean }>`
 
   @media (max-width: 480px) {
     position: fixed;
-    left: 50%;
-    right: auto;
-    margin-left: -156px;
-    width: 312px;
-    max-width: calc(100vw - 2rem);
+    left: 1rem;
+    right: 1rem;
+    margin: 0 auto;
+    width: auto;
+    max-width: 312px;
     ${({ $up }: { $up: boolean }) => ($up ? 'bottom: 68px;' : 'top: 60px;')}
   }
 `;

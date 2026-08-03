@@ -34,6 +34,7 @@ import {
   MobileEuFlag,
   MobileFooter,
   MobileHeader,
+  MobileHeaderLangSlot,
   PrimaryButton,
   ProductHighlight,
   SignupPrompt,
@@ -186,6 +187,9 @@ export const MosaLoginPage = ({
 
           <MobileHeader>
             <img src="/logos/mosa-cloud-logo.svg" alt="mosa.cloud" />
+            <MobileHeaderLangSlot>
+              <LanguageSelector />
+            </MobileHeaderLangSlot>
           </MobileHeader>
 
           <FormContainer>

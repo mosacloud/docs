@@ -37,7 +37,7 @@ const APP_META: Record<
 > = {
   epicentre: {
     icon: '/images/icons/epicentre-icon.svg',
-    label: 'Epicentre',
+    label: 'Hub',
     subtitle: 'Home',
     color: '#0284C7',
     gradientEnd: '#0443F2',
@@ -134,6 +134,16 @@ const Dropdown = styled.div<{ $up: boolean }>`
   padding: 14px;
   z-index: 2000;
   animation: ${panelIn} 150ms ${EASE} both;
+
+  @media (max-width: 480px) {
+    position: fixed;
+    left: 1rem;
+    right: 1rem;
+    margin: 0 auto;
+    width: auto;
+    max-width: 312px;
+    ${({ $up }: { $up: boolean }) => ($up ? 'bottom: 68px;' : 'top: 60px;')}
+  }
 `;
 
 const CurrentRow = styled.div`

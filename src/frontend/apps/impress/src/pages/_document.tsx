@@ -20,7 +20,9 @@ class MyDocument extends Document<{ locale: string }> {
   render() {
     return (
       <Html lang={this.props.locale}>
-        <Head />
+        <Head>
+          <link rel="icon" href="/favicon.ico?v=2" />
+        </Head>
         <body>
           <Main />
           <NextScript />

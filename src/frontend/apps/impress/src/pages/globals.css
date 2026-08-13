@@ -113,3 +113,18 @@ nextjs-portal {
   white-space: nowrap !important;
   border: 0 !important;
 }
+
+html[data-has-profile-picture] {
+  .user-menu__button .c__avatar,
+  .user-menu__content__body__user-info .c__avatar {
+    background-image: var(--user-profile-picture-url);
+    background-size: cover;
+    background-position: center;
+    border-color: transparent;
+  }
+
+  .user-menu__button .c__avatar .c__avatar__initials,
+  .user-menu__content__body__user-info .c__avatar .c__avatar__initials {
+    visibility: hidden;
+  }
+}

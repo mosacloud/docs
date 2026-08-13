@@ -1,5 +1,6 @@
 import { Header as UIKitHeader, UserMenu } from '@gouvfr-lasuite/ui-kit';
 import Image from 'next/image';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
@@ -57,8 +58,46 @@ const HeaderLogo = () => {
   );
 };
 
+/**
+ * The picture URL comes from the OIDC provider and isn't guaranteed to stay
+ * reachable for the whole session (expired/session-scoped URL, network
+ * error). Preload it and only flip on the CSS var once it actually loads, so
+ * a failed load leaves the avatar's initials fallback visible instead of an
+ * empty circle.
+ */
+const useProfilePictureVar = (picture?: string | null) => {
+  useEffect(() => {
+    const root = document.documentElement;
+    const clear = () => {
+      root.style.removeProperty('--user-profile-picture-url');
+      delete root.dataset.hasProfilePicture;
+    };
+
+    if (!picture) {
+      clear();
+      return;
+    }
+
+    const image = new window.Image();
+    image.onload = () => {
+      const escaped = picture.replace(/["\\]/g, '\\$&');
+      root.style.setProperty('--user-profile-picture-url', `url("${escaped}")`);
+      root.dataset.hasProfilePicture = '';
+    };
+    image.onerror = clear;
+    image.src = picture;
+
+    return () => {
+      image.onload = null;
+      image.onerror = null;
+      clear();
+    };
+  }, [picture]);
+};
+
 const HeaderRight = () => {
   const { user } = useAuth();
+  useProfilePictureVar(user?.picture);
 
   return (
     <Box $direction="row" $align="center" $gap="0.5rem">

@@ -47,9 +47,11 @@ class OIDCAuthenticationBackend(LaSuiteOIDCAuthenticationBackend):
         Returns:
           dict: A dictionary of extra claims.
         """
+        picture = user_info.get("picture")
         return {
             "full_name": self.compute_full_name(user_info),
             "short_name": user_info.get(settings.OIDC_USERINFO_SHORTNAME_FIELD),
+            "picture": picture if isinstance(picture, str) else None,
         }
 
     def get_existing_user(self, sub, email):

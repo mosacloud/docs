@@ -460,6 +460,7 @@ def test_api_users_retrieve_me_authenticated():
         "full_name": user.full_name,
         "language": user.language,
         "short_name": user.short_name,
+        "picture": user.picture,
         "is_first_connection": True,
     }
 
@@ -490,6 +491,7 @@ def test_api_users_retrieve_me_authenticated_empty_name():
         "full_name": "test_foo",
         "language": user.language,
         "short_name": "test_foo",
+        "picture": user.picture,
         "is_first_connection": True,
     }
 

@@ -4,7 +4,8 @@ import logging
 import os
 
 from django.conf import settings
-from django.core.exceptions import SuspiciousOperation
+from django.core.exceptions import SuspiciousOperation, ValidationError
+from django.core.validators import URLValidator
 
 from lasuite.marketing.tasks import create_or_update_contact
 from lasuite.oidc_login.backends import (
@@ -15,6 +16,22 @@ from core.models import DuplicateEmailError
 from core.utils.analytics import PosthogEventName, posthog_capture
 
 logger = logging.getLogger(__name__)
+
+# Must match core.models.User.picture's max_length.
+PICTURE_MAX_LENGTH = 500
+_validate_picture_url = URLValidator()
+
+
+def sanitize_picture_claim(picture):
+    """Return `picture` if it's a valid, not-too-long URL string, else None."""
+    if not isinstance(picture, str) or len(picture) > PICTURE_MAX_LENGTH:
+        return None
+    try:
+        _validate_picture_url(picture)
+    except ValidationError:
+        return None
+    return picture
+
 
 # Settings renamed warnings
 if os.environ.get("USER_OIDC_FIELDS_TO_FULLNAME"):
@@ -47,11 +64,10 @@ class OIDCAuthenticationBackend(LaSuiteOIDCAuthenticationBackend):
         Returns:
           dict: A dictionary of extra claims.
         """
-        picture = user_info.get("picture")
         return {
             "full_name": self.compute_full_name(user_info),
             "short_name": user_info.get(settings.OIDC_USERINFO_SHORTNAME_FIELD),
-            "picture": picture if isinstance(picture, str) else None,
+            "picture": sanitize_picture_claim(user_info.get("picture")),
         }
 
     def get_existing_user(self, sub, email):

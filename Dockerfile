@@ -160,6 +160,11 @@ FROM core AS backend-production
 # Remove apk cache, we don't need it anymore
 RUN rm -rf /var/cache/apk/*
 
+# The app runs entirely out of the uv-managed /app/.venv; the system pip
+# installed in the base image (and its vendored msgpack copy, GHSA-6v7p-g79w-8964)
+# is unused at runtime. Drop it to clear the trivy scan.
+RUN /usr/local/bin/python -m pip uninstall -y pip
+
 ARG IMPRESS_STATIC_ROOT=/data/static
 
 # Gunicorn - not used by default but configuration file is provided

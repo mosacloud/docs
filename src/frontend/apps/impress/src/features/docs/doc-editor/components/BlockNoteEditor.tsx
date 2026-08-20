@@ -18,7 +18,7 @@ import {
   useCreateBlockNote,
 } from '@blocknote/react';
 import { HocuspocusProvider } from '@hocuspocus/provider';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type { Awareness } from 'y-protocols/awareness';
@@ -141,14 +141,48 @@ export const BlockNoteEditor = ({ doc, provider }: BlockNoteEditorProps) => {
   const { activePanel, isPanelOpen } = useRightPanelStore();
   const isCommentSideBarOpen = isPanelOpen && activePanel === 'comments';
 
+  const [pictureLoaded, setPictureLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!user?.picture) {
+      setPictureLoaded(false);
+      return;
+    }
+
+    let cancelled = false;
+    const image = new window.Image();
+    image.onload = () => {
+      if (!cancelled) {
+        setPictureLoaded(true);
+      }
+    };
+    image.onerror = () => {
+      if (!cancelled) {
+        setPictureLoaded(false);
+      }
+    };
+    image.src = user.picture;
+
+    return () => {
+      cancelled = true;
+      image.onload = null;
+      image.onerror = null;
+    };
+  }, [user?.picture]);
+
   const currentUserAvatarUrl = useMemo(() => {
     if (canSeeComment) {
-      return (
-        user?.picture ||
-        avatarUrlFromName(collabName, themeTokens?.font?.families?.base)
-      );
+      return pictureLoaded && user?.picture
+        ? user.picture
+        : avatarUrlFromName(collabName, themeTokens?.font?.families?.base);
     }
-  }, [canSeeComment, collabName, themeTokens?.font?.families?.base, user?.picture]);
+  }, [
+    canSeeComment,
+    collabName,
+    pictureLoaded,
+    themeTokens?.font?.families?.base,
+    user?.picture,
+  ]);
 
   const editor: DocsBlockNoteEditor = useCreateBlockNote(
     {

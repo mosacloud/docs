@@ -12,14 +12,13 @@ from lasuite.oidc_login.backends import (
     OIDCAuthenticationBackend as LaSuiteOIDCAuthenticationBackend,
 )
 
-from core.models import DuplicateEmailError
+from core.models import DuplicateEmailError, User
 from core.utils.analytics import PosthogEventName, posthog_capture
 
 logger = logging.getLogger(__name__)
 
-# Must match core.models.User.picture's max_length.
-PICTURE_MAX_LENGTH = 500
-_validate_picture_url = URLValidator()
+PICTURE_MAX_LENGTH = User._meta.get_field("picture").max_length
+_validate_picture_url = URLValidator(schemes=["http", "https"])
 
 
 def sanitize_picture_claim(picture):

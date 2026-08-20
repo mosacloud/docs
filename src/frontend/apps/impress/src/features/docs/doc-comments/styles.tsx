@@ -243,7 +243,9 @@ export const DocsCommentsStyle = createGlobalStyle<{
           height: 26px;
           flex: 0 0 26px;
           background-image: ${({ currentUserAvatarUrl }) =>
-            currentUserAvatarUrl ? `url("${currentUserAvatarUrl}")` : 'none'};
+            currentUserAvatarUrl
+              ? `url("${currentUserAvatarUrl.replace(/["\\]/g, '\\$&')}")`
+              : 'none'};
           background-position: center;
           background-repeat: no-repeat;
           background-size: cover;

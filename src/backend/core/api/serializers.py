@@ -40,6 +40,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "full_name",
             "short_name",
+            "picture",
             "language",
             "is_first_connection",
         ]
@@ -48,6 +49,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "full_name",
             "short_name",
+            "picture",
             "is_first_connection",
         ]
 

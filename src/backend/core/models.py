@@ -156,6 +156,14 @@ class User(AbstractBaseUser, BaseModel, auth_models.PermissionsMixin):
 
     email = models.EmailField(_("identity email address"), blank=True, null=True)
 
+    picture = models.URLField(
+        _("picture"),
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text=_("Profile picture URL from the OIDC provider, if any."),
+    )
+
     # Unlike the "email" field which stores the email coming from the OIDC token, this field
     # stores the email used by staff users to login to the admin site
     admin_email = models.EmailField(

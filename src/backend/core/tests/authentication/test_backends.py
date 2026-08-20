@@ -15,11 +15,33 @@ from core import models
 from core.authentication.backends import (
     OIDCAuthenticationBackend,
     create_or_update_contact,
+    sanitize_picture_claim,
 )
 from core.factories import UserFactory
 from core.utils.analytics import PosthogEventName
 
 pytestmark = pytest.mark.django_db
+
+
+@pytest.mark.parametrize(
+    "picture",
+    [
+        None,
+        123,
+        ["https://example.com/pic.png"],
+        "not-a-url",
+        "https://" + "a" * 500 + ".com/pic.png",
+    ],
+)
+def test_sanitize_picture_claim_invalid(picture):
+    """Missing, non-string, non-URL or overlong picture claims are rejected."""
+    assert sanitize_picture_claim(picture) is None
+
+
+def test_sanitize_picture_claim_valid():
+    """A well-formed, reasonably-sized URL string is kept as-is."""
+    picture = "https://example.com/pic.png"
+    assert sanitize_picture_claim(picture) == picture
 
 
 def test_authentication_getter_existing_user_no_email(
@@ -378,6 +400,74 @@ def test_authentication_getter_new_user_with_email(monkeypatch):
     assert user.short_name == "John"
     assert user.has_usable_password() is False
     assert models.User.objects.count() == 1
+
+
+def test_authentication_getter_new_user_with_invalid_picture(monkeypatch):
+    """An invalid or overlong picture claim should not be persisted on the user."""
+    klass = OIDCAuthenticationBackend()
+
+    def get_userinfo_mocked(*args):
+        return {
+            "sub": "123",
+            "email": "impress@example.com",
+            "picture": "https://" + "a" * 500 + ".com/pic.png",
+        }
+
+    monkeypatch.setattr(OIDCAuthenticationBackend, "get_userinfo", get_userinfo_mocked)
+
+    user = klass.get_or_create_user(
+        access_token="test-token", id_token=None, payload=None
+    )
+
+    assert user.picture is None
+
+
+def test_authentication_getter_existing_user_picture_cleared_when_claim_disappears(
+    django_assert_num_queries, monkeypatch
+):
+    """
+    A previously stored picture should be cleared once the IdP stops sending it,
+    instead of being left stale forever.
+    """
+    klass = OIDCAuthenticationBackend()
+    user = UserFactory(picture="https://example.com/old-pic.png")
+
+    def get_userinfo_mocked(*args):
+        return {"sub": user.sub, "email": user.email}
+
+    monkeypatch.setattr(OIDCAuthenticationBackend, "get_userinfo", get_userinfo_mocked)
+
+    with django_assert_num_queries(2):  # user by sub, clear picture
+        authenticated_user = klass.get_or_create_user(
+            access_token="test-token", id_token=None, payload=None
+        )
+
+    assert user == authenticated_user
+    user.refresh_from_db()
+    assert user.picture is None
+
+
+def test_authentication_getter_existing_user_picture_kept_when_unchanged(
+    django_assert_num_queries, monkeypatch
+):
+    """No extra query should be issued when the picture claim hasn't changed."""
+    klass = OIDCAuthenticationBackend()
+    picture = "https://example.com/pic.png"
+    user = UserFactory(picture=picture)
+
+    def get_userinfo_mocked(*args):
+        return {"sub": user.sub, "email": user.email, "picture": picture}
+
+    monkeypatch.setattr(OIDCAuthenticationBackend, "get_userinfo", get_userinfo_mocked)
+
+    with django_assert_num_queries(1):
+        authenticated_user = klass.get_or_create_user(
+            access_token="test-token", id_token=None, payload=None
+        )
+
+    assert user == authenticated_user
+    user.refresh_from_db()
+    assert user.picture == picture
 
 
 def test_authentication_getter_existing_disabled_user_via_sub(

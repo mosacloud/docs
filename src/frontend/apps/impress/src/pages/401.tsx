@@ -7,21 +7,6 @@ import { useAuth } from '@/features/auth';
 import { MosaLoginPage } from '@/features/home/components/MosaLoginPage';
 import { NextPageWithLayout } from '@/types/next';
 
-const HeaderAuthActions = () => {
-  const { t } = useTranslation();
-
-  return (
-    <Box $direction="row" $align="center" $gap="sm">
-      <ButtonLogin variant="tertiary">
-        {t('Try it now', {
-          description: 'Button on the sign-in page to log in',
-        })}
-      </ButtonLogin>
-      <ButtonLogin />
-    </Box>
-  );
-};
-
 const Page: NextPageWithLayout = () => {
   const { t } = useTranslation();
   const { authenticated } = useAuth();

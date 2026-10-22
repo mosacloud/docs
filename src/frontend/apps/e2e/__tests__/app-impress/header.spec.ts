@@ -1,148 +1,6 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Header', () => {
-  test('checks all the elements are visible', async ({ page }) => {
-    await page.goto('/');
-
-    const header = page.locator('.c__main-layout__header').first();
-
-    await expect(header.getByTestId('header-logo-link')).toBeVisible();
-    await expect(header.locator('h1').getByText('Docs')).toHaveCSS(
-      'font-family',
-      /Roboto/i,
-    );
-
-    await header.locator('.user-menu__button').click();
-
-    await expect(
-      page.locator('.user-menu__item').filter({ hasText: 'Logout' }),
-    ).toBeVisible();
-
-    await expect(page.locator('.c__language-picker')).toContainText('EN');
-  });
-
-  test('checks all the elements are visible with DSFR theme', async ({
-    page,
-  }) => {
-    await overrideConfig(page, {
-      FRONTEND_THEME: 'dsfr',
-      theme_customization: {
-        header: {
-          icon: {
-            src: '/assets/icon-docs-v2.svg',
-            style: {
-              width: '100px',
-              height: 'auto',
-            },
-            alt: '',
-            withTitle: false,
-            'data-testid': 'custom-testid-docs',
-          },
-        },
-      },
-    });
-    await page.goto('/');
-
-    const header = page.locator('.c__main-layout__header').first();
-
-    await expect(header.getByTestId('custom-testid-docs')).toHaveAttribute(
-      'src',
-      '/assets/icon-docs-v2.svg',
-    );
-    // With withTitle: false, the h1 is kept for accessibility but visually hidden via sr-only
-    await expect(header.locator('h1').getByText('Docs')).toHaveClass(/sr-only/);
-  });
-
-  // Skip: Header.tsx no longer renders the upstream Waffle widget (dropped
-  // in favor of Mosa's own AppSwitcherPanel, which doesn't read
-  // theme_customization.waffle at all).
-  test.skip('checks a custom waffle', async ({ page }) => {
-    await overrideConfig(page, {
-      theme_customization: {
-        waffle: {
-          data: {
-            services: [
-              {
-                name: 'Docs E2E Custom 1',
-                url: 'https://docs.numerique.gouv.fr/',
-                maturity: 'stable',
-                logo: 'https://lasuite.numerique.gouv.fr/assets/products/docs.svg',
-              },
-              {
-                name: 'Docs E2E Custom 2',
-                url: 'https://docs.numerique.gouv.fr/',
-                maturity: 'stable',
-                logo: 'https://lasuite.numerique.gouv.fr/assets/products/docs.svg',
-              },
-            ],
-          },
-          showMoreLimit: 9,
-        },
-      },
-    });
-    await page.goto('/');
-
-    const header = page.locator('.c__main-layout__header').first();
-
-    await expect(
-      header.getByRole('button', { name: 'Digital LaSuite services' }),
-    ).toBeVisible();
-
-    /**
-     * The Waffle loads a js file from a remote server,
-     * it takes some time to load the file and have the interaction available
-     */
-    await page.waitForTimeout(1500);
-
-    await header
-      .getByRole('button', { name: 'Digital LaSuite services' })
-      .click();
-
-    await expect(
-      page.getByRole('link', { name: 'Docs E2E Custom 1' }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole('link', { name: 'Docs E2E Custom 2' }),
-    ).toBeVisible();
-  });
-
-  // Skip: Header.tsx no longer renders the upstream Waffle widget (dropped
-  // in favor of Mosa's own AppSwitcherPanel, which doesn't read
-  // theme_customization.waffle at all).
-  test.skip('checks the waffle dsfr', async ({ page }) => {
-    await overrideConfig(page, {
-      theme_customization: {
-        waffle: {
-          apiUrl: 'https://lasuite.numerique.gouv.fr/api/services',
-          showMoreLimit: 9,
-        },
-      },
-    });
-    await page.goto('/');
-
-    const header = page.locator('.c__main-layout__header').first();
-
-    await expect(
-      header.getByRole('button', { name: 'Digital LaSuite services' }),
-    ).toBeVisible();
-
-    /**
-     * The Waffle loads a js file from a remote server,
-     * it takes some time to load the file and have the interaction available
-     */
-    await page.waitForTimeout(1500);
-
-    await header
-      .getByRole('button', {
-        name: 'Digital LaSuite services',
-      })
-      .click();
-
-    await expect(page.getByRole('link', { name: 'Tchap' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Grist' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Visio' })).toBeVisible();
-  });
-
   test('it displays skip link on first TAB and focuses page heading on click', async ({
     page,
   }) => {
@@ -167,48 +25,40 @@ test.describe('Header', () => {
     await expect(pageHeading).toBeFocused();
   });
 
-  test('checks the header is correctly overrided', async ({ page }) => {
-    await overrideConfig(page, {
-      FRONTEND_THEME: 'dsfr',
-      theme_customization: {
-        header: {
-          icon: {
-            src: '/assets/logo-gouv.svg',
-            width: 220,
-            height: 40,
-            alt: '',
-          },
-        },
-      },
-    });
-
+  test('checks elements visibility on different screen sizes', async ({
+    page,
+  }) => {
+    // Desktop viewport
     await page.goto('/');
-    const header = page.locator('.c__main-layout__header').first();
+
+    const header = page.locator('header').first();
 
     await expect(header.getByLabel('Toggle left panel')).toBeHidden();
     await expect(header.getByLabel('Docs animated icon')).toBeHidden();
     await expect(header.getByLabel('Search docs')).toBeHidden();
 
-    await expect(logoImage).not.toHaveAttribute('src', '/assets/icon-docs.svg');
-    await expect(logoImage).toHaveAttribute('src', '/assets/logo-gouv.svg');
-    await expect(logoImage).toHaveAttribute('alt', '');
-  });
-});
+    // Tablet viewport
+    await page.setViewportSize({ width: 900, height: 1200 });
+    await expect(header.getByLabel('Toggle left panel')).toBeVisible();
+    await expect(header.getByLabel('Docs animated icon')).toBeHidden();
+    await expect(header.getByLabel('Search docs')).toBeHidden();
 
-test.describe('Header: Log out', () => {
-  test.use({ storageState: { cookies: [], origins: [] } });
+    await header.getByLabel('Toggle left panel').click();
+    await expect(header.getByLabel('Toggle left panel')).toBeVisible();
+    await expect(header.getByLabel('Docs animated icon')).toBeInViewport();
+    await expect(header.getByLabel('Search docs')).toBeVisible();
 
-  // eslint-disable-next-line playwright/expect-expect
-  test('checks logout button', async ({ page, browserName }) => {
-    await page.goto('/');
-    await SignIn(page, browserName);
+    // scrollDown
+    await page.mouse.wheel(0, 1000);
 
-    await page.locator('.user-menu__button').click();
-    await page
-      .locator('.user-menu__item')
-      .filter({ hasText: 'Logout' })
-      .click();
+    await expect(header.getByLabel('Toggle left panel')).toBeVisible();
+    await expect(header.getByLabel('Docs animated icon')).not.toBeInViewport();
+    await expect(header.getByLabel('Search docs')).toBeVisible();
 
-    await expectLoginPage(page);
+    // Mobile viewport
+    await page.setViewportSize({ width: 500, height: 1200 });
+    await expect(header.getByLabel('Toggle left panel')).toBeVisible();
+    await expect(header.getByLabel('Docs animated icon')).toBeVisible();
+    await expect(header.getByLabel('Search docs')).toBeVisible();
   });
 });

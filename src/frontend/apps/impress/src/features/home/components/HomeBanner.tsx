@@ -20,8 +20,6 @@ export default function HomeBanner() {
   const { data: config } = useConfig();
   const withProConnect = config?.theme_customization?.home?.['with-proconnect'];
   const icon = config?.theme_customization?.home?.['icon-banner'];
-  const withOnboardingTutorial =
-    config?.theme_customization?.onboarding?.enabled ?? true;
 
   return (
     <Box
@@ -118,23 +116,23 @@ export default function HomeBanner() {
           />
         )}
       </Box>
-      {withOnboardingTutorial && (
-        <Box $css="bottom: 3rem" $position="absolute">
-          <Button
-            color="brand"
-            variant="secondary"
-            icon={<Icon $color="inherit" iconName="expand_more" />}
-            onClick={(e) => {
-              e.preventDefault();
-              document
-                .querySelector('#docs-app-info')
-                ?.scrollIntoView({ behavior: 'smooth' });
-            }}
-          >
-            {t('Show more')}
-          </Button>
-        </Box>
-      )}
+      <Box $css="bottom: 3rem" $position="absolute">
+        <Button
+          color="brand"
+          variant="secondary"
+          icon={<Icon $color="inherit" iconName="expand_more" />}
+          onClick={(e) => {
+            e.preventDefault();
+            document
+              .querySelector('#docs-app-info')
+              ?.scrollIntoView({ behavior: 'smooth' });
+          }}
+        >
+          {t('Show more', {
+            description: 'Button revealing more of the home page',
+          })}
+        </Button>
+      </Box>
     </Box>
   );
 }

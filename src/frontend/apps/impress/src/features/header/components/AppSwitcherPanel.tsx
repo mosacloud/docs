@@ -1,4 +1,4 @@
-import { Button } from '@gouvfr-lasuite/cunningham-react';
+import { Button } from '@gouvfr-lasuite/ui-components';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styled, { keyframes } from 'styled-components';
@@ -17,13 +17,7 @@ const SHADOW =
 
 /* ── App metadata ───────────────────────────────────────── */
 type AppId =
-  | 'epicentre'
-  | 'drive'
-  | 'meet'
-  | 'mail'
-  | 'calendar'
-  | 'chat'
-  | 'commander';
+  'epicentre' | 'drive' | 'meet' | 'mail' | 'calendar' | 'chat' | 'commander';
 
 const APP_META: Record<
   AppId,

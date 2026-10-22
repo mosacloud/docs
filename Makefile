@@ -256,6 +256,8 @@ logs: ## display app-dev logs (follow mode)
 
 run-backend: ## Start only the backend application and all needed services
 	@$(MAKE) create-docker-network
+	@$(MAKE) data/jwt/private.pem
+	@$(MAKE) data/jwt/yhub-private.pem
 	@$(COMPOSE) up --force-recreate -d app-dev
 	@$(COMPOSE) up --force-recreate -d docspec
 	@$(COMPOSE) up --force-recreate -d celery-dev

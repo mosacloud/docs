@@ -446,9 +446,7 @@ test.describe('Doc Tree', () => {
     await page.keyboard.press('ArrowDown');
     await expect(treeRow2).toBeFocused();
 
-    await page.keyboard.press('Tab');
-    await expect(page.getByLabel('Open user menu')).toBeFocused();
-
+    // The user menu lives in the Mosa top bar, before the tree in tab order
     await page.keyboard.press('Tab');
     await expect(page.getByLabel('Open help menu')).toBeFocused();
 
@@ -459,9 +457,6 @@ test.describe('Doc Tree', () => {
 
     await page.keyboard.press('Shift+Tab');
     await expect(page.getByLabel('Open help menu')).toBeFocused();
-
-    await page.keyboard.press('Shift+Tab');
-    await expect(page.getByLabel('User menu')).toBeFocused();
 
     await page.keyboard.press('Shift+Tab');
     await expect(docTree.getByLabel('Root document').first()).toBeFocused();

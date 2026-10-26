@@ -84,7 +84,7 @@ export const DocsGrid = ({
       $position="relative"
       $padding={{
         horizontal: isSmallMobile ? '0' : 'sm',
-        vertical: isSmallMobile ? '0' : 'sm',
+        vertical: isSmallMobile ? '0' : isDesktop ? 'base' : 'sm',
       }}
       $width="100%"
       $maxWidth="960px"
@@ -94,8 +94,7 @@ export const DocsGrid = ({
       <Card
         data-testid="docs-grid"
         $width="100%"
-        $border="none"
-        $background="transparent"
+        {...(!isDesktop && { $border: 'none', $background: 'transparent' })}
         $css={css`
           ${
             isDragOver
@@ -212,9 +211,12 @@ const DocGridTitleBar = ({
     <Box
       $direction="row"
       $padding={{
-        vertical: 'sm',
+        vertical: 'md',
         horizontal: isDesktop ? 'md' : 'xs',
       }}
+      $css={css`
+        border-bottom: 1px solid var(--c--contextuals--border--surface--primary);
+      `}
       $align="center"
       $justify="space-between"
     >

@@ -132,9 +132,7 @@ test.describe('Doc Routing', () => {
 
     await page.reload();
 
-    await expect(
-      page.getByText('You need to sign in before accessing the document'),
-    ).toBeVisible({
+    await expect(page.getByText('Log in to access the document.')).toBeVisible({
       timeout: 10000,
     });
 

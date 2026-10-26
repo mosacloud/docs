@@ -18,6 +18,7 @@ export const CONFIG = {
   AI_FEATURE_BLOCKNOTE_ENABLED: false,
   AI_FEATURE_LEGACY_ENABLED: true,
   API_USERS_SEARCH_QUERY_MIN_LENGTH: 3,
+  APP_URLS: {},
   COLLABORATION_HTTP_FALLBACK_AWARENESS_ENABLED: true,
   COLLABORATION_HTTP_FALLBACK_JSON_ENABLED: false,
   COLLABORATION_HTTP_FALLBACK_SYNC_INTERVAL: 10000,
@@ -106,32 +107,32 @@ export const randomName = (
       : `${name}-${browserName}-${Math.floor(Math.random() * 10000)}-${index}`;
   });
 
+// Mosa top bar: the panel toggle lives in the top bar (<= 1024px) and, on a
+// doc page, also as a floating collapse button next to the doc header.
+const getPanelToggle = (page: Page) =>
+  page
+    .getByTestId('floating-bar-toggle-left-panel')
+    .or(page.locator('.c__header__toggle-menu button'))
+    .first();
+
+const isPanelExpanded = async (toggleButton: Locator) =>
+  (await toggleButton.getAttribute('aria-expanded')) === 'true' ||
+  (await toggleButton.getAttribute('aria-label')) === 'Close the menu';
+
 export const openHeaderMenu = async (page: Page) => {
-  const toggleButton = page.getByTestId('floating-bar-toggle-left-panel');
+  const toggleButton = getPanelToggle(page);
   await expect(toggleButton).toBeVisible();
 
-  const isExpanded =
-    (await toggleButton.getAttribute('aria-expanded')) === 'true';
-  if (!isExpanded) {
+  if (!(await isPanelExpanded(toggleButton))) {
     await toggleButton.click();
   }
 };
 
-export const closeHeaderMenu = async (page: Page, isMobile = false) => {
-  if (isMobile) {
-    const closeButton = page.getByRole('button', { name: 'Close left panel' });
-    await expect(closeButton).toBeVisible();
-    await closeButton.click();
-
-    return;
-  }
-
-  const toggleButton = page.getByTestId('floating-bar-toggle-left-panel');
+export const closeHeaderMenu = async (page: Page) => {
+  const toggleButton = getPanelToggle(page);
   await expect(toggleButton).toBeVisible();
 
-  const isExpanded =
-    (await toggleButton.getAttribute('aria-expanded')) === 'true';
-  if (isExpanded) {
+  if (await isPanelExpanded(toggleButton)) {
     await toggleButton.click();
   }
 };

@@ -42,7 +42,7 @@ export const createRootSubPage = async (
   await expect(subPageItem).toBeVisible();
 
   if (isMobile) {
-    await closeHeaderMenu(page, true);
+    await closeHeaderMenu(page);
   }
 
   // Update sub page name

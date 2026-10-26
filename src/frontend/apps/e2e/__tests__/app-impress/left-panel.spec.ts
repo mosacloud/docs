@@ -18,14 +18,19 @@ test.describe('Left panel desktop', () => {
 
   test('checks all the elements are visible', async ({ page }) => {
     const leftPanel = page.getByLabel('Left panel');
+    const header = page.locator('.--docs--header');
 
     await expect(leftPanel.getByTestId('home-button')).toBeHidden();
     await expect(leftPanel.getByTestId('new-doc-button')).toBeVisible();
-    await expect(leftPanel.getByLabel('User menu')).toBeVisible();
     await expect(leftPanel.getByLabel('Open help menu')).toBeVisible();
 
-    await expect(leftPanel.getByTestId('header-logo-link')).toBeVisible();
-    await expect(leftPanel.locator('h1').getByText('Docs')).toHaveCSS(
+    // The account actions and the logo live in the Mosa top bar
+    await expect(header.getByLabel('User menu')).toBeVisible();
+    await expect(header.getByLabel('Switch app')).toBeVisible();
+    await expect(leftPanel.getByLabel('User menu')).toBeHidden();
+
+    await expect(header.getByTestId('header-logo-link')).toBeVisible();
+    await expect(header.locator('h1').getByText('Docs')).toHaveCSS(
       'font-family',
       /Roboto/i,
     );
@@ -61,19 +66,17 @@ test.describe('Left panel desktop', () => {
     });
     await page.goto('/');
 
-    const leftPanel = page.getByRole('navigation', { name: 'Left panel' });
+    const header = page.locator('.--docs--header');
 
-    await expect(leftPanel.getByTestId('custom-testid-docs')).toHaveAttribute(
+    await expect(header.getByTestId('custom-testid-docs')).toHaveAttribute(
       'src',
       '/assets/icon-docs-dsfr-v2.svg',
     );
     // With withTitle: false, the h1 is kept for accessibility but visually hidden via sr-only
-    await expect(leftPanel.locator('h1').getByText('Docs')).toHaveClass(
-      /sr-only/,
-    );
+    await expect(header.locator('h1').getByText('Docs')).toHaveClass(/sr-only/);
   });
 
-  test('checks the left panel is correctly overrided', async ({ page }) => {
+  test('checks the header logo is correctly overrided', async ({ page }) => {
     await overrideConfig(page, {
       FRONTEND_THEME: 'dsfr',
       theme_customization: {
@@ -91,9 +94,9 @@ test.describe('Left panel desktop', () => {
     });
 
     await page.goto('/');
-    const leftPanel = page.getByRole('navigation', { name: 'Left panel' });
+    const header = page.locator('.--docs--header');
 
-    const logoImage = leftPanel.getByTestId('header-icon-docs');
+    const logoImage = header.getByTestId('header-icon-docs');
     await expect(logoImage).toBeVisible({
       timeout: 10000,
     });
@@ -103,7 +106,8 @@ test.describe('Left panel desktop', () => {
     await expect(logoImage).toHaveAttribute('alt', '');
   });
 
-  test('checks a custom waffle', async ({ page }) => {
+  // The Mosa top bar has an app switcher instead of the La Suite waffle
+  test.skip('checks a custom waffle', async ({ page }) => {
     await overrideConfig(page, {
       theme_customization: {
         waffle: {
@@ -154,7 +158,7 @@ test.describe('Left panel desktop', () => {
     ).toBeVisible();
   });
 
-  test('checks the waffle dsfr', async ({ page }) => {
+  test.skip('checks the waffle dsfr', async ({ page }) => {
     await overrideConfig(page, {
       theme_customization: {
         waffle: {
@@ -261,42 +265,48 @@ test.describe('Left panel responsive', () => {
     await page.setViewportSize({ width: 500, height: 1200 });
     await page.goto('/');
 
-    const header = page.locator('header').first();
+    const header = page.locator('.--docs--header');
     const leftPanel = page.getByLabel('Left panel', { exact: true });
     const homeButton = page.getByTestId('home-button');
     const newDocButton = page.getByTestId('new-doc-button');
-    const userMenu = page.getByRole('button', {
+    const userMenu = header.getByRole('button', {
       name: 'User menu',
     });
+    const panelToggle = header.locator('.c__header__toggle-menu button');
 
+    // The account actions stay in the top bar, only the panel is collapsed
     await expect(leftPanel).not.toBeInViewport();
     await expect(homeButton).not.toBeInViewport();
     await expect(newDocButton).not.toBeInViewport();
-    await expect(userMenu).not.toBeInViewport();
+    await expect(userMenu).toBeInViewport();
 
     await createDoc(page, 'mobile-doc-test', browserName, 1, true);
 
-    await header.getByLabel(/Show the side panel/).click();
+    await panelToggle.click();
 
     await expect(leftPanel).toBeInViewport();
     await expect(homeButton).toBeInViewport();
     await expect(newDocButton).toBeInViewport();
     await expect(userMenu).toBeInViewport();
 
-    await leftPanel.getByRole('button', { name: 'Close left panel' }).click();
+    // The same toggle closes the panel again
+    await expect(panelToggle).toHaveAccessibleName('Close the menu');
+    await panelToggle.click();
+    await expect(leftPanel).not.toBeInViewport();
 
-    // Tablet size - like in desktop, left panel should be visible
+    // Wide screen - the left panel is visible and the toggle is hidden
     await page.setViewportSize({ width: 1200, height: 1200 });
     await page.goto('/');
 
     await expect(page.getByRole('link', { name: 'Recent' })).toBeInViewport();
     await expect(newDocButton).toBeInViewport();
     await expect(userMenu).toBeInViewport();
-    await expect(header.getByLabel('Toggle left panel')).toBeVisible();
+    await expect(panelToggle).toBeHidden();
 
-    await page.setViewportSize({ width: 1100, height: 1200 });
+    // Up to 1024px the top bar shows the panel toggle
+    await page.setViewportSize({ width: 1000, height: 1200 });
     await page.goto('/');
-    await expect(header.getByLabel('Toggle left panel')).toBeHidden();
+    await expect(panelToggle).toBeVisible();
   });
 
   test('checks panel closes when clicking on a subdoc', async ({

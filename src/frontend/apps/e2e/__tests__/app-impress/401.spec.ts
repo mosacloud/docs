@@ -16,6 +16,6 @@ test.describe('401', () => {
     await expect(
       page.getByRole('button', { name: 'Sign in with your account' }),
     ).toBeVisible();
-    await expect(page).toHaveTitle(/401 Unauthorized - Docs/);
+    await expect(page).toHaveTitle(/Sign in to Docs/);
   });
 });

@@ -30,6 +30,11 @@ test.describe('Header', () => {
   test('checks the top bar elements on different screen sizes', async ({
     page,
   }) => {
+    // The app switcher is only rendered when app URLs are configured
+    await overrideConfig(page, {
+      APP_URLS: { drive: 'https://drive.example.com' },
+    });
+
     // Desktop viewport
     await page.goto('/');
 

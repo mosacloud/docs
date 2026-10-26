@@ -17,6 +17,12 @@ test.describe('Left panel desktop', () => {
   });
 
   test('checks all the elements are visible', async ({ page }) => {
+    // The app switcher is only rendered when app URLs are configured
+    await overrideConfig(page, {
+      APP_URLS: { drive: 'https://drive.example.com' },
+    });
+    await page.goto('/');
+
     const leftPanel = page.getByLabel('Left panel');
     const header = page.locator('.--docs--header');
 

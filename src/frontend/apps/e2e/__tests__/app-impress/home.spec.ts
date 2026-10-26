@@ -196,7 +196,8 @@ test.describe('Home page', () => {
     ).toBeVisible();
   });
 
-  test('it shows the homepage for a direct /home link when the homepage feature is enabled', async ({
+  // Mosa renders its own login page on /home instead of the La Suite homepage
+  test.skip('it shows the homepage for a direct /home link when the homepage feature is enabled', async ({
     page,
   }) => {
     await overrideConfig(page, {

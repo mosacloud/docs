@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
 import { Box } from '@/components';
+import { HEADER_HEIGHT, VIEWPORT_HEIGHT } from '@/features/header/conf';
 import { useResponsiveStore } from '@/stores/useResponsiveStore';
 
 import { useLeftPanelStore } from '../stores';
@@ -21,7 +22,7 @@ export const LeftPanel = ({ isResizable }: { isResizable?: boolean }) => {
         <Box
           $css={css`
             position: fixed;
-            inset: 0;
+            inset: ${HEADER_HEIGHT}px 0 0 0;
             z-index: 999;
             background-color: rgba(0, 0, 0, 0.3);
             transition: opacity 0.2s ease-in-out;
@@ -39,7 +40,7 @@ export const LeftPanel = ({ isResizable }: { isResizable?: boolean }) => {
           description: 'Accessible name of the left navigation panel',
         })}
         $width={isResizable ? '100%' : '300px'}
-        $height="100dvh"
+        $height={VIEWPORT_HEIGHT}
         $overflow="hidden"
         $css={css`
           z-index: 1;
@@ -78,7 +79,7 @@ export const LeftPanel = ({ isResizable }: { isResizable?: boolean }) => {
                   box-shadow: 10px 0px 10px 0px rgba(0, 0, 0, 0.05);
                   position: fixed;
                   z-index: 1000;
-                  top: 0;
+                  top: ${HEADER_HEIGHT}px;
                   left: 0;
                   ${
                     !isPanelOpen

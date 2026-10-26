@@ -41,7 +41,7 @@ const DocsPageLayout = ({ children }: PropsWithChildren) => {
       propsContent={{
         $background: !isDesktop
           ? 'var(--c--contextuals--background--surface--primary)'
-          : 'linear-gradient(53deg, var(--c--contextuals--background--surface--primary) 39.96%, var(--c--contextuals--background--semantic--brand--tertiary) 125.64%)',
+          : 'var(--c--contextuals--background--surface--tertiary)',
       }}
     >
       {children}

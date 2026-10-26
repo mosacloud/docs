@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { css } from 'styled-components';
 
 import { Box, BoxType } from '@/components';
+import { Header } from '@/features/header';
+import { VIEWPORT_HEIGHT, VIEWPORT_HEIGHT_CSS } from '@/features/header/conf';
 import { LeftPanel, ResizableLeftPanel } from '@/features/left-panel';
 import { RightPanel } from '@/features/right-panel/components/RightPanel';
 import { DocEditorSkeleton, Skeleton } from '@/features/skeletons';
@@ -35,17 +37,24 @@ export function MainLayout({
   return (
     <Box
       className="--docs--main-layout"
-      $direction="row"
       $width="100%"
       $height="100dvh"
-      {...propsLayout}
+      $css={VIEWPORT_HEIGHT_CSS}
     >
-      <MainLayoutContent
-        enableResizablePanel={enableResizablePanel}
-        {...propsContent}
+      <Header />
+      <Box
+        $direction="row"
+        $width="100%"
+        $height={VIEWPORT_HEIGHT}
+        {...propsLayout}
       >
-        {children}
-      </MainLayoutContent>
+        <MainLayoutContent
+          enableResizablePanel={enableResizablePanel}
+          {...propsContent}
+        >
+          {children}
+        </MainLayoutContent>
+      </Box>
     </Box>
   );
 }
@@ -107,7 +116,7 @@ export const MainContent = ({
       $align="center"
       $flex={1}
       $width="100%"
-      $height="100dvh"
+      $height={VIEWPORT_HEIGHT}
       $position="relative"
       $background="var(--c--contextuals--background--surface--primary)"
       $css={css`

@@ -4,7 +4,7 @@ import { createGlobalStyle } from 'styled-components';
 
 import { Box } from '@/components';
 import { Waffle } from '@/components/Waffle';
-import { ButtonLogin, gotoLogout, useAuth } from '@/features/auth';
+import { gotoLogout, useAuth } from '@/features/auth';
 import { HelpMenu } from '@/features/help';
 import { LanguagePicker } from '@/features/language/components/LanguagePicker';
 
@@ -15,10 +15,11 @@ const FooterActionsGlobalStyle = createGlobalStyle`
 `;
 
 type FooterActionsProps = {
-  withLogin?: boolean;
+  /** The account actions live in the top bar: keep only the help menu. */
+  hideAccount?: boolean;
 };
 
-export const FooterActions = ({ withLogin }: FooterActionsProps) => {
+export const FooterActions = ({ hideAccount }: FooterActionsProps) => {
   const { t } = useTranslation();
   const { user } = useAuth();
 
@@ -37,19 +38,20 @@ export const FooterActions = ({ withLogin }: FooterActionsProps) => {
         $direction="row"
         $align="center"
         $gap="3xs"
-        $justify="space-between"
+        $justify={hideAccount ? 'flex-end' : 'space-between'}
         className="--docs--footer-actions"
       >
-        <Box $direction="row" $align="center" $gap="3xs">
-          <UserMenu
-            user={userMenu}
-            logout={user ? gotoLogout : undefined}
-            actions={<LanguagePicker />}
-            withMobileView={false}
-          />
-          <Waffle />
-          {withLogin && <ButtonLogin />}
-        </Box>
+        {!hideAccount && (
+          <Box $direction="row" $align="center" $gap="3xs">
+            <UserMenu
+              user={userMenu}
+              logout={user ? gotoLogout : undefined}
+              actions={<LanguagePicker />}
+              withMobileView={false}
+            />
+            <Waffle />
+          </Box>
+        )}
         <HelpMenu />
       </Box>
     </>

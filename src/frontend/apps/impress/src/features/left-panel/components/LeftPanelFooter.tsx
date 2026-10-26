@@ -4,7 +4,7 @@ import { FooterActions } from '@/features/footer';
 export const LeftPanelFooter = () => {
   return (
     <SeparatedSection showSeparator="top" $margin={{ top: 'auto' }}>
-      <FooterActions withLogin />
+      <FooterActions hideAccount />
     </SeparatedSection>
   );
 };

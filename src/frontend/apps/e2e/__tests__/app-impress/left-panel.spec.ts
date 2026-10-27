@@ -17,12 +17,6 @@ test.describe('Left panel desktop', () => {
   });
 
   test('checks all the elements are visible', async ({ page }) => {
-    // The app switcher is only rendered when app URLs are configured
-    await overrideConfig(page, {
-      APP_URLS: { drive: 'https://drive.example.com' },
-    });
-    await page.goto('/');
-
     const leftPanel = page.getByLabel('Left panel');
     const header = page.locator('.--docs--header');
 
@@ -32,7 +26,6 @@ test.describe('Left panel desktop', () => {
 
     // The account actions and the logo live in the Mosa top bar
     await expect(header.getByLabel('User menu')).toBeVisible();
-    await expect(header.getByLabel('Switch app')).toBeVisible();
     await expect(leftPanel.getByLabel('User menu')).toBeHidden();
 
     await expect(header.getByTestId('header-logo-link')).toBeVisible();

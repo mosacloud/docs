@@ -8,6 +8,10 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe('Doc Table Content', () => {
+  // The Mosa top bar takes 52px of the scroll area: with the default 720px
+  // viewport "Level 2" ends up behind it, so give the page the same room.
+  test.use({ viewport: { width: 1280, height: 800 } });
+
   test('it checks the doc table content', async ({ page, browserName }) => {
     await createDoc(page, 'doc-table-content', browserName, 1);
 

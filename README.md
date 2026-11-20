@@ -29,6 +29,15 @@
   <a href="mailto:docs@numerique.gouv.fr">Contact us</a>
 </p>
 
+> [!NOTE]
+> **mosa.cloud fork.** `main` is the Mosa branding and fixes rebased on an
+> upstream release of [suitenumerique/docs](https://github.com/suitenumerique/docs),
+> tagged `vX.Y.Z-mosa`. Each push to `main` publishes `mosacloud/docs-backend`,
+> `docs-frontend`, `docs-frontend-mit` and `docs-y-provider` on Docker Hub as
+> `X.Y.Z-mosa.<run>`, `latest` and `dev`; a `v*` tag publishes `X.Y.Z-mosa`.
+> The collaboration server is not forked: use upstream's `lasuite/impress-yhub`
+> at the same version.
+
 # La Suite Docs: Collaborative Text Editing
 
 **Docs, where your notes can become knowledge through live collaboration.**

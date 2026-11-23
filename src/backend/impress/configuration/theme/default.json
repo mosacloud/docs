@@ -155,12 +155,12 @@
   },
   "favicon": {
     "light": {
-      "href": "/assets/favicon-light.png",
-      "type": "image/png"
+      "href": "/favicon.ico?v=2",
+      "type": "image/x-icon"
     },
     "dark": {
-      "href": "/assets/favicon-dark.png",
-      "type": "image/png"
+      "href": "/favicon.ico?v=2",
+      "type": "image/x-icon"
     }
   },
   "onboarding": {

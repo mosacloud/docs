@@ -4,6 +4,11 @@
 @import url('@fontsource-variable/material-symbols-outlined');
 @import url('@fontsource-variable/inter');
 @import url('@fontsource-variable/inter/wght-italic.css');
+@import url('@fontsource/open-sans/400.css');
+@import url('@fontsource/open-sans/500.css');
+@import url('@fontsource/open-sans/600.css');
+@import url('@fontsource/poppins/600.css');
+@import url('@fontsource/poppins/700.css');
 @import url('@gouvfr-lasuite/ui-components/fonts/marianne');
 
 body {
